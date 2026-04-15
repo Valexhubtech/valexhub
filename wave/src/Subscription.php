@@ -5,6 +5,7 @@ namespace Wave;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Subscription extends Model
 {
@@ -17,6 +18,7 @@ class Subscription extends Model
         'billable_type',
         'billable_id',
         'plan_id',
+        'product_id',
         'vendor_slug',
         'vendor_product_id',
         'vendor_transaction_id',
@@ -70,5 +72,21 @@ class Subscription extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class, 'plan_id');
+    }
+
+    /**
+     * The product that belongs to the subscription.
+     */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    /**
+     * Get the user products associated with this subscription.
+     */
+    public function userProducts(): HasMany
+    {
+        return $this->hasMany(UserProduct::class);
     }
 }

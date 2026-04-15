@@ -37,6 +37,33 @@ class User extends WaveUser
         return $this->hasMany(ActivityLog::class);
     }
 
+    /**
+     * Get the user's products
+     */
+    public function userProducts(): HasMany
+    {
+        return $this->hasMany(\Wave\UserProduct::class);
+    }
+
+    /**
+     * Get the user's active products
+     */
+    public function activeProducts(): HasMany
+    {
+        return $this->userProducts()->where('status', 'active');
+    }
+
+    /**
+     * Check if user owns a specific product
+     */
+    public function ownsProduct($productId): bool
+    {
+        return $this->userProducts()
+            ->where('product_id', $productId)
+            ->where('status', 'active')
+            ->exists();
+    }
+
     protected static function boot()
     {
         parent::boot();

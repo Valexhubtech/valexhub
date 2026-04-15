@@ -28,6 +28,14 @@ class Category extends Model
     }
 
     /**
+     * Get the products that belong to this category
+     */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    /**
      * Get all categories with caching
      */
     public static function getAllCached()
