@@ -38,6 +38,9 @@ resources/themes/.gitignore
 /storage/app/public/*
 !/storage/app/public/demo
 
+# Local documentation files
+LOCAL_PROJECT_STRUCTURE.md
+
 # Ignore everything inside the resources/plugins folder
 resources/plugins/*
 
