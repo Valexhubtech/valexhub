@@ -69,12 +69,17 @@
                             :class="{ 'hidden md:block opacity-0 invisible md:absolute' : !open, 'md:invisible md:opacity-0 md:hidden md:absolute' : open }"
                             class="top-0 left-0 w-screen space-y-3 transition-transform duration-300 ease-out bg-white border-t border-b border-gray-100 md:shadow-md md:-translate-y-2 md:mt-24 md:block md:group-hover:block md:group-hover:visible md:group-hover:opacity-100 md:group-hover:translate-y-0" x-cloak>
                             <ul class="flex flex-col justify-between mx-auto max-w-7xl md:px-16 md:flex-row">
-                                @foreach(\Wave\Category::all() as $category)
-                                    <li class="w-full border-l border-gray-100 md:w-1/{{ \Wave\Category::count() <= 5 ? \Wave\Category::count() : '5' }}">
-                                        <a href="{{ route('blog.category', ['category' => $category]) }}" class="block h-full p-6 text-lg font-semibold hover:bg-gray-50 lg:p-7 lg:py-10">
-                                            <img src="/wave/img/icons/anchor.png" class="w-12 h-auto" alt="{{ $category->name }} icon" />
+                                @php
+                                    $productCategories = \Wave\Category::whereHas('products', function($query) {
+                                        $query->where('is_active', true);
+                                    })->get();
+                                @endphp
+                                @foreach($productCategories as $category)
+                                    <li class="w-full border-l border-gray-100 md:w-1/{{ $productCategories->count() <= 4 ? ($productCategories->count() + 1) : '5' }}">
+                                        <a href="{{ route('products.category', ['category' => $category->slug]) }}" class="block h-full p-6 text-lg font-semibold hover:bg-gray-50 lg:p-7 lg:py-10">
+                                            <x-phosphor-package class="w-12 h-12 text-zinc-600" />
                                             <span class="block my-2 text-xs font-bold uppercase text-slate-800">{{ $category->name }}</span>
-                                            <span class="block text-xs font-medium leading-5 text-slate-500">Explore {{ strtolower($category->name) }} solutions</span>
+                                            <span class="block text-xs font-medium leading-5 text-slate-500">{{ $category->products()->where('is_active', true)->count() }} products available</span>
                                         </a>
                                     </li>
                                 @endforeach
