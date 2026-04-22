@@ -89,7 +89,7 @@
                             
                             <div class="flex flex-col gap-2">
                                 <a href="{{ route('products.show', ['category' => $category->slug, 'product' => $product->slug]) }}" class="text-center px-4 py-2 text-sm font-medium text-white bg-zinc-900 rounded-md hover:bg-zinc-800">View Details</a>
-                                <a href="https://wa.me/2348012345678?text=Hi%2C%20I%27d%20like%20to%20know%20more%20about%20{{ urlencode($product->name) }}" target="_blank" class="text-center px-4 py-2 text-sm font-medium text-zinc-700 border border-zinc-300 rounded-md hover:bg-zinc-50">Get Quote</a>
+                                <x-elements.quote-demo-modal :product="$product" size="compact" />
                             </div>
                         </div>
                     @endforeach

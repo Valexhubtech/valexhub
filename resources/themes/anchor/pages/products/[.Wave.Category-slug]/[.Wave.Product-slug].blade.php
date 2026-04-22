@@ -40,10 +40,7 @@
                             </div>
                         @endif
 
-                        <div class="flex flex-col gap-3 md:flex-row">
-                            <a href="https://wa.me/2348012345678?text=Hi%2C%20I%27d%20like%20to%20get%20a%20quote%20for%20{{ urlencode($product->name) }}" target="_blank" class="px-6 py-3 text-white bg-zinc-900 rounded-md hover:bg-zinc-800 text-center">Get Quote</a>
-                            <a href="https://wa.me/2348012345678?text=Hi%2C%20I%27d%20like%20to%20schedule%20a%20demo%20for%20{{ urlencode($product->name) }}" target="_blank" class="px-6 py-3 text-zinc-700 border border-zinc-300 rounded-md hover:bg-zinc-50 text-center">Schedule Demo</a>
-                        </div>
+                        <x-elements.quote-demo-modal :product="$product" />
                     </div>
 
                     <!-- Product Image/Icon -->

@@ -11,7 +11,11 @@
 |
 */
 
+use Illuminate\Support\Facades\Route;
 use Wave\Facades\Wave;
 
 // Wave routes
 Wave::routes();
+
+// Demo Request Routes
+Route::post('/demo-request', [\App\Http\Controllers\DemoRequestController::class, 'store'])->name('demo-request.store');

@@ -35,12 +35,6 @@
                                 <span>Contact Us</span>
                             </a>
                         </li>
-                        <li>
-                            <a href="{{ route('pricing') }}" class="relative inline-block text-black group">
-                                <span class="absolute bottom-0 w-full transition duration-150 ease-out transform -translate-y-1 border-b border-black opacity-0 group-hover:opacity-100 group-hover:translate-y-1"></span>
-                                <span>Pricing</span>
-                            </a>
-                        </li>
                     </ul>
                 </div>
                 <div class="md:justify-self-end">
@@ -55,6 +49,24 @@
                             </li>
                         @endforeach
                     </ul>
+                </div>
+                <div class="md:justify-self-end">
+                    <h3 class="font-semibold text-black">Business Hours</h3>
+                    <div class="mt-6 space-y-4 text-sm">
+                        <div>
+                            <p class="font-medium text-black">Monday - Friday</p>
+                            <p class="text-gray-600">9:00 AM - 6:00 PM</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-black">Saturday</p>
+                            <p class="text-gray-600">10:00 AM - 4:00 PM</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-black">Sunday</p>
+                            <p class="text-gray-600">Closed</p>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">All times WAT</p>
+                    </div>
                 </div>
             </div>
         </div>

@@ -79,6 +79,56 @@
             </x-filament::section>
         </section>
     </section>
+    <section class="flex gap-5 mb-5">
+        <section class="flex flex-col gap-5 items-center w-full xl:flex-row">
+            <x-filament::section class="w-full">
+                <div class="flex gap-x-5 items-center">
+                    <div class="flex-">
+                        <x-phosphor-package-duotone class="h-10 text-blue-600 fill-current" />
+                    </div>
+                    <div class="flex flex-col w-full">
+                        <div class="mt-1 text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-200">{{ \Wave\Product::count() }}</div>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs font-medium text-gray-500 truncate">Products</div>
+            </x-filament::section>
+            <x-filament::section class="w-full">
+                <div class="flex gap-x-5 items-center">
+                    <div class="flex-">
+                        <x-phosphor-chats-circle-duotone class="h-10 text-blue-600 fill-current" />
+                    </div>
+                    <div class="flex flex-col w-full">
+                        <div class="mt-1 text-xl font-semibold tracking-tight text-gray-900 dark:text-gray-200">{{ \Wave\DemoRequest::count() }}</div>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs font-medium text-gray-500 truncate">Demo Requests</div>
+            </x-filament::section>
+        </section>
+        <section class="flex flex-col gap-5 items-center w-full xl:flex-row">
+            <x-filament::section class="w-full">
+                <div class="flex gap-x-5 items-center">
+                    <div class="flex-">
+                        <x-phosphor-clock-duotone class="h-10 text-orange-500 fill-current" />
+                    </div>
+                    <div class="flex flex-col w-full">
+                        <div class="mt-1 text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-200">{{ \Wave\DemoRequest::where('status', 'pending')->count() }}</div>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs font-medium text-gray-500 truncate">Pending Requests</div>
+            </x-filament::section>
+            <x-filament::section class="w-full">
+                <div class="flex gap-x-5 items-center">
+                    <div class="flex-">
+                        <x-phosphor-calendar-duotone class="h-10 text-green-500 fill-current" />
+                    </div>
+                    <div class="flex flex-col w-full">
+                        <div class="mt-1 text-xl font-semibold tracking-tight text-gray-900 dark:text-gray-200">{{ \Wave\DemoRequest::whereDate('created_at', today())->count() }}</div>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs font-medium text-gray-500 truncate">Today's Requests</div>
+            </x-filament::section>
+        </section>
+    </section>
     <x-filament::section>
         <div class="flex flex-col relative gap-x-3 justify-center space-y-2 items-center min-h-[400px] w-full ">
             <p class="text-center text-gray-400 dark:text-gray-500">Welcome to your Admin Dashboard. Modify this page at:</p> 
