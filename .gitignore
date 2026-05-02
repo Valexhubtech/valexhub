@@ -41,6 +41,9 @@ resources/themes/.gitignore
 # Local documentation files
 LOCAL_PROJECT_STRUCTURE.md
 
+# Ignore local dev builds but allow production builds from CI
+/public/build/.vite
+
 # Ignore everything inside the resources/plugins folder
 resources/plugins/*
 

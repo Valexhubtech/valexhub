@@ -1,4 +1,3 @@
-
 <!-- Section 1 -->
 <footer class="pt-10">
     <x-container>
@@ -10,13 +9,12 @@
                 <div class="md:justify-self-end">
                     <h3 class="font-semibold text-black">Product</h3>
                     <ul class="mt-6 space-y-4 text-sm">
-                        @foreach(\Wave\Category::all() as $category)
-                            <li>
-                                <a href="{{ route('blog.category', ['category' => $category]) }}" class="relative inline-block text-black group">
-                                    <span class="absolute bottom-0 w-full transition duration-150 ease-out transform -translate-y-1 border-b border-black opacity-0 group-hover:opacity-100 group-hover:translate-y-1"></span>
-                                    <span>{{ $category->name }}</span>
-                                </a>
-                            </li>
+                        @foreach(\Wave\Category::whereHas('products', function($query) { $query->where('is_active', true); })->get() as $category)
+                        <li>
+                            <a href="{{ route('products.category', ['category' => $category->slug]) }}" class="text-black hover:text-zinc-600 transition-colors duration-200">
+                                {{ $category->name }}
+                            </a>
+                        </li>
                         @endforeach
                     </ul>
                 </div>
@@ -24,15 +22,13 @@
                     <h3 class="font-semibold text-black">Company</h3>
                     <ul class="mt-6 space-y-4 text-sm">
                         <li>
-                            <a href="{{ route('about') }}" class="relative inline-block text-black group">
-                                <span class="absolute bottom-0 w-full transition duration-150 ease-out transform -translate-y-1 border-b border-black opacity-0 group-hover:opacity-100 group-hover:translate-y-1"></span>
-                                <span>About Us</span>
+                            <a href="{{ route('about') }}" class="text-black hover:text-zinc-600 transition-colors duration-200">
+                                About Us
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('book-demo') }}" class="relative inline-block text-black group">
-                                <span class="absolute bottom-0 w-full transition duration-150 ease-out transform -translate-y-1 border-b border-black opacity-0 group-hover:opacity-100 group-hover:translate-y-1"></span>
-                                <span>Contact Us</span>
+                            <a href="{{ route('book-demo') }}" class="text-black hover:text-zinc-600 transition-colors duration-200">
+                                Contact Us
                             </a>
                         </li>
                     </ul>
@@ -41,12 +37,11 @@
                     <h3 class="font-semibold text-black">Resources</h3>
                     <ul class="mt-6 space-y-4 text-sm">
                         @foreach(\Wave\Page::where('status', 'ACTIVE')->get() as $page)
-                            <li>
-                                <a href="{{ route($page->slug) }}" class="relative inline-block text-black group">
-                                    <span class="absolute bottom-0 w-full transition duration-150 ease-out transform -translate-y-1 border-b border-black opacity-0 group-hover:opacity-100 group-hover:translate-y-1"></span>
-                                    <span>{{ $page->title }}</span>
-                                </a>
-                            </li>
+                        <li>
+                            <a href="{{ route($page->slug) }}" class="text-black hover:text-zinc-600 transition-colors duration-200">
+                                {{ $page->title }}
+                            </a>
+                        </li>
                         @endforeach
                     </ul>
                 </div>

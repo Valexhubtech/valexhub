@@ -113,12 +113,6 @@
                                             <span class="block leading-5 opacity-50">Tailored applications built specifically for your business requirements</span>
                                         </a>
                                     </div>
-                                    <div class="w-auto divide-y divide-zinc-100">
-                                        <a href="#_" class="block text-sm p-7 hover:bg-neutral-100">
-                                            <span class="block mb-1 font-medium text-black">Industry-Specific Solutions</span>
-                                            <span class="block font-light leading-5 opacity-50">Specialized software designed for healthcare, finance, retail and more</span>
-                                        </a>
-                                    </div>
                                 </div>
                             </ul>
                         </div>
@@ -132,28 +126,28 @@
                         </a>
                     </li>
 
-                    @guest
+                    {{-- @guest
                         <li class="relative z-30 flex flex-col items-center justify-center flex-shrink-0 w-full h-auto pt-3 space-y-3 text-sm md:hidden px-7">
                             <x-button href="{{ route('login') }}" tag="a" class="w-full text-sm" color="secondary">Login</x-button>
                             <x-button href="{{ route('register') }}" tag="a" class="w-full text-sm">Sign Up</x-button>
                         </li>
                     @else
-                        {{-- <li class="flex items-center justify-center w-full pt-3 md:hidden px-7">
+                        <li class="flex items-center justify-center w-full pt-3 md:hidden px-7">
                             <x-button href="{{ route('login') }}" tag="a" class="w-full text-sm">View Dashboard</x-button>
-                        </li> --}}
-                    @endguest
+                        </li>
+                    @endguest --}}
 
                 </ul>
             </nav>
             
-            @guest
+            {{-- @guest
                 <div class="relative z-30 items-center justify-center flex-shrink-0 hidden h-full space-x-3 text-sm md:flex">
                     <x-button href="{{ route('login') }}" tag="a" class="text-sm" color="secondary">Login</x-button>
                     <x-button href="{{ route('register') }}" tag="a" class="text-sm">Sign Up</x-button>
                 </div>
             @else
-                {{-- <x-button href="{{ route('login') }}" tag="a" class="text-sm" class="relative z-20 flex-shrink-0 hidden ml-2 md:block">View Dashboard</x-button> --}}
-            @endguest
+                <x-button href="{{ route('login') }}" tag="a" class="text-sm" class="relative z-20 flex-shrink-0 hidden ml-2 md:block">View Dashboard</x-button>
+            @endguest --}}
 
         </div>
     </x-container>

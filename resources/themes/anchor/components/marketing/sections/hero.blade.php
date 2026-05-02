@@ -8,8 +8,8 @@
                 We build tailored digital solutions that help businesses recover lost revenue, streamline operations, and scale profitably.
             </p>
             <div class="flex flex-col gap-3 justify-center items-center mx-auto mt-8 md:gap-2 lg:justify-start md:ml-0 md:flex-row">
-                <x-button size="lg" class="w-full lg:w-auto" href="https://wa.me/2348012345678?text=Hi%2C%20I%27d%20like%20to%20book%20a%20free%20demo" target="_blank">Book a Free Demo</x-button>
-                <x-button size="lg" color="secondary" class="w-full lg:w-auto" href="{{ route('blog') }}" wire:navigate>Explore Products</x-button>
+                <x-button size="lg" class="w-full lg:w-auto" tag="a" href="{{ route('book-demo') }}" wire:navigate>Book a Free Demo</x-button>
+                <x-button size="lg" color="secondary" class="w-full lg:w-auto" tag="a" href="{{ route('products') }}" wire:navigate>Explore Products</x-button>
             </div>
             <p class="mx-auto mt-6 text-sm font-medium text-left lg:ml-0 sm:text-center lg:text-left text-zinc-600">
                 Trusted by schools, hotels, pharmacies & growing businesses across Nigeria
