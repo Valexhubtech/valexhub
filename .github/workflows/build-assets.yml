@@ -8,11 +8,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     
     steps:
     - uses: actions/checkout@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql, pdo_pgsql, gd, exif
+
+    - name: Install Composer dependencies
+      run: composer install --no-dev --optimize-autoloader
 
     - uses: actions/setup-node@v4
       with:
