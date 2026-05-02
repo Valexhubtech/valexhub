@@ -28,7 +28,7 @@ describe('Changelog Model', function () {
     it('has fillable attributes', function () {
         $changelog = new Changelog();
 
-        expect($changelog->getFillable())->toBe(['title', 'description', 'body']);
+        expect($changelog->getFillable())->toBe(['title', 'description', 'body', 'loggable_type', 'loggable_id']);
     });
 
     it('has timestamps', function () {
