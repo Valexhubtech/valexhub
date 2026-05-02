@@ -1,4 +1,4 @@
-name: Build Assets for Production
+name: Build Assets
 
 on:
   push:
@@ -6,61 +6,31 @@ on:
     paths:
       - 'resources/**'
       - 'package.json'
-      - 'package-lock.json'
       - 'vite.config.js'
       - 'tailwind.config.js'
-      - '.github/workflows/build-assets.yml'
   workflow_dispatch:
 
 jobs:
-  build-assets:
+  build:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        fetch-depth: 0
-      env:
-        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - uses: actions/setup-node@v4
       with:
         node-version: '22'
         cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+    - run: npm ci
+    - run: npm run build
 
-    - name: Build assets
-      run: npm run build
-
-    - name: Check for changes
-      id: verify-changed-files
+    - name: Commit build files
       run: |
-        if [ -n "$(git status --porcelain)" ]; then
-          echo "changed=true" >> $GITHUB_OUTPUT
-        else
-          echo "changed=false" >> $GITHUB_OUTPUT
-        fi
-
-    - name: Commit build assets
-      if: steps.verify-changed-files.outputs.changed == 'true'
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config user.name "GitHub Action"
+        git config user.email "action@github.com"
         git add public/build/
-        git commit -m "🚀 Build assets for production
-
-        Generated from commit: ${{ github.sha }}
-        
-        Co-authored-by: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
-
-    - name: Push changes
-      if: steps.verify-changed-files.outputs.changed == 'true'
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: main
+        git diff --staged --quiet || git commit -m "🚀 Build assets"
+        git push
