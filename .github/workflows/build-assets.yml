@@ -9,6 +9,8 @@ on:
       - 'package-lock.json'
       - 'vite.config.js'
       - 'tailwind.config.js'
+      - '.github/workflows/build-assets.yml'
+  workflow_dispatch:
 
 jobs:
   build-assets:
@@ -20,11 +22,13 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         fetch-depth: 0
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '22'
         cache: 'npm'
 
     - name: Install dependencies
