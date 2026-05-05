@@ -1,8 +1,10 @@
+<!-- 2026 Modern Navbar with Glassmorphism and Dynamic States -->
 <header 
     x-data="{ 
         mobileMenuOpen: false, 
         scrolled: false, 
-        showOverlay: false, 
+        showOverlay: false,
+        activeDropdown: null,
         topOffset: '5',
         evaluateScrollPosition(){
             if(window.pageYOffset > this.topOffset){
@@ -10,24 +12,42 @@
             } else {
                 this.scrolled = false;
             }
-        } 
+        },
+        closeAllDropdowns() {
+            this.activeDropdown = null;
+            this.showOverlay = false;
+        }
     }"
     x-init="
         window.addEventListener('resize', function() {
             if(window.innerWidth > 768) {
                 mobileMenuOpen = false;
+                activeDropdown = null;
             }
         });
         $watch('mobileMenuOpen', function(value){
-            if(value){ document.body.classList.add('overflow-hidden'); } else { document.body.classList.remove('overflow-hidden'); }
+            if(value){ 
+                document.body.classList.add('overflow-hidden'); 
+            } else { 
+                document.body.classList.remove('overflow-hidden'); 
+                activeDropdown = null;
+            }
         });
         evaluateScrollPosition();
         window.addEventListener('scroll', function() {
             evaluateScrollPosition(); 
-        })
+        });
+        document.addEventListener('click', function(event) {
+            if(!event.target.closest('[data-dropdown]')) {
+                closeAllDropdowns();
+            }
+        });
     " 
-    :class="{ 'border-gray-200/60 bg-white/90 border-b backdrop-blur-lg' : scrolled, 'border-transparent border-b bg-transparent translate-y-0' : !scrolled }" 
-    class="box-content sticky top-0 z-50 w-full h-24" 
+    :class="{ 
+        'bg-white/80 backdrop-blur-xl border-slate-200/60 shadow-lg shadow-slate-900/5' : scrolled, 
+        'bg-white/20 backdrop-blur-md border-white/20' : !scrolled 
+    }" 
+    class="box-content sticky top-0 z-50 w-full h-20 border-b transition-all duration-500" 
 >
     <div 
         x-show="showOverlay"
@@ -38,17 +58,37 @@
         <div class="w-screen h-full bg-black/50"></div>
     </div>
     <x-container>
-        <div class="z-30 flex items-center justify-between h-24 md:space-x-8">
+        <div class="z-30 flex items-center justify-between h-20 md:space-x-8">
+            <!-- Logo Section with Enhanced Styling -->
             <div class="z-20 flex items-center justify-between w-full md:w-auto">
                 <div class="relative z-20 inline-flex">
-                    <a href="{{ route('home') }}" wire:navigate class="flex items-center justify-center space-x-3 font-bold text-zinc-900">
-                    <x-logo class="w-auto h-8 md:h-9"></x-logo>
+                    <a href="{{ route('home') }}" wire:navigate class="flex items-center justify-center space-x-3 font-bold transition-all duration-300 hover:scale-105 group">
+                        <x-logo class="w-auto h-8 md:h-9 transition-all duration-300 group-hover:brightness-110"></x-logo>
                     </a>
                 </div>
+                
+                <!-- Modern Mobile Menu Button -->
                 <div class="flex justify-end flex-grow md:hidden">
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="inline-flex items-center justify-center p-2 transition duration-150 ease-in-out rounded-full text-zinc-400 hover:text-zinc-500 hover:bg-zinc-100">
-                        <svg x-show="!mobileMenuOpen" class="w-6 h-6" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
-                        <svg x-show="mobileMenuOpen" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                    <button 
+                        @click="mobileMenuOpen = !mobileMenuOpen" 
+                        type="button" 
+                        :class="{ 'bg-slate-100/80 backdrop-blur-sm': mobileMenuOpen }"
+                        class="inline-flex items-center justify-center p-3 rounded-2xl transition-all duration-300 ease-out text-slate-600 hover:text-slate-800 hover:bg-slate-100/60 backdrop-blur-sm border border-slate-200/50 hover:border-slate-300/50 shadow-sm hover:shadow-md">
+                        <!-- Hamburger to X Animation -->
+                        <div class="w-6 h-6 flex flex-col justify-center items-center">
+                            <span 
+                                :class="{ 'rotate-45 translate-y-1': mobileMenuOpen, 'rotate-0 translate-y-0': !mobileMenuOpen }"
+                                class="w-5 h-0.5 bg-current transform transition-all duration-300 origin-center">
+                            </span>
+                            <span 
+                                :class="{ 'opacity-0': mobileMenuOpen, 'opacity-100': !mobileMenuOpen }"
+                                class="w-5 h-0.5 bg-current transform transition-all duration-300 mt-1">
+                            </span>
+                            <span 
+                                :class="{ '-rotate-45 -translate-y-2': mobileMenuOpen, 'rotate-0 translate-y-0': !mobileMenuOpen }"
+                                class="w-5 h-0.5 bg-current transform transition-all duration-300 mt-1 origin-center">
+                            </span>
+                        </div>
                     </button>
                 </div>
             </div>
@@ -60,62 +100,11 @@
                             Home
                         </a>
                     </li>
-                    <li x-data="{ open: false }" @mouseenter="showOverlay=true" @mouseleave="showOverlay=false" class="z-30 flex flex-col items-start h-auto border-b border-gray-100 md:h-full md:border-b-0 group md:flex-row md:items-center">
-                        <a href="#_" x-on:click="open=!open" class="flex items-center w-full h-16 gap-1 text-sm font-semibold text-gray-700 transition duration-300 hover:bg-gray-100 md:hover:bg-transparent px-7 md:h-full md:px-0 md:w-auto hover:text-gray-900">
-                            <span class="">Products</span>
-                            <svg :class="{ 'group-hover:-rotate-180' : !mobileMenuOpen, '-rotate-180' : mobileMenuOpen && open }" class="w-5 h-5 transition-all duration-300 ease-out" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" class=""></path></svg>
-                        </a>
-                        <div 
-                            :class="{ 'hidden md:block opacity-0 invisible md:absolute' : !open, 'md:invisible md:opacity-0 md:hidden md:absolute' : open }"
-                            class="top-0 left-0 w-screen space-y-3 transition-transform duration-300 ease-out bg-white border-t border-b border-gray-100 md:shadow-md md:-translate-y-2 md:mt-24 md:block md:group-hover:block md:group-hover:visible md:group-hover:opacity-100 md:group-hover:translate-y-0" x-cloak>
-                            <ul class="flex flex-col justify-between mx-auto max-w-7xl md:px-16 md:flex-row">
-                                @php
-                                    $productCategories = \Wave\Category::whereHas('products', function($query) {
-                                        $query->where('is_active', true);
-                                    })->get();
-                                @endphp
-                                @foreach($productCategories as $category)
-                                    <li class="w-full border-l border-gray-100 md:w-1/{{ $productCategories->count() <= 4 ? ($productCategories->count() + 1) : '5' }}">
-                                        <a href="{{ route('products.category', ['category' => $category->slug]) }}" class="block h-full p-6 text-lg font-semibold hover:bg-gray-50 lg:p-7 lg:py-10">
-                                            <x-phosphor-package class="w-12 h-12 text-zinc-600" />
-                                            <span class="block my-2 text-xs font-bold uppercase text-slate-800">{{ $category->name }}</span>
-                                            <span class="block text-xs font-medium leading-5 text-slate-500">{{ $category->products()->where('is_active', true)->count() }} products available</span>
-                                        </a>
-                                    </li>
-                                @endforeach
-                                <li class="w-full border-l border-r border-gray-100 md:w-1/5">
-                                    <a href="{{ route('products') }}" class="block h-full p-6 text-lg font-semibold hover:bg-gray-50 lg:p-7 lg:py-10">
-                                        <img src="/wave/img/icons/chest.png" class="w-12 h-auto" alt="view all products icon" />
-                                        <span class="block my-2 text-xs font-bold uppercase text-slate-800">View All Products</span>
-                                        <span class="block text-xs font-medium leading-5 text-slate-500">Browse our complete product catalog</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+                    <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
+                        <a href="{{ route('products') }}" wire:navigate class="flex items-center h-full text-sm font-semibold text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900">Products</a>
                     </li>
-                    <li x-data="{ open: false }" @mouseenter="showOverlay=true" @mouseleave="showOverlay=false" class="z-30 flex flex-col items-start h-auto border-b border-gray-100 md:h-full md:border-b-0 group md:flex-row md:items-center">
-                        <a href="#_" x-on:click="open=!open" class="flex items-center w-full h-16 gap-1 text-sm font-semibold text-gray-700 transition duration-300 hover:bg-gray-100 md:hover:bg-transparent px-7 md:h-full md:px-0 md:w-auto hover:text-gray-900">
-                            <span class="">Solutions</span>
-                            <svg :class="{ 'group-hover:-rotate-180' : !mobileMenuOpen, '-rotate-180' : mobileMenuOpen && open }" class="w-5 h-5 transition-all duration-300 ease-out" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" class=""></path></svg>
-                        </a>
-                        <div 
-                            :class="{ 'hidden md:block opacity-0 invisible md:absolute' : !open, 'md:invisible md:opacity-0 md:hidden md:absolute' : open }"
-                            class="top-0 left-0 w-screen space-y-3 transition-transform duration-300 ease-out bg-white border-t border-b border-gray-100 md:shadow-md md:-translate-y-2 md:mt-24 md:block md:group-hover:block md:group-hover:visible md:group-hover:opacity-100 md:group-hover:translate-y-0" x-cloak>
-                            <ul class="flex flex-col justify-between mx-auto max-w-7xl md:flex-row md:px-12">
-                                <div class="flex flex-col w-full border-l border-r divide-x md:flex-row divide-zinc-100 border-zinc-100">
-                                    <div class="w-auto divide-y divide-zinc-100">
-                                        <a href="{{ route('products') }}" class="block text-sm p-7 hover:bg-neutral-100 group">
-                                            <span class="block mb-1 font-medium text-black">Pre-built Systems</span>
-                                            <span class="block font-light leading-5 opacity-50">Ready-to-deploy software solutions for common business needs</span>
-                                        </a>
-                                        <a href="{{ route('custom-software') }}" class="block text-sm p-7 hover:bg-neutral-100 group">
-                                            <span class="block mb-1 font-medium text-black">Custom Software Development</span>
-                                            <span class="block leading-5 opacity-50">Tailored applications built specifically for your business requirements</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </ul>
-                        </div>
+                    <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
+                        <a href="{{ route('custom-software') }}" wire:navigate class="flex items-center h-full text-sm font-semibold text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900">Solutions</a>
                     </li>
                     <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
                         <a href="{{ route('blog') }}" wire:navigate class="flex items-center h-full text-sm font-semibold text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900">Blog</a>
