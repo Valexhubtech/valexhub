@@ -279,6 +279,27 @@
 .animate-stagger-4 { animation-delay: 0.4s; }
 .animate-stagger-5 { animation-delay: 0.5s; }
 
+/* Mobile Performance Optimizations */
+@media (max-width: 768px) {
+  /* Reduce animation complexity on mobile */
+  .retro-grid-line {
+    animation-duration: 30s; /* Slower on mobile for better performance */
+  }
+  
+  .floating-shape {
+    animation-duration: 8s; /* Slower floating animations */
+  }
+  
+  /* Optimize transforms for mobile */
+  .bento-item,
+  .hero-content,
+  .card-icon {
+    will-change: transform;
+    transform: translateZ(0); /* Force hardware acceleration */
+    backface-visibility: hidden;
+  }
+}
+
 /* Responsive Animation Controls */
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -291,8 +312,22 @@
   .animate-draw-path,
   .typing-animation,
   .deployment-card,
-  .animate-float {
+  .animate-float,
+  .retro-grid-line,
+  .floating-shape {
     animation: none;
+  }
+}
+
+/* Low-end device optimizations */
+@media (max-width: 480px) {
+  /* Further reduce animations on very small screens */
+  .floating-shape {
+    display: none; /* Hide floating shapes on small screens */
+  }
+  
+  .retro-grid {
+    opacity: 0.3; /* Reduce grid opacity for better performance */
   }
 }
 

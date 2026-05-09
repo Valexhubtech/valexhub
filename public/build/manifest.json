@@ -9,12 +9,12 @@
     "isEntry": true
   },
   "resources/themes/anchor/assets/css/app.css": {
-    "file": "assets/app-BX9DnDaX.css",
+    "file": "assets/app-mAKkdx_H.css",
     "src": "resources/themes/anchor/assets/css/app.css",
     "isEntry": true
   },
   "resources/themes/anchor/assets/js/app.js": {
-    "file": "assets/app-MkMyzltp.js",
+    "file": "assets/app-C1FYxNjW.js",
     "name": "app",
     "src": "resources/themes/anchor/assets/js/app.js",
     "isEntry": true,
@@ -23,12 +23,12 @@
     ]
   },
   "resources/themes/flux/assets/css/app.css": {
-    "file": "assets/app-D6piXkbT.css",
+    "file": "assets/app-Ch8vIFW-.css",
     "src": "resources/themes/flux/assets/css/app.css",
     "isEntry": true
   },
   "resources/themes/flux/assets/js/app.js": {
-    "file": "assets/app-CLsD7i0H.js",
+    "file": "assets/app-MkMyzltp.js",
     "name": "app",
     "src": "resources/themes/flux/assets/js/app.js",
     "isEntry": true,

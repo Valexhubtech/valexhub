@@ -122,7 +122,7 @@ jobs:
         response=$(curl -sS -o homepage.html -w "%{http_code}" http://localhost:8000)
         if [ $response -eq 200 ]; then
           echo "Homepage is accessible"
-          if grep -q "Powerful Tools" homepage.html; then
+          if grep -q "Powerful Business Tools Built for Growth" homepage.html; then
             echo "Homepage contains expected content"
           else
             echo "Homepage doesn't contain expected content"
