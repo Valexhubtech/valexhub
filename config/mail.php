@@ -6,6 +6,9 @@ return [
         'mailgun' => [
             'transport' => 'mailgun',
         ],
+        'resend' => [
+            'transport' => 'resend',
+        ],
     ],
 
     'markdown' => [

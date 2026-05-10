@@ -10,6 +10,9 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DemoRequestNotification;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -155,6 +158,18 @@ class DemoRequestResource extends Resource
             ])
             ->recordActions([
                 EditAction::make(),
+                Action::make('resend_notification')
+                    ->label('Resend Reminder')
+                    ->icon('phosphor-paper-plane-duotone')
+                    ->color('warning')
+                    ->action(function (DemoRequest $record) {
+                        Mail::to(config('mail.from.address'))->send(new DemoRequestNotification($record));
+                    })
+                    ->successNotificationTitle('Reminder Sent!')
+                    ->requiresConfirmation()
+                    ->modalHeading('Resend Demo Request Reminder')
+                    ->modalDescription('This will send another notification email about this demo request.')
+                    ->modalSubmitActionLabel('Send Reminder'),
                 DeleteAction::make(),
             ])
             ->toolbarActions([

@@ -13,4 +13,8 @@ return [
         'secret' => env('SPARKPOST_SECRET'),
     ],
 
+    'resend' => [
+        'key' => env('RESEND_API_KEY'),
+    ],
+
 ];

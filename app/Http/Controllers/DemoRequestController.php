@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Mail;
 use Wave\DemoRequest;
 use Wave\Product;
+use App\Mail\DemoRequestNotification;
+use App\Mail\DemoRequestConfirmation;
 
 class DemoRequestController extends Controller
 {
@@ -38,6 +41,22 @@ class DemoRequestController extends Controller
                 'request_type' => $validated['request_type'],
                 'status' => 'pending',
             ]);
+
+            // Try to send emails, but don't fail the entire request if emails fail
+            try {
+                // Send notification email to company
+                Mail::to(config('mail.from.address'))->send(new DemoRequestNotification($demoRequest));
+                
+                // Send confirmation email to customer
+                Mail::to($demoRequest->email)->send(new DemoRequestConfirmation($demoRequest));
+            } catch (\Exception $emailError) {
+                // Log email failure but continue with the request
+                \Log::warning('Demo request emails failed to send:', [
+                    'error' => $emailError->getMessage(),
+                    'demo_request_id' => $demoRequest->id,
+                    'email' => $demoRequest->email,
+                ]);
+            }
 
             // Generate WhatsApp URL
             $whatsappUrl = $demoRequest->generateWhatsAppUrl();
