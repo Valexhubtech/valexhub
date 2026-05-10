@@ -7,12 +7,12 @@
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .header { background: #2563eb; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
         .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
-        .info-box { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #10b981; }
+        .info-box { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #2563eb; }
         .label { font-weight: 600; color: #666; margin-bottom: 5px; }
         .value { margin-bottom: 15px; }
-        .highlight { background: #dcfce7; padding: 15px; border-radius: 6px; margin: 20px 0; }
+        .highlight { background: #eff6ff; padding: 15px; border-radius: 6px; margin: 20px 0; }
     </style>
 </head>
 <body>
