@@ -145,38 +145,17 @@
                 </div>
             </div>
 
-            <!-- Pricing -->
-            <div class="text-center mb-16">
-                <h2 class="text-2xl font-bold text-zinc-900 mb-4">Investment Range</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-                    <div class="p-6 border border-zinc-200 rounded-lg">
-                        <h3 class="text-lg font-semibold text-zinc-900 mb-2">Simple Systems</h3>
-                        <div class="text-2xl font-bold text-zinc-900 mb-4">₦300K - ₦800K</div>
-                        <p class="text-sm text-zinc-500">Basic CRUD operations, simple workflows, up to 5 modules</p>
-                    </div>
-                    <div class="p-6 border border-zinc-200 rounded-lg bg-zinc-50">
-                        <h3 class="text-lg font-semibold text-zinc-900 mb-2">Medium Systems</h3>
-                        <div class="text-2xl font-bold text-zinc-900 mb-4">₦800K - ₦2M</div>
-                        <p class="text-sm text-zinc-500">Complex workflows, integrations, reporting, mobile apps</p>
-                    </div>
-                    <div class="p-6 border border-zinc-200 rounded-lg">
-                        <h3 class="text-lg font-semibold text-zinc-900 mb-2">Enterprise Systems</h3>
-                        <div class="text-2xl font-bold text-zinc-900 mb-4">₦2M+</div>
-                        <p class="text-sm text-zinc-500">Full ERP systems, multiple integrations, advanced features</p>
-                    </div>
-                </div>
-                <p class="text-sm text-zinc-500 mt-6">All projects include design, development, testing, deployment, training, and 3 months support.</p>
-            </div>
-
             <!-- CTA -->
-            <div class="text-center">
-                <h2 class="text-2xl font-bold text-zinc-900 mb-4">Ready to Build Your Custom Solution?</h2>
-                <p class="text-zinc-500 mb-8 max-w-2xl mx-auto">Let's discuss your requirements and provide you with a detailed proposal and fixed-price quote.</p>
-                <div class="flex flex-col gap-3 justify-center items-center md:flex-row">
-                    <a href="https://wa.me/2348012345678?text=Hi%2C%20I%27d%20like%20to%20discuss%20a%20custom%20software%20project" target="_blank" class="px-8 py-3 text-white bg-zinc-900 rounded-md hover:bg-zinc-800">Start Your Project</a>
-                    <a href="{{ route('book-demo') }}" class="px-8 py-3 text-zinc-700 border border-zinc-300 rounded-md hover:bg-zinc-50">Book Consultation</a>
+            <section class="py-12 sm:py-24">
+                <div class="text-center bg-gradient-to-r from-zinc-900 to-zinc-800 rounded-2xl p-12 text-white">
+                    <h2 class="text-3xl font-bold mb-6">Ready to Transform Your Business?</h2>
+                    <p class="text-zinc-200 mb-10 max-w-2xl mx-auto text-lg">Join hundreds of Nigerian businesses already using ValexHub systems to streamline operations and boost revenue.</p>
+                    <div class="flex flex-col gap-4 justify-center items-center md:flex-row">
+                        <a href="{{ route('book-demo') }}" class="px-8 py-4 text-zinc-900 bg-white rounded-lg hover:bg-zinc-100 font-semibold transition-colors">Book Free Demo</a>
+                        <a href="{{ route('products') }}" class="px-8 py-4 text-white border border-zinc-600 rounded-lg hover:bg-zinc-800 font-semibold transition-colors">View Our Products</a>
+                    </div>
                 </div>
-            </div>
+            </section>
         </div>
     </x-container>
 </x-layouts.marketing>

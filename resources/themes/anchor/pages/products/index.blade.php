@@ -48,50 +48,57 @@
             @if($products->count() > 0)
                 <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                     @foreach($products as $product)
-                        <div class="p-6 bg-white border border-zinc-200 rounded-lg hover:shadow-md transition-shadow">
-                            @if($product->icon)
-                                <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-zinc-100 rounded-lg overflow-hidden">
-                                    <img src="{{ Storage::url($product->icon) }}" alt="{{ $product->name }}" class="w-8 h-8 object-contain">
-                                </div>
-                            @else
-                                <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-zinc-100 rounded-lg">
-                                    <x-phosphor-package class="w-6 h-6 text-zinc-600" />
-                                </div>
-                            @endif
-                            
-                            <div class="text-center mb-4">
-                                @if($product->category)
-                                    <span class="inline-block px-2 py-1 text-xs text-zinc-500 bg-zinc-100 rounded-full mb-2">{{ $product->category->name }}</span>
+                        <div class="overflow-hidden bg-white border border-zinc-200 rounded-lg hover:shadow-md transition-shadow">
+                            <!-- Cover Image Section -->
+                            <div class="relative">
+                                @if($product->icon)
+                                    <img src="{{ Storage::url($product->icon) }}" alt="{{ $product->name }}" class="w-full h-48 object-cover">
+                                @else
+                                    <div class="w-full h-48 bg-zinc-100 flex items-center justify-center">
+                                        <x-phosphor-package class="w-16 h-16 text-zinc-600" />
+                                    </div>
                                 @endif
-                                <h3 class="text-lg font-semibold text-zinc-900 mb-2">{{ $product->name }}</h3>
-                                @if($product->short_description)
-                                    <p class="text-sm text-zinc-500 mb-4">{{ $product->short_description }}</p>
+                                
+                                <!-- Category Badge - Top Right -->
+                                @if($product->category)
+                                    <div class="absolute top-3 right-3">
+                                        <span class="px-3 py-1.5 text-xs font-medium text-zinc-600 bg-white/90 backdrop-blur-sm rounded-full shadow-sm">{{ $product->category->name }}</span>
+                                    </div>
                                 @endif
                             </div>
-
-                            @if($product->low_price || $product->high_price)
-                                <div class="text-center mb-4">
-                                    <span class="text-lg font-bold text-zinc-900">{{ $product->price_range }}</span>
-                                </div>
-                            @endif
-
-                            @if($product->features && count($product->features) > 0)
-                                <ul class="text-xs text-zinc-600 mb-4 space-y-1">
-                                    @foreach(array_slice($product->features, 0, 3) as $feature)
-                                        <li class="flex items-center">
-                                            <x-phosphor-check class="w-3 h-3 text-green-500 mr-2 flex-shrink-0" />
-                                            {{ $feature }}
-                                        </li>
-                                    @endforeach
-                                    @if(count($product->features) > 3)
-                                        <li class="text-zinc-400">+{{ count($product->features) - 3 }} more features</li>
-                                    @endif
-                                </ul>
-                            @endif
                             
-                            <div class="flex flex-col gap-2">
-                                <a href="{{ route('products.show', ['category' => $product->category->slug, 'product' => $product->slug]) }}" class="text-center px-4 py-2 text-sm font-medium text-white bg-zinc-900 rounded-md hover:bg-zinc-800">View Details</a>
-                                <x-elements.quote-demo-modal :product="$product" size="compact" />
+                            <div class="p-6">
+                                <div class="text-center mb-4">
+                                    <h3 class="text-lg font-semibold text-zinc-900 mb-2">{{ $product->name }}</h3>
+                                    @if($product->short_description)
+                                        <p class="text-sm text-zinc-500 mb-4">{{ $product->short_description }}</p>
+                                    @endif
+                                </div>
+
+                                @if($product->low_price || $product->high_price)
+                                    <div class="text-center mb-4">
+                                        <span class="text-lg font-bold text-zinc-900">{{ $product->price_range }}</span>
+                                    </div>
+                                @endif
+
+                                @if($product->features && count($product->features) > 0)
+                                    <ul class="text-xs text-zinc-600 mb-4 space-y-1">
+                                        @foreach(array_slice($product->features, 0, 3) as $feature)
+                                            <li class="flex items-center">
+                                                <x-phosphor-check class="w-3 h-3 text-green-500 mr-2 flex-shrink-0" />
+                                                {{ $feature }}
+                                            </li>
+                                        @endforeach
+                                        @if(count($product->features) > 3)
+                                            <li class="text-zinc-400">+{{ count($product->features) - 3 }} more features</li>
+                                        @endif
+                                    </ul>
+                                @endif
+                                
+                                <div class="flex flex-col gap-2">
+                                    <a href="{{ route('products.show', ['category' => $product->category->slug, 'product' => $product->slug]) }}" class="text-center px-4 py-2 text-sm font-medium text-white bg-zinc-900 rounded-md hover:bg-zinc-800">View Details</a>
+                                    <x-elements.quote-demo-modal :product="$product" size="compact" />
+                                </div>
                             </div>
                         </div>
                     @endforeach
