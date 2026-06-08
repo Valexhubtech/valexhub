@@ -1,39 +1,18 @@
 {
-  "_module.esm-CJzrDrQx.js": {
-    "file": "assets/module.esm-CJzrDrQx.js",
-    "name": "module.esm"
-  },
   "resources/css/filament/admin/theme.css": {
     "file": "assets/theme-Dj4DdEq6.css",
     "src": "resources/css/filament/admin/theme.css",
     "isEntry": true
   },
   "resources/themes/anchor/assets/css/app.css": {
-    "file": "assets/app-C5pvpmMd.css",
+    "file": "assets/app-CntZ04cO.css",
     "src": "resources/themes/anchor/assets/css/app.css",
     "isEntry": true
   },
   "resources/themes/anchor/assets/js/app.js": {
-    "file": "assets/app-C1FYxNjW.js",
+    "file": "assets/app-B34Ovd0l.js",
     "name": "app",
     "src": "resources/themes/anchor/assets/js/app.js",
-    "isEntry": true,
-    "imports": [
-      "_module.esm-CJzrDrQx.js"
-    ]
-  },
-  "resources/themes/flux/assets/css/app.css": {
-    "file": "assets/app-DUN94_Ag.css",
-    "src": "resources/themes/flux/assets/css/app.css",
     "isEntry": true
-  },
-  "resources/themes/flux/assets/js/app.js": {
-    "file": "assets/app-MkMyzltp.js",
-    "name": "app",
-    "src": "resources/themes/flux/assets/js/app.js",
-    "isEntry": true,
-    "imports": [
-      "_module.esm-CJzrDrQx.js"
-    ]
   }
 }
