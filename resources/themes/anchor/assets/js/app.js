@@ -1,4 +1,3 @@
-import Alpine from 'alpinejs'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { TextPlugin } from 'gsap/TextPlugin'
@@ -13,10 +12,6 @@ gsap.registerPlugin(ScrollTrigger, TextPlugin, Draggable)
 
 // Make GSAP available globally
 window.gsap = gsap
-window.Alpine = Alpine
-
-// Start Alpine.js
-Alpine.start()
 
 // Initialize animations after DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {

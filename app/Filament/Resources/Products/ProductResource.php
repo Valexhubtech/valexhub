@@ -18,7 +18,9 @@ use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
@@ -36,7 +38,9 @@ class ProductResource extends Resource
 
     protected static BackedEnum|string|null $navigationIcon = 'phosphor-package-duotone';
 
-    protected static ?int $navigationSort = 7;
+    protected static string|\UnitEnum|null $navigationGroup = 'Products & Catalog';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
@@ -62,6 +66,16 @@ class ProductResource extends Resource
                     ->options(Category::pluck('name', 'id'))
                     ->searchable()
                     ->required(),
+
+                Select::make('type')
+                    ->label('Product Type')
+                    ->options([
+                        'custom' => 'Custom (Quote / Demo)',
+                        'prebuilt' => 'Pre-built (Pay & Deploy)',
+                    ])
+                    ->required()
+                    ->default('custom')
+                    ->helperText('Pre-built products get a "Deploy" checkout button; Custom products get a quote/demo request form.'),
 
                 TextInput::make('short_description')
                     ->maxLength(500),
@@ -130,6 +144,60 @@ class ProductResource extends Resource
                     ->maxLength(500)
                     ->rows(2)
                     ->label('SEO Keywords'),
+
+                Section::make('Coolify Deployment Configuration')
+                    ->description('Required only for Pre-built (Pay & Deploy) products.')
+                    ->schema([
+                        Select::make('coolify_deploy_type')
+                            ->label('Deploy Type')
+                            ->options([
+                                'docker_image' => 'Docker Image',
+                                'git_repo'     => 'Public Git Repository',
+                            ])
+                            ->nullable()
+                            ->live()
+                            ->helperText('Leave blank for Custom (quote/demo) products.'),
+
+                        TextInput::make('coolify_docker_image')
+                            ->label('Docker Image')
+                            ->placeholder('e.g. bitnami/wordpress:latest')
+                            ->hidden(fn (Get $get): bool => $get('coolify_deploy_type') !== 'docker_image')
+                            ->nullable(),
+
+                        TextInput::make('coolify_git_repo')
+                            ->label('Git Repository URL')
+                            ->placeholder('https://github.com/org/repo')
+                            ->url()
+                            ->hidden(fn (Get $get): bool => $get('coolify_deploy_type') !== 'git_repo')
+                            ->nullable(),
+
+                        TextInput::make('coolify_git_branch')
+                            ->label('Git Branch')
+                            ->placeholder('main')
+                            ->default('main')
+                            ->hidden(fn (Get $get): bool => $get('coolify_deploy_type') !== 'git_repo')
+                            ->nullable(),
+
+                        Repeater::make('coolify_env_template')
+                            ->label('Environment Variable Template')
+                            ->schema([
+                                TextInput::make('key')
+                                    ->label('Key')
+                                    ->placeholder('e.g. DB_HOST')
+                                    ->required(),
+                                TextInput::make('value')
+                                    ->label('Value')
+                                    ->placeholder('e.g. localhost')
+                                    ->nullable(),
+                            ])
+                            ->columns(2)
+                            ->addActionLabel('Add Variable')
+                            ->helperText('These env vars are injected into every deployment. APP_ADMIN_EMAIL and APP_ADMIN_PASSWORD are always appended automatically.')
+                            ->nullable()
+                            ->defaultItems(0),
+                    ])
+                    ->collapsible()
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -142,6 +210,12 @@ class ProductResource extends Resource
 
                 TextColumn::make('name')
                     ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('type')
+                    ->badge()
+                    ->color(fn (string $state): string => $state === 'prebuilt' ? 'success' : 'gray')
+                    ->formatStateUsing(fn (string $state): string => $state === 'prebuilt' ? 'Pay & Deploy' : 'Custom')
                     ->sortable(),
 
                 TextColumn::make('category.name')
@@ -211,7 +285,8 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\Resources\Products\RelationManagers\PricingRelationManager::class,
+            \App\Filament\Resources\Products\RelationManagers\AddonsRelationManager::class,
         ];
     }
 

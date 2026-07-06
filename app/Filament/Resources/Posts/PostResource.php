@@ -34,7 +34,9 @@ class PostResource extends Resource
 
     protected static BackedEnum|string|null $navigationIcon = 'phosphor-pencil-line-duotone';
 
-    protected static ?int $navigationSort = 3;
+    protected static string|\UnitEnum|null $navigationGroup = 'Content';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {

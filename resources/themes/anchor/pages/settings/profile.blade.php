@@ -23,29 +23,45 @@
 
 		public function mount(): void
         {
-            $this->form->fill();
+            $user = auth()->user();
+
+            // Set statePath('data') directly — Filament v4 reads from this
+            // property to render form inputs, so populating it directly is
+            // the most reliable way to pre-fill values in a Volt component.
+            $this->data['name']     = $user->name ?? '';
+            $this->data['username'] = $user->username ?? '';
+            $this->data['email']    = $user->email ?? '';
+
+            // Pre-fill dynamic profile fields (about, occupation, etc.)
+            foreach (config('profile.fields', []) as $field) {
+                $key = \Illuminate\Support\Str::slug($field['label']);
+                $keyValue = $user->profileKeyValues->where('key', $key)->first();
+                $value = $keyValue->value ?? '';
+                if (! empty($value) && json_decode($value, true) !== null) {
+                    $value = json_decode($value, true);
+                }
+                $this->data[$key] = $value;
+            }
         }
 
        public function form(Schema $schema): Schema
         {
+            $user = auth()->user();
             return $schema
                 ->components([
                     \Filament\Forms\Components\TextInput::make('name')
                         ->label('Name')
                         ->required()
-						->rules('required|string')
-						->default(auth()->user()->name),
+						->rules('required|string'),
 					\Filament\Forms\Components\TextInput::make('username')
                         ->label('Username')
                         ->required()
-						->rules('sometimes|required|string|alpha_dash|max:255|unique:users,username,' . auth()->user()->id)
-						->helperText('Your unique username used in your profile URL')
-						->default(auth()->user()->username),
+						->rules('sometimes|required|string|alpha_dash|max:255|unique:users,username,' . ($user?->id ?? 0))
+						->helperText('Your unique username used in your profile URL'),
 					\Filament\Forms\Components\TextInput::make('email')
                         ->label('Email Address')
                         ->required()
-						->rules('sometimes|required|email|unique:users,email,' . auth()->user()->id)
-						->default(auth()->user()->email),
+						->rules('sometimes|required|email|unique:users,email,' . ($user?->id ?? 0)),
 					...($this->dynamicFields( config('profile.fields') ))
                 ])
                 ->statePath('data');

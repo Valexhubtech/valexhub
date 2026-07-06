@@ -65,6 +65,10 @@
                                             <x-billing.button wire:click="redirectToStripeCheckout('{{ $plan->id }}')" wire:target="redirectToPaymentProvider" rounded="md" color="{{ config('devdojo.billing.style.color') }}">
                                                 Subscribe to this Plan
                                             </x-billing.button>
+                                        @elseif(config('wave.billing_provider') == 'paystack')
+                                            <x-billing.button wire:click="redirectToPaystackCheckout('{{ $plan->id }}')" wire:target="redirectToPaystackCheckout" rounded="md" color="{{ config('devdojo.billing.style.color') }}">
+                                                Subscribe to this Plan
+                                            </x-billing.button>
                                         @else
                                             @if($change)
 
