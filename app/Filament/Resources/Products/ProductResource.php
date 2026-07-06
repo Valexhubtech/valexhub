@@ -89,13 +89,13 @@ class ProductResource extends Resource
                 TextInput::make('low_price')
                     ->numeric()
                     ->step(0.01)
-                    ->prefix('$')
+                    ->prefix('₦')
                     ->label('Low Price'),
 
                 TextInput::make('high_price')
                     ->numeric()
                     ->step(0.01)
-                    ->prefix('$')
+                    ->prefix('₦')
                     ->label('High Price'),
 
                 TagsInput::make('features')
@@ -228,13 +228,13 @@ class ProductResource extends Resource
                     ->formatStateUsing(function ($record) {
                         if ($record->low_price && $record->high_price) {
                             if ($record->low_price == $record->high_price) {
-                                return '$' . number_format($record->low_price, 2);
+                                return '₦' . number_format($record->low_price, 2);
                             }
-                            return '$' . number_format($record->low_price, 2) . ' - $' . number_format($record->high_price, 2);
+                            return '₦' . number_format($record->low_price, 2) . ' - ₦' . number_format($record->high_price, 2);
                         } elseif ($record->low_price) {
-                            return 'From $' . number_format($record->low_price, 2);
+                            return 'From ₦' . number_format($record->low_price, 2);
                         } elseif ($record->high_price) {
-                            return 'Up to $' . number_format($record->high_price, 2);
+                            return 'Up to ₦' . number_format($record->high_price, 2);
                         }
                         return 'Contact for pricing';
                     })

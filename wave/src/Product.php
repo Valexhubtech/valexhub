@@ -283,13 +283,13 @@ class Product extends Model
     {
         if ($this->low_price && $this->high_price) {
             if ($this->low_price == $this->high_price) {
-                return '$' . number_format($this->low_price, 2);
+                return '₦' . number_format($this->low_price, 2);
             }
-            return '$' . number_format($this->low_price, 2) . ' - $' . number_format($this->high_price, 2);
+            return '₦' . number_format($this->low_price, 2) . ' - ₦' . number_format($this->high_price, 2);
         } elseif ($this->low_price) {
-            return 'From $' . number_format($this->low_price, 2);
+            return 'From ₦' . number_format($this->low_price, 2);
         } elseif ($this->high_price) {
-            return 'Up to $' . number_format($this->high_price, 2);
+            return 'Up to ₦' . number_format($this->high_price, 2);
         }
         
         return 'Contact for pricing';
