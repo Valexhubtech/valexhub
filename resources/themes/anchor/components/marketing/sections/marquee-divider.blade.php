@@ -1,91 +1,133 @@
 <!-- Marquee Divider -->
-<section class="relative w-full">
+<section class="relative w-full" aria-hidden="true">
     <style>
         @keyframes marquee {
-            0% {
-                transform: translateX(0);
-            }
-            100% {
-                transform: translateX(-100%);
-            }
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
         @keyframes marquee-reverse {
-            0% {
-                transform: translateX(-100%);
-            }
-            100% {
-                transform: translateX(0);
-            }
+            0%   { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
         }
-        .animate-marquee {
-            animation: marquee 20s linear infinite;
-        }
-        .animate-marquee-reverse {
-            animation: marquee-reverse 20s linear infinite;
-        }
-        .container-block-02 {
-            container-type: inline-size;
-        }
-        @container (max-width: 1100px) {
-            .container-block-02 *:nth-child(2),
-            .container-block-02 *:nth-child(3) {
-                display: none;
-            }
-        }
-        @container (max-width: 1100px) {
-            .container-block-02 > div{
-                font-size:12px !important;
-            }
-        }
+        .animate-marquee         { animation: marquee 30s linear infinite; }
+        .animate-marquee-reverse { animation: marquee-reverse 30s linear infinite; }
     </style>
-    
-    <div class="flex flex-col w-full h-full">
-        <div x-data x-init="
-                $nextTick(() => {
-                    $refs.content.appendChild($refs.item.cloneNode(true));
-                });
-            " 
-            class="w-full overflow-hidden text-lg italic tracking-wide text-white uppercase bg-gray-900 sm:text-xs md:text-sm lg:text-base xl:text-xl"
-            >
-            <div class="relative w-full mx-auto overflow-hidden max-w-7xl">
-                <div class="absolute left-0 z-20 w-40 h-full bg-gradient-to-r from-gray-900 to-transparent"></div>
-                <div class="absolute right-0 z-20 w-40 h-full bg-gradient-to-l from-gray-900 to-transparent"></div>
-                <div x-ref="content" class="flex animate-marquee">
-                    <div x-ref="item" class="flex items-center justify-center flex-shrink-0 w-full py-2 space-x-12 container-block-02">
-                        <div class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                            Pre-built Solutions
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                            Fast Deployment
-                        </div>
-                    </div>
-                </div>
+
+    {{-- Row 1 — forward --}}
+    <div class="w-full overflow-hidden bg-gray-900 py-2.5">
+        <div class="flex animate-marquee whitespace-nowrap">
+            {{-- Item set (duplicated by JS for seamless loop) --}}
+            <div class="flex items-center gap-10 px-8 text-xs sm:text-sm font-semibold uppercase tracking-widest text-white/70 flex-shrink-0">
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    Live in &lt; 1 hour
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    Pre-built Solutions
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Naira Payments
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    Fast Deployment
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    No Lock-in
+                </span>
+            </div>
+            {{-- Duplicate for seamless loop --}}
+            <div class="flex items-center gap-10 px-8 text-xs sm:text-sm font-semibold uppercase tracking-widest text-white/70 flex-shrink-0">
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    Live in &lt; 1 hour
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    Pre-built Solutions
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Naira Payments
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    Fast Deployment
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    No Lock-in
+                </span>
             </div>
         </div>
-        <div x-data x-init="
-                $nextTick(() => {
-                    $refs.content.appendChild($refs.item.cloneNode(true));
-                });
-            " 
-            class="w-full overflow-hidden text-lg italic tracking-wide text-white uppercase bg-gray-900 sm:text-xs md:text-sm lg:text-base xl:text-xl"
-            >
-            <div class="relative w-full mx-auto overflow-hidden max-w-7xl">
-                <div class="absolute left-0 z-20 w-40 h-full bg-gradient-to-r from-gray-900 to-transparent"></div>
-                <div class="absolute right-0 z-20 w-40 h-full bg-gradient-to-l from-gray-900 to-transparent"></div>
-                <div x-ref="content" class="flex animate-marquee-reverse">
-                    <div x-ref="item" class="flex items-center justify-center flex-shrink-0 w-full py-2 space-x-12 container-block-02">
-                        <div class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                            Custom Development
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                            24/7 Support
-                        </div>
-                    </div>
-                </div>
+    </div>
+
+    {{-- Row 2 — reverse --}}
+    <div class="w-full overflow-hidden bg-gray-900 border-t border-white/5 py-2.5">
+        <div class="flex animate-marquee-reverse whitespace-nowrap">
+            <div class="flex items-center gap-10 px-8 text-xs sm:text-sm font-semibold uppercase tracking-widest text-white/70 flex-shrink-0">
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    24/7 Support
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>
+                    Works Offline
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Custom Development
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    WhatsApp Support
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                    Secure Payments
+                </span>
+            </div>
+            {{-- Duplicate for seamless loop --}}
+            <div class="flex items-center gap-10 px-8 text-xs sm:text-sm font-semibold uppercase tracking-widest text-white/70 flex-shrink-0">
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    24/7 Support
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>
+                    Works Offline
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Custom Development
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    WhatsApp Support
+                </span>
+                <span class="text-white/20">·</span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                    Secure Payments
+                </span>
             </div>
         </div>
     </div>

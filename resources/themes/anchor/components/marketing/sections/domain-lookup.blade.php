@@ -5,11 +5,29 @@
 
     <div class="relative z-10 max-w-3xl mx-auto px-6 lg:px-8 text-center">
 
-        <p class="text-xs font-semibold tracking-widest uppercase text-zinc-600 mb-4">Your business, your brand</p>
-        <h2 class="text-3xl sm:text-4xl font-black text-white leading-tight mb-3">
-            Get Your Domain
-        </h2>
-        <p class="text-sm sm:text-base text-zinc-400 mb-10">
+        <p class="text-xs font-semibold tracking-widest uppercase text-zinc-400 mb-4">Your business, your brand</p>
+        <div class="relative mb-3">
+            {{-- Arrow accent — left --}}
+            <div class="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-[110%] items-center gap-1.5 transform rotate-[-6deg] opacity-65 pointer-events-none" aria-hidden="true">
+                <span class="font-black text-sm text-zinc-400 leading-tight" style="font-style:italic;">check if<br>it's yours</span>
+                <svg width="28" height="22" viewBox="0 0 32 24" fill="none" class="text-zinc-400 flex-shrink-0">
+                    <path d="M4 12 C8 8, 18 6, 28 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                    <path d="M25 7 L28 10 L25 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            {{-- Arrow accent — right --}}
+            <div class="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-[110%] items-center gap-1.5 transform rotate-[6deg] opacity-65 pointer-events-none" aria-hidden="true">
+                <svg width="28" height="22" viewBox="0 0 32 24" fill="none" class="text-zinc-400 flex-shrink-0 scale-x-[-1]">
+                    <path d="M4 12 C8 8, 18 6, 28 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                    <path d="M25 7 L28 10 L25 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="font-black text-sm text-zinc-400 leading-tight" style="font-style:italic;">own your<br>brand</span>
+            </div>
+            <h2 class="text-3xl sm:text-4xl font-black text-white leading-tight">
+                Own Your Domain
+            </h2>
+        </div>
+        <p class="text-sm sm:text-base text-zinc-300 mb-10">
             Every deployment comes with the option to add a custom domain. Check if yours is available.
         </p>
 
@@ -36,14 +54,14 @@
                         x-model="domain"
                         type="text"
                         placeholder="yourbusiness.com"
-                        class="w-full px-5 py-4 bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-600 rounded-xl text-sm focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 transition-colors"
+                        class="w-full px-5 py-4 bg-zinc-800 border border-zinc-400 text-white placeholder-zinc-400 rounded-xl text-sm focus:outline-none focus:border-white/60 focus:ring-1 focus:ring-white/10 transition-colors"
                         @keydown.enter.prevent="check()"
                     >
                 </div>
                 <button
                     @click.prevent="check()"
                     :disabled="loading || !domain.trim()"
-                    class="px-7 py-4 bg-white text-zinc-900 font-semibold text-sm rounded-xl hover:bg-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center justify-center gap-2">
+                    class="px-7 py-4 bg-white text-zinc-900 font-bold text-sm rounded-xl hover:bg-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center justify-center gap-2 shadow-lg shadow-black/20">
                     <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -86,14 +104,14 @@
                     @endauth
                 </div>
                 @guest
-                <p class="mt-3 text-xs text-zinc-600">
+                <p class="mt-3 text-xs text-zinc-400">
                     Create an account to complete your domain search and connect it to your deployment.
                 </p>
                 @endguest
             </div>
         </div>
 
-        <p class="mt-6 text-xs text-zinc-700">Domain registration is optional — every deployment works on a free subdomain by default.</p>
+        <p class="mt-6 text-xs text-zinc-400">Domain registration is optional — every deployment works on a free subdomain by default.</p>
 
     </div>
 </section>

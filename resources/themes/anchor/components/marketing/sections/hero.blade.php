@@ -1,8 +1,8 @@
-<section class="hero-section relative min-h-screen flex items-center overflow-hidden bg-white">
+<section class="hero-section relative lg:min-h-screen flex items-start lg:items-center overflow-hidden bg-white">
 
-    {{-- Subtle dot background --}}
-    <div class="absolute inset-0 opacity-40"
-         style="background-image: radial-gradient(circle, #d4d4d8 1px, transparent 1px); background-size: 28px 28px;"></div>
+    {{-- Subtle grid background --}}
+    <div class="absolute inset-0 opacity-[0.04] pointer-events-none"
+         style="background-image: linear-gradient(rgba(0,0,0,1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,1) 1px, transparent 1px); background-size: 60px 60px;"></div>
 
     {{-- Gradient fade at bottom --}}
     <div class="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
@@ -10,75 +10,68 @@
     {{-- Blue orb top-right --}}
     <div class="absolute -top-32 -right-32 w-[600px] h-[600px] bg-blue-100/70 rounded-full blur-3xl pointer-events-none"></div>
 
+    {{-- Mobile "Pay & Go Live" annotation — standalone, tilted, visible --}}
+    <div class="lg:hidden absolute top-[72px] right-3 transform rotate-[8deg] z-20 pointer-events-none select-none opacity-60" aria-hidden="true">
+        <div class="flex items-start gap-1">
+            <svg width="18" height="18" viewBox="0 0 28 28" fill="none" class="text-zinc-500 mt-0.5 flex-shrink-0">
+                <path d="M4 6 C4 6, 20 2, 24 16 C26 23, 20 26, 16 26" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                <path d="M13 23 L16 26 L13.5 29" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="font-black text-base text-zinc-500 leading-tight" style="font-style:italic; letter-spacing:-0.03em;">Pay &amp;<br>Go Live</span>
+        </div>
+    </div>
+
     {{-- Content --}}
-    <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-28 lg:pt-24 pb-16 w-full">
+    <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-20 lg:pt-24 pb-8 lg:pb-16 w-full">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
             {{-- LEFT: Text --}}
-            <div>
+            <div class="text-center lg:text-left">
                 {{-- Tag --}}
-                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-zinc-200 bg-white/90 text-xs font-semibold text-zinc-600 mb-6 shadow-sm">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-zinc-200 bg-white/90 text-xs font-semibold text-zinc-600 mb-4 shadow-sm">
                     <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse flex-shrink-0"></span>
-                    Built for Nigerian businesses
+                    Built for businesses
                 </div>
 
-                {{-- Headline --}}
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-zinc-900 leading-[0.9] tracking-tight">
-                    Run Your<br>
+                {{-- Headline: 2 lines on mobile/tablet, 3-4 lines on desktop --}}
+                <h1 class="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-zinc-900 leading-[0.95] tracking-tight">
+                    Run Your<br class="hidden lg:block">
                     Business on<br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-400">Software<br class="sm:hidden">That Works</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-400">Software That Works</span>
                 </h1>
 
                 {{-- Subtitle --}}
-                <p class="mt-6 text-base sm:text-lg text-zinc-500 leading-relaxed max-w-md">
-                    Pre-built management systems for schools, hotels, pharmacies and more — deployed for you in days, not months.
+                <p class="mt-5 text-base sm:text-lg text-zinc-500 leading-relaxed max-w-md mx-auto lg:mx-0">
+                    Pre-built management systems for schools, hotels, property and more — sign up, pay, and go live in under an hour.
                 </p>
 
                 {{-- CTAs --}}
-                <div class="mt-8 flex flex-col sm:flex-row gap-3">
+                <div class="mt-7 flex flex-row flex-wrap gap-2 justify-center lg:justify-start">
                     <a href="{{ route('book-demo') }}"
-                       class="inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold text-white bg-zinc-900 rounded-xl hover:bg-zinc-800 transition-colors shadow-lg shadow-zinc-900/20">
+                       class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:px-6 sm:py-3.5 text-xs sm:text-sm font-semibold text-white bg-zinc-900 rounded-xl hover:bg-zinc-800 transition-colors shadow-lg shadow-zinc-900/20">
                         Book a Free Demo
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5-5 5M6 7l5 5-5 5"/>
                         </svg>
                     </a>
                     <a href="{{ route('products') }}"
-                       class="inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold text-zinc-700 bg-white border border-zinc-200 rounded-xl hover:bg-zinc-50 hover:border-zinc-300 transition-colors shadow-sm">
+                       class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:px-6 sm:py-3.5 text-xs sm:text-sm font-semibold text-zinc-700 bg-white border border-zinc-200 rounded-xl hover:bg-zinc-50 hover:border-zinc-300 transition-colors shadow-sm">
                         Browse Products
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
                     </a>
                 </div>
 
-                {{-- Value chips --}}
-                <div class="mt-8 flex flex-wrap gap-2"
-                     x-data
-                     x-init="
-                        if(typeof gsap !== 'undefined') {
-                            gsap.from($el.querySelectorAll('.value-chip'), {
-                                opacity: 0, y: 12, scale: 0.9,
-                                stagger: 0.08, duration: 0.45, ease: 'back.out(1.4)', delay: 0.6
-                            });
-                        }
-                     ">
-                    <span class="value-chip opacity-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-zinc-200 bg-white/80 backdrop-blur-sm text-xs font-medium text-zinc-600 shadow-sm">
-                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span> 5–10 day setup
-                    </span>
-                    <span class="value-chip opacity-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-zinc-200 bg-white/80 backdrop-blur-sm text-xs font-medium text-zinc-600 shadow-sm">
-                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span> Naira payments
-                    </span>
-                    <span class="value-chip opacity-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-zinc-200 bg-white/80 backdrop-blur-sm text-xs font-medium text-zinc-600 shadow-sm">
-                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span> Works offline
-                    </span>
-                    <span class="value-chip opacity-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-zinc-200 bg-white/80 backdrop-blur-sm text-xs font-medium text-zinc-600 shadow-sm">
-                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span> WhatsApp support
-                    </span>
-                    <span class="value-chip opacity-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-zinc-200 bg-white/80 backdrop-blur-sm text-xs font-medium text-zinc-600 shadow-sm">
-                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span> No lock-in
-                    </span>
+                {{-- Mobile "Ready in Minutes" accent --}}
+                <div class="lg:hidden flex justify-center items-center gap-1.5 mt-4 transform rotate-[2deg] opacity-45 pointer-events-none select-none" aria-hidden="true">
+                    <span class="font-black text-xs text-zinc-500 tracking-wide" style="font-style:italic;">Ready in Minutes</span>
+                    <svg width="14" height="18" viewBox="0 0 24 32" fill="none" class="text-zinc-500">
+                        <path d="M4 4 C8 4, 20 8, 18 18 C16 26, 8 28, 8 28" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                        <path d="M5 25 L8 28 L11 25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                 </div>
+
             </div>
 
             {{-- RIGHT: Floating product cards --}}
@@ -198,6 +191,7 @@
             </div>
         </div>
     </div>
+
 
     {{-- GSAP floating card animations --}}
     <script>
