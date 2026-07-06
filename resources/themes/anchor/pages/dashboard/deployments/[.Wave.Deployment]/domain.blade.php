@@ -21,13 +21,13 @@ name('dashboard.deployments.domain');
         <a href="{{ route('dashboard.deployments.show', ['deployment' => $deployment->id]) }}"
            class="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors">
             <x-phosphor-arrow-left class="w-4 h-4" />
-            Back to {{ $deployment->name ?? 'Deployment' }}
+            Back to {{ $deployment->product->name ?? 'Deployment' }}
         </a>
     </div>
 
     <x-app.heading
         title="Get Your Domain"
-        :description="'Connect a custom domain to ' . ($deployment->name ?? 'your deployment') . '. We\'ll register it and point it to your system automatically.'"
+        :description="'Connect a custom domain to ' . ($deployment->product->name ?? 'your deployment') . '. We\'ll register it and point it to your system automatically.'"
         :border="false"
     />
 

@@ -1,7 +1,119 @@
 <div>
 
-    {{-- ── Search form ─────────────────────────────────────────────────────── --}}
-    @if(!$showPayment)
+    {{-- ── Payment review ───────────────────────────────────────────────────── --}}
+    @if($showPayment && $selectedDomain)
+    @php
+        $domainNaira = number_format($selectedPriceKobo / 100, 0);
+        $totalNaira  = number_format(($selectedPriceKobo + (int)config('domains.setup_fee_kobo')) / 100, 0);
+    @endphp
+
+    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-5 mb-5">
+        <h3 class="font-semibold text-gray-900 dark:text-white mb-4">Order Summary</h3>
+        <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Domain: <span class="font-medium text-gray-900 dark:text-white">{{ $selectedDomain }}</span> (1 year)</span>
+                <span class="font-medium text-gray-900 dark:text-white">₦{{ $domainNaira }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Setup & DNS configuration fee</span>
+                <span class="font-medium text-gray-900 dark:text-white">₦{{ $setupFeeNaira }}</span>
+            </div>
+            <div class="border-t border-blue-200 dark:border-blue-700 pt-2 mt-2 flex justify-between">
+                <span class="font-semibold text-gray-900 dark:text-white">Total</span>
+                <span class="font-bold text-lg text-blue-700 dark:text-blue-300">₦{{ $totalNaira }}</span>
+            </div>
+        </div>
+    </div>
+
+    @if($deployment)
+    <div class="flex items-center gap-2.5 mb-5 px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg">
+        <svg class="w-4 h-4 text-zinc-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>
+        <span class="text-sm text-zinc-600 dark:text-zinc-300">Attaching to <span class="font-semibold text-zinc-900 dark:text-white">{{ $deployment->name ?? 'Deployment #' . $deployment->id }}</span></span>
+    </div>
+    @endif
+
+    <div class="text-sm text-gray-500 dark:text-gray-400 mb-5 space-y-1">
+        <p>✓ Domain registered in your name</p>
+        <p>✓ DNS configured and pointed to your deployment</p>
+        <p>✓ Invoice issued immediately after payment</p>
+        <p>✓ Domain live within ~30 minutes</p>
+    </div>
+
+    @if($paymentError)
+        <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            {{ $paymentError }}
+        </div>
+    @endif
+
+    <div class="flex gap-3">
+        <button wire:click="proceedToPayment"
+                wire:loading.attr="disabled"
+                class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-base transition-colors disabled:opacity-60">
+            <span wire:loading.remove wire:target="proceedToPayment">Pay ₦{{ $totalNaira }} via Paystack</span>
+            <span wire:loading wire:target="proceedToPayment">Redirecting to payment…</span>
+        </button>
+        <button wire:click="cancelSelection"
+                class="px-5 py-3 border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-300 font-medium rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+            Back
+        </button>
+    </div>
+
+    {{-- ── Deployment selector ──────────────────────────────────────────────── --}}
+    @elseif($showDeploymentSelector && $selectedDomain)
+
+    <div class="mb-5">
+        <div class="flex items-start gap-3 p-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl mb-5">
+            <svg class="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+            <div>
+                <p class="text-sm font-semibold text-zinc-900 dark:text-white">{{ $selectedDomain }}</p>
+                <p class="text-xs text-zinc-500 mt-0.5">Select which deployment to attach this domain to</p>
+            </div>
+        </div>
+
+        @error('deploymentSelector')
+            <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{{ $message }}</div>
+        @enderror
+
+        @if(count($availableDeployments))
+            <div class="space-y-2">
+                @foreach($availableDeployments as $dep)
+                <button wire:click="selectDeployment({{ $dep['id'] }})"
+                        wire:loading.attr="disabled"
+                        class="w-full flex items-center justify-between gap-4 px-5 py-4 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:border-blue-400 hover:shadow-sm transition-all text-left group">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30">
+                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </div>
+                        <span class="text-sm font-semibold text-zinc-900 dark:text-white truncate">{{ $dep['name'] }}</span>
+                    </div>
+                    <svg class="w-4 h-4 text-zinc-300 group-hover:text-blue-500 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </button>
+                @endforeach
+            </div>
+        @else
+            <div class="flex flex-col items-center justify-center py-10 text-center border border-zinc-200 dark:border-zinc-700 rounded-xl">
+                <div class="w-11 h-11 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-700 mb-3">
+                    <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <p class="text-sm font-semibold text-zinc-900 dark:text-white mb-1">No deployments available</p>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs mb-4">
+                    You need to deploy a service before you can register a domain. Domains are always attached to a specific deployment.
+                </p>
+                <a href="{{ route('products') }}" wire:navigate
+                   class="inline-flex items-center gap-1.5 px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-semibold rounded-lg hover:bg-zinc-700 transition-colors">
+                    View Services
+                </a>
+            </div>
+        @endif
+
+        <button wire:click="cancelDeploymentSelection"
+                class="mt-4 text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors">
+            ← Back to results
+        </button>
+    </div>
+
+    {{-- ── Search form + results ────────────────────────────────────────────── --}}
+    @else
     <div class="mb-6">
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
             Enter a name for your website — keep it short and easy to remember.
@@ -40,7 +152,7 @@
         @enderror
     </div>
 
-    {{-- ── Results ──────────────────────────────────────────────────────────── --}}
+    {{-- Results --}}
     @if($searched && count($results))
     @php
         $groups = [
@@ -64,7 +176,6 @@
         <div>
             <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">{{ $group['label'] }}</h3>
 
-            {{-- Available / unknown rows --}}
             @if(count($available))
             <div class="space-y-2">
                 @foreach($available as $option)
@@ -73,7 +184,6 @@
             </div>
             @endif
 
-            {{-- Taken rows — collapsed by default, expandable via Alpine --}}
             @if(count($taken))
             <div x-data="{ open: false }" class="{{ count($available) ? 'mt-3' : '' }}">
                 <button @click="open = !open"
@@ -98,58 +208,6 @@
     @elseif($searched)
     <p class="text-sm text-gray-500 mt-4">No results returned. Please try a different name.</p>
     @endif
-    @endif
-
-    {{-- ── Payment review ───────────────────────────────────────────────────── --}}
-    @if($showPayment && $selectedDomain)
-    @php
-        $domainNaira = number_format($selectedPriceKobo / 100, 0);
-        $totalNaira  = number_format(($selectedPriceKobo + (int)config('domains.setup_fee_kobo')) / 100, 0);
-    @endphp
-
-    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-5 mb-5">
-        <h3 class="font-semibold text-gray-900 dark:text-white mb-4">Order Summary</h3>
-        <div class="space-y-2 text-sm">
-            <div class="flex justify-between">
-                <span class="text-gray-600 dark:text-gray-400">Domain: <span class="font-medium text-gray-900 dark:text-white">{{ $selectedDomain }}</span> (1 year)</span>
-                <span class="font-medium text-gray-900 dark:text-white">₦{{ $domainNaira }}</span>
-            </div>
-            <div class="flex justify-between">
-                <span class="text-gray-600 dark:text-gray-400">Setup & DNS configuration fee</span>
-                <span class="font-medium text-gray-900 dark:text-white">₦{{ $setupFeeNaira }}</span>
-            </div>
-            <div class="border-t border-blue-200 dark:border-blue-700 pt-2 mt-2 flex justify-between">
-                <span class="font-semibold text-gray-900 dark:text-white">Total</span>
-                <span class="font-bold text-lg text-blue-700 dark:text-blue-300">₦{{ $totalNaira }}</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="text-sm text-gray-500 dark:text-gray-400 mb-5 space-y-1">
-        <p>✓ Domain registered in your name</p>
-        <p>✓ DNS configured and pointed to your deployment</p>
-        <p>✓ Invoice issued immediately after payment</p>
-        <p>✓ Domain live within ~30 minutes</p>
-    </div>
-
-    @if($paymentError)
-        <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-            {{ $paymentError }}
-        </div>
-    @endif
-
-    <div class="flex gap-3">
-        <button wire:click="proceedToPayment"
-                wire:loading.attr="disabled"
-                class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-base transition-colors disabled:opacity-60">
-            <span wire:loading.remove wire:target="proceedToPayment">Pay ₦{{ $totalNaira }} via Paystack</span>
-            <span wire:loading wire:target="proceedToPayment">Redirecting to payment…</span>
-        </button>
-        <button wire:click="cancelSelection"
-                class="px-5 py-3 border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-300 font-medium rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-            Back
-        </button>
-    </div>
     @endif
 
 </div>

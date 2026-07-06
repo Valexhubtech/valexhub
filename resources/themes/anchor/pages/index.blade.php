@@ -26,30 +26,34 @@ name('home');
         <!-- Marquee Divider -->
         <x-marketing.sections.marquee-divider />
 
-        <!-- <section aria-labelledby="features-heading"> -->
-        <x-container class="py-8">
-            <h2 id="features-heading" class="sr-only">Our Software Solutions</h2>
-            <x-marketing.sections.features />
-        </x-container>
-        <!-- </section> -->
+        <section aria-labelledby="domain-lookup-heading">
+            <h2 id="domain-lookup-heading" class="sr-only">Domain Availability Check</h2>
+            <x-marketing.sections.domain-lookup />
+        </section>
+
+        <section aria-labelledby="how-it-works-heading">
+            <h2 id="how-it-works-heading" class="sr-only">How It Works</h2>
+            <x-marketing.sections.how-it-works />
+        </section>
 
         <section aria-labelledby="development-timeline-heading">
             <h2 id="development-timeline-heading" class="sr-only">Development Timeline</h2>
             <x-marketing.sections.development-services />
         </section>
 
+        <section aria-labelledby="affiliate-heading">
+            <h2 id="affiliate-heading" class="sr-only">Affiliate Program</h2>
+            <x-marketing.sections.affiliate-program />
+        </section>
+
         <section aria-labelledby="faq-heading">
-            <x-container class="py-12 border-t sm:py-24 border-zinc-200">
-                <h2 id="faq-heading" class="sr-only">Frequently Asked Questions</h2>
-                <x-marketing.sections.faq />
-            </x-container>
+            <h2 id="faq-heading" class="sr-only">Frequently Asked Questions</h2>
+            <x-marketing.sections.faq />
         </section>
 
         <section aria-labelledby="cta-heading">
-            <x-container class="py-12 border-t sm:py-24 border-zinc-200">
-                <h2 id="cta-heading" class="sr-only">Get Started with ValexHub</h2>
-                <x-marketing.sections.final-cta />
-            </x-container>
+            <h2 id="cta-heading" class="sr-only">Get Started with ValexHub</h2>
+            <x-marketing.sections.final-cta />
         </section>
     </main>
 

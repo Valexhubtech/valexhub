@@ -1,12 +1,7 @@
 <?php
-    use function Laravel\Folio\{middleware, name};
-    name('pricing');
+use function Laravel\Folio\{name, render};
+
+name('pricing');
+
+render(fn() => redirect()->route('products', [], 301));
 ?>
-
-<x-layouts.marketing>
-
-    <x-container class="py-10">
-        <x-marketing.sections.pricing />
-    </x-container>
-
-</x-layouts.marketing>

@@ -6,6 +6,7 @@ import { Draggable } from 'gsap/Draggable'
 // Import our animation modules
 import { HeroAnimations } from './hero-animations.js'
 import { FeaturesAnimations } from './features-animations.js'
+import { HowItWorksAnimations } from './how-it-works-animations.js'
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, TextPlugin, Draggable)
@@ -17,9 +18,12 @@ window.gsap = gsap
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize hero animations
     window.heroAnimations = new HeroAnimations()
-    
+
     // Initialize features animations
     window.featuresAnimations = new FeaturesAnimations()
+
+    // Initialize how it works pinned scroll
+    window.howItWorksAnimations = new HowItWorksAnimations()
     
     // Add structured data for SEO
     addStructuredData()

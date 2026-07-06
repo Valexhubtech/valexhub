@@ -13,7 +13,10 @@ use Wave\DomainPurchase;
 
 class DomainSearch extends Component
 {
-    public Deployment $deployment;
+    public ?Deployment $deployment = null;
+
+    // Tracks whether deployment was injected as a prop vs chosen via selector
+    public bool $deploymentBound = false;
 
     public string $searchQuery  = '';
     public array  $results      = [];
@@ -25,8 +28,15 @@ class DomainSearch extends Component
     public ?string $selectedItemId   = null;
     public int     $selectedPriceKobo = 0;
 
-    public bool   $showPayment  = false;
-    public string $paymentError = '';
+    public bool   $showPayment           = false;
+    public bool   $showDeploymentSelector = false;
+    public array  $availableDeployments  = [];
+    public string $paymentError          = '';
+
+    public function mount(): void
+    {
+        $this->deploymentBound = $this->deployment !== null;
+    }
 
     public function search(): void
     {
@@ -39,12 +49,10 @@ class DomainSearch extends Component
         $this->searching = true;
         $this->results   = [];
         $this->searched  = false;
-        $this->reset(['selectedDomain', 'selectedTld', 'selectedItemId', 'selectedPriceKobo', 'showPayment']);
+        $this->reset(['selectedDomain', 'selectedTld', 'selectedItemId', 'selectedPriceKobo', 'showPayment', 'showDeploymentSelector', 'availableDeployments']);
 
         $input = strtolower(trim($this->searchQuery));
 
-        // Strip TLD suffix if user typed it (e.g. "mybusiness.com" → "mybusiness")
-        // Sort longest TLDs first so "com.ng" is checked before "ng"
         $hostinger   = app(HostingerDomainService::class);
         $catalogTlds = $this->loadCatalog($hostinger);
 
@@ -54,7 +62,6 @@ class DomainSearch extends Component
             return;
         }
 
-        // Filter to our curated whitelist so we don't present 400+ niche TLDs
         $whitelist   = (array) config('domains.tld_whitelist', []);
         $catalogTlds = array_intersect_key($catalogTlds, array_flip($whitelist));
 
@@ -77,7 +84,6 @@ class DomainSearch extends Component
             return;
         }
 
-        // Check availability for all catalog TLDs in one API call
         try {
             $availability = $hostinger->checkAvailability($name, $allTldKeys);
         } catch (\Throwable $e) {
@@ -95,8 +101,6 @@ class DomainSearch extends Component
             $fullDomain = $name . '.' . $tld;
             $available  = $availability[$fullDomain]['available'] ?? null;
 
-            // Use promo (first-period) price. Convert: usd_cents × rate = NGN kobo
-            // (usd_cents/100 naira × rate × 100 kobo/naira = usd_cents × rate kobo)
             $priceKobo = (int) round($catalogItem['promo_cents'] * $liveRate);
 
             $isRecommended = in_array($tld, $recommendedTlds) && $available !== false;
@@ -115,13 +119,12 @@ class DomainSearch extends Component
             ];
         }
 
-        // Sort: available+recommended > available > unknown > taken
         usort($results, function ($a, $b) {
-            $score = fn ($r) => match (true) {
-                $r['available'] === true && $r['recommended'] => 3,
-                $r['available'] === true                      => 2,
-                $r['available'] === null                      => 1,
-                default                                       => 0,
+            $score = function ($r) {
+                if ($r['available'] === true && $r['recommended']) return 3;
+                if ($r['available'] === true)                      return 2;
+                if ($r['available'] === null)                      return 1;
+                return 0;
             };
             return $score($b) <=> $score($a);
         });
@@ -137,17 +140,70 @@ class DomainSearch extends Component
         $this->selectedTld       = $tld;
         $this->selectedPriceKobo = $priceKobo;
         $this->selectedItemId    = $itemId;
-        $this->showPayment       = true;
+
+        if ($this->deployment !== null) {
+            $this->showPayment = true;
+            return;
+        }
+
+        // No deployment bound — find ones available for this user
+        $paidIds = DomainPurchase::where('user_id', Auth::id())
+            ->where('payment_status', 'paid')
+            ->pluck('deployment_id')
+            ->toArray();
+
+        $this->availableDeployments = Deployment::with('product')
+            ->where('user_id', Auth::id())
+            ->whereNotIn('id', $paidIds)
+            ->get()
+            ->map(function ($d) {
+                return ['id' => $d->id, 'name' => $d->product->name ?? 'Deployment #' . $d->id];
+            })
+            ->toArray();
+
+        $this->showDeploymentSelector = true;
+    }
+
+    public function selectDeployment(int $deploymentId): void
+    {
+        $deployment = Deployment::where('id', $deploymentId)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (! $deployment) {
+            return;
+        }
+
+        $hasDomain = DomainPurchase::where('deployment_id', $deploymentId)
+            ->where('payment_status', 'paid')
+            ->exists();
+
+        if ($hasDomain) {
+            $this->addError('deploymentSelector', 'This deployment already has a domain attached.');
+            return;
+        }
+
+        $this->deployment             = $deployment;
+        $this->showDeploymentSelector = false;
+        $this->showPayment            = true;
+    }
+
+    public function cancelDeploymentSelection(): void
+    {
+        $this->reset(['selectedDomain', 'selectedTld', 'selectedItemId', 'selectedPriceKobo', 'showDeploymentSelector', 'availableDeployments']);
     }
 
     public function cancelSelection(): void
     {
-        $this->reset(['selectedDomain', 'selectedTld', 'selectedItemId', 'selectedPriceKobo', 'showPayment']);
+        if (! $this->deploymentBound) {
+            $this->deployment = null;
+        }
+        $this->reset(['selectedDomain', 'selectedTld', 'selectedItemId', 'selectedPriceKobo', 'showPayment', 'showDeploymentSelector', 'availableDeployments']);
     }
 
     public function proceedToPayment(): void
     {
-        if (! $this->selectedDomain || ! $this->selectedTld) {
+        if (! $this->selectedDomain || ! $this->selectedTld || ! $this->deployment) {
             return;
         }
 

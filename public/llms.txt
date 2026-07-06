@@ -1,0 +1,71 @@
+# ValexHub
+
+> ValexHub provides custom business software and management systems for Nigerian SMEs — including schools, hotels, pharmacies, restaurants, and property managers.
+
+## About
+
+ValexHub is a Nigerian SaaS platform that deploys ready-made and custom-built business management software for Nigerian small and medium-sized enterprises. Each deployment runs on dedicated cloud infrastructure via Coolify and can be connected to a custom domain.
+
+Key differentiators:
+- Pre-configured for the Nigerian business context: Naira payments, Paystack integration, WAT timezone, WhatsApp notifications
+- Offline-capable systems for environments with unreliable internet
+- 5–10 business day deployment for pre-built systems; ~7 weeks for fully custom software
+- Local WhatsApp, phone, and remote-access support
+- Monthly subscription pricing denominated in Naira
+- Data ownership — clients retain full access to their data
+
+## Products
+
+Pre-built systems available for immediate deployment:
+
+- **School Management System** — student records, fee collection, timetables, attendance, parent portal
+- **Hotel Management System** — room booking, guest management, front desk operations, billing
+- **Pharmacy POS** — inventory management, dispensing records, sales tracking, expiry alerts
+- **Restaurant Management** — table management, order taking, kitchen display, sales reports
+- **Property Management System** — tenant management, rent collection, maintenance requests, lease tracking
+- **Real Estate CRM** — property listings, lead management, viewing schedules, document storage
+
+## Services
+
+- Pre-built solution deployment, configuration, and branding
+- Custom software development (bespoke systems built to exact business requirements)
+- Custom domain registration and DNS setup
+- Staff training and onboarding (included with every deployment)
+- Ongoing technical support and managed hosting
+
+## Affiliate Program
+
+ValexHub operates an affiliate program for business consultants, IT professionals, and entrepreneurs who refer clients.
+
+- Earn up to 30% recurring monthly commission per referred client
+- Multi-tier structure: earn from referrals made by your referrals
+- Monthly payouts via Nigerian bank transfer
+- Dedicated affiliate dashboard with referral link, commission ledger, and payout requests
+- Sign up at: https://valexhub.com/register
+
+## Billing
+
+- One-time setup fee covers installation, customisation, data migration, and training
+- Monthly subscription covers hosting, software updates, and ongoing support
+- All payments accepted in Naira via Paystack
+- Cancel anytime — data exported and handed over with no penalty
+
+## Contact
+
+- Website: https://valexhub.com
+- Email: info.valexhub@gmail.com
+- WhatsApp: Available via the website contact page
+- Twitter/X: @valexhub_
+- Instagram: @valexhub__
+- Facebook: @valexhub__
+- Business hours: Monday–Friday 9:00 AM – 6:00 PM WAT; Saturday 10:00 AM – 4:00 PM WAT
+
+## Key Pages
+
+- Home: https://valexhub.com/
+- Products catalogue: https://valexhub.com/products
+- Custom software: https://valexhub.com/custom-software
+- Blog: https://valexhub.com/blog
+- Book a free demo: https://valexhub.com/book-demo
+- Register / sign up: https://valexhub.com/register
+- Login: https://valexhub.com/login
