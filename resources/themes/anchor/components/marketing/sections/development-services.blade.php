@@ -13,12 +13,12 @@
             <path d="M4 8 C4 8, 20 4, 30 18 C36 27, 28 32, 24 32" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
             <path d="M20 30 L24 32 L22 28" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span class="text-2xl font-black text-zinc-500 whitespace-nowrap tracking-tight">from order to live</span>
+        <span class="text-2xl font-black text-zinc-500 whitespace-nowrap tracking-tight">live in under an hour</span>
     </div>
 
     {{-- Abstract annotation — bottom left --}}
     <div class="absolute bottom-12 left-8 hidden xl:flex items-center gap-3 transform rotate-[5deg] opacity-50">
-        <span class="text-2xl font-black text-zinc-600 whitespace-nowrap tracking-tight">we handle everything</span>
+        <span class="text-2xl font-black text-zinc-600 whitespace-nowrap tracking-tight">you're in control</span>
         <svg width="32" height="22" viewBox="0 0 28 20" fill="none" class="text-zinc-600">
             <path d="M2 10 C8 4, 18 4, 26 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
             <path d="M22 7 L26 10 L22 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -36,15 +36,15 @@
                 <span class="bg-gradient-to-r from-zinc-300 via-blue-400 to-blue-300 bg-clip-text text-transparent"> Deployment Timeline</span>
             </h2>
             <p class="mt-4 text-sm sm:text-base text-zinc-300 max-w-2xl mx-auto leading-relaxed">
-                From concept to launch we follow a structured process — keeping you informed and in control at every step.
+                Custom builds follow a structured development process. Pre-built software deploys instantly — live in under an hour.
             </p>
         </div>
 
         {{-- Mobile annotations (inline below heading) --}}
         <div class="lg:hidden flex flex-wrap gap-3 justify-center mb-10 opacity-60">
-            <span class="text-xl font-black text-zinc-500 inline-block" style="transform: rotate(-2deg)">from order to live</span>
+            <span class="text-xl font-black text-zinc-500 inline-block" style="transform: rotate(-2deg)">live in under an hour</span>
             <span class="text-zinc-600 font-black self-center">·</span>
-            <span class="text-xl font-black text-zinc-600 inline-block" style="transform: rotate(2deg)">we handle everything</span>
+            <span class="text-xl font-black text-zinc-600 inline-block" style="transform: rotate(2deg)">you're in control</span>
         </div>
 
         {{-- Tab switcher --}}
@@ -121,10 +121,11 @@
                 <ol class="relative space-y-0 before:absolute before:top-0 before:left-5 before:h-full before:w-px before:bg-zinc-700">
                     @php
                         $prebuiltSteps = [
-                            ['week' => 'Day 1–2',  'color' => 'bg-purple-500', 'title' => 'Solution Selection & Assessment', 'desc' => 'A quick call to identify the best pre-built system for your business and assess your existing data structure.'],
-                            ['week' => 'Week 1',   'color' => 'bg-purple-500', 'title' => 'Setup & Configuration',            'desc' => 'System installation, branding customisation, user accounts, and workflow configuration to match your business.'],
-                            ['week' => 'Week 2',   'color' => 'bg-purple-500', 'title' => 'Data Migration & Testing',         'desc' => 'Import your existing data, run comprehensive tests, and fine-tune settings. Staff preview and feedback round.'],
-                            ['week' => 'Week 3',   'color' => 'bg-green-500',  'title' => 'Training & Go Live',               'desc' => 'Full staff training, final testing, and go-live support. Your business is up and running with minimal downtime.'],
+                            ['time' => 'Seconds',       'color' => 'bg-purple-500', 'textColor' => 'text-purple-400', 'title' => 'Create Your Account',         'desc' => 'Sign up for free — no credit card required. Your dashboard is ready instantly. Browse all available software products before committing to anything.'],
+                            ['time' => '< 5 minutes',   'color' => 'bg-purple-500', 'textColor' => 'text-purple-400', 'title' => 'Choose & Configure',           'desc' => 'Pick your software, select cloud or on-premises hosting, add the modules you need, and choose your billing cycle — monthly, quarterly, or yearly.'],
+                            ['time' => '< 5 minutes',   'color' => 'bg-purple-500', 'textColor' => 'text-purple-400', 'title' => 'Pay Securely in Naira',        'desc' => 'Complete payment via Paystack — card, bank transfer, or USSD. No hidden fees, no long contracts. Cancel or upgrade any time from your dashboard.'],
+                            ['time' => 'Under 1 hour',  'color' => 'bg-green-500',  'textColor' => 'text-green-400',  'title' => 'System Live — Login & URL Ready', 'desc' => 'Your software deploys automatically the moment payment is confirmed. Your login credentials and system URL appear in your dashboard — usually within minutes.'],
+                            ['time' => 'Optional',      'color' => 'bg-zinc-500',   'textColor' => 'text-zinc-400',   'title' => 'Attach a Custom Domain',       'desc' => 'Want a branded web address? Search and register a domain directly from your dashboard. We configure DNS automatically — live within 30 minutes.'],
                         ];
                     @endphp
                     @foreach($prebuiltSteps as $i => $step)
@@ -133,7 +134,7 @@
                                 <span class="relative z-10 w-4 h-4 mt-1 rounded-full {{ $step['color'] }} ring-4 ring-zinc-900 shadow-lg"></span>
                             </div>
                             <div class="flex-1 pb-2">
-                                <time class="text-xs font-semibold uppercase tracking-widest {{ $i === 3 ? 'text-green-400' : 'text-purple-400' }}">{{ $step['week'] }}</time>
+                                <time class="text-xs font-semibold uppercase tracking-widest {{ $step['textColor'] }}">{{ $step['time'] }}</time>
                                 <h3 class="mt-1 text-lg font-bold text-white">{{ $step['title'] }}</h3>
                                 <p class="mt-2 text-sm text-zinc-300 leading-relaxed max-w-lg">{{ $step['desc'] }}</p>
                             </div>
