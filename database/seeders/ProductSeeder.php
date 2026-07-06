@@ -31,7 +31,7 @@ class ProductSeeder extends Seeder
             [
                 'name'              => 'School Management System',
                 'category_id'       => $categoryId,
-                'type'              => 'custom',
+                'type'              => 'prebuilt',
                 'short_description' => 'A complete academic management platform for primary, secondary, and tertiary institutions.',
                 'description'       => '<p>ValexHub School Management System is built to handle the full operational lifecycle of a Nigerian educational institution — from student enrollment and fee collection to timetabling, attendance, grading, and parent communication.</p><p>Whether you run a nursery school, secondary school, or a polytechnic, this platform eliminates paperwork and puts every piece of academic data at your fingertips. Parents get real-time access to their children\'s progress, and your admin staff spends less time on repetitive tasks.</p><p>All data is stored securely in the cloud with automatic backups. Staff can work from any device, and the system scales as your institution grows.</p>',
                 'low_price'         => 80000,
@@ -90,7 +90,7 @@ class ProductSeeder extends Seeder
             [
                 'name'              => 'Hotel Management System',
                 'category_id'       => $categoryId,
-                'type'              => 'custom',
+                'type'              => 'prebuilt',
                 'short_description' => 'End-to-end hotel operations software for Nigerian hotels, lodges, and guest houses.',
                 'description'       => '<p>ValexHub Hotel Management System gives your property a fully digital front desk — from the moment a guest makes a reservation to the moment they check out. Manage room availability, housekeeping schedules, restaurant orders, billing, and staff, all from one unified platform.</p><p>Designed specifically for Nigerian hospitality businesses, the system supports Naira billing, local payment methods including Paystack, and operates reliably even during internet disruptions. Whether you run a boutique guest house or a multi-floor hotel, this software scales to match your operation.</p><p>Eliminate manual room booking conflicts, lost receipts, and inefficient housekeeping workflows. Your front desk team will have everything they need on one screen.</p>',
                 'low_price'         => 100000,
@@ -149,7 +149,7 @@ class ProductSeeder extends Seeder
             [
                 'name'              => 'Property Management System',
                 'category_id'       => $categoryId,
-                'type'              => 'custom',
+                'type'              => 'prebuilt',
                 'short_description' => 'Manage rental properties, tenants, rent collection, and maintenance from one dashboard.',
                 'description'       => '<p>ValexHub Property Management System is the all-in-one platform for Nigerian landlords, property managers, and real estate agencies. Stop managing tenants from WhatsApp and spreadsheets — bring everything into a system that was built for how property business works in Nigeria.</p><p>Track every property and unit, manage tenant agreements and renewals, collect rent with automated reminders via WhatsApp and SMS, and handle maintenance requests with a structured workflow. Generate owner statements, track arrears, and produce financial reports that make tax season and investor reporting effortless.</p><p>From a single residential property to a portfolio of commercial buildings, this system grows with you.</p>',
                 'low_price'         => 60000,
@@ -208,7 +208,7 @@ class ProductSeeder extends Seeder
             [
                 'name'              => 'Payroll & HR Management',
                 'category_id'       => $categoryId,
-                'type'              => 'custom',
+                'type'              => 'prebuilt',
                 'short_description' => 'End-to-end HR and payroll solution built for Nigerian businesses and tax compliance.',
                 'description'       => '<p>ValexHub Payroll & HR Management handles everything from employee onboarding to monthly salary processing — fully compliant with Nigerian tax regulations including PAYE, pension (PFA), NHF, and NSITF deductions.</p><p>Store all employee records digitally, track attendance and leave balances, manage performance reviews, and generate payslips at the click of a button. The system calculates gross pay, statutory deductions, and net pay automatically — removing the risk of manual errors that can cost you in audits and employee disputes.</p><p>Whether you manage 10 or 1,000 employees, this system ensures your HR process is professional, accurate, and audit-ready at all times.</p>',
                 'low_price'         => 50000,
@@ -266,7 +266,7 @@ class ProductSeeder extends Seeder
             [
                 'name'              => 'Inventory & Point of Sale',
                 'category_id'       => $categoryId,
-                'type'              => 'custom',
+                'type'              => 'prebuilt',
                 'short_description' => 'Fast, reliable POS and stock management for Nigerian retail stores and multi-branch businesses.',
                 'description'       => '<p>ValexHub Inventory & Point of Sale is built for the pace of Nigerian retail. Process sales quickly at the counter, track stock across multiple branches, manage suppliers, and get the financial reports you need to make smart buying decisions.</p><p>The POS works offline during internet outages and syncs automatically when connectivity is restored — so your business never stops. Scan barcodes, apply discounts, manage multiple payment methods (cash, POS card, bank transfer), and print receipts instantly.</p><p>From a single shop to a chain of stores, this system gives you full visibility into what you\'re selling, what\'s running low, and where your money is going.</p>',
                 'low_price'         => 40000,
