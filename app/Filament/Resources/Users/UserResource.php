@@ -30,6 +30,8 @@ class UserResource extends Resource
 
     protected static BackedEnum|string|null $navigationIcon = 'phosphor-users-duotone';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Users & Affiliates';
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema

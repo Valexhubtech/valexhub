@@ -23,6 +23,8 @@ class RoleResource extends Resource
 
     protected static BackedEnum|string|null $navigationIcon = 'phosphor-address-book-duotone';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Users & Affiliates';
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema

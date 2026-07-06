@@ -2,8 +2,13 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\AuthorizeDeploymentAccess;
+use App\Http\Middleware\VerifyPaystackWebhookSignature;
 use App\Listeners\LogSuccessfulLogin;
 use App\Listeners\LogSuccessfulLogout;
+use App\Services\Coolify\CoolifyDeploymentServiceContract;
+use App\Services\Coolify\MockCoolifyDeploymentService;
+use App\Services\Coolify\RealCoolifyDeploymentService;
 use Exception;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -32,7 +37,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(CoolifyDeploymentServiceContract::class, function () {
+            return config('services.coolify.use_real_service')
+                ? app(RealCoolifyDeploymentService::class)
+                : app(MockCoolifyDeploymentService::class);
+        });
     }
 
     /**
@@ -79,6 +88,9 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->bootRoute();
+
+        $this->app->router->aliasMiddleware('paystack-webhook-signature', VerifyPaystackWebhookSignature::class);
+        $this->app->router->aliasMiddleware('authorize-deployment-access', AuthorizeDeploymentAccess::class);
     }
 
     private function setSchemaDefaultLength(): void

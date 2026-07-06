@@ -5,6 +5,7 @@ namespace Wave;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class UserProduct extends Model
 {
@@ -38,6 +39,26 @@ class UserProduct extends Model
     public function subscription(): BelongsTo
     {
         return $this->belongsTo(Subscription::class);
+    }
+
+    public function orderAddons(): HasMany
+    {
+        return $this->hasMany(OrderAddon::class);
+    }
+
+    public function pricing(): BelongsTo
+    {
+        return $this->belongsTo(ProductPricing::class, 'product_pricing_id');
+    }
+
+    public function deployments(): HasMany
+    {
+        return $this->hasMany(Deployment::class);
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
     }
 
     /**

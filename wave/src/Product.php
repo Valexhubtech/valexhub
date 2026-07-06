@@ -18,11 +18,12 @@ class Product extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'features' => 'array',
-        'images' => 'array',
-        'is_active' => 'boolean',
-        'low_price' => 'decimal:2',
-        'high_price' => 'decimal:2',
+        'features'             => 'array',
+        'images'               => 'array',
+        'is_active'            => 'boolean',
+        'low_price'            => 'decimal:2',
+        'high_price'           => 'decimal:2',
+        'coolify_env_template' => 'array',
     ];
 
     /**
@@ -83,6 +84,90 @@ class Product extends Model
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    /**
+     * Get the deployments for this product
+     */
+    public function deployments(): HasMany
+    {
+        return $this->hasMany(Deployment::class);
+    }
+
+    /**
+     * Get all pricing options for this product
+     */
+    public function pricingOptions(): HasMany
+    {
+        return $this->hasMany(ProductPricing::class)->where('is_active', true)->orderBy('sort_order');
+    }
+
+    /**
+     * Get pricing for a specific deployment type
+     */
+    public function pricingFor(string $deploymentType): HasMany
+    {
+        return $this->pricingOptions()
+            ->whereIn('deployment_type', [$deploymentType, 'both']);
+    }
+
+    /**
+     * Get all add-ons for this product
+     */
+    public function addons(): HasMany
+    {
+        return $this->hasMany(ProductAddon::class)->where('is_active', true)->orderBy('sort_order');
+    }
+
+    /**
+     * Get add-ons available for a specific deployment type
+     */
+    public function addonsFor(string $deploymentType): HasMany
+    {
+        return $this->addons()
+            ->whereIn('deployment_type', [$deploymentType, 'both']);
+    }
+
+    /**
+     * Whether this product supports cloud deployment
+     */
+    public function supportsCloud(): bool
+    {
+        return $this->pricingOptions()
+            ->whereIn('deployment_type', ['cloud', 'both'])->exists();
+    }
+
+    /**
+     * Whether this product supports on-prem deployment
+     */
+    public function supportsOnPrem(): bool
+    {
+        return $this->pricingOptions()
+            ->whereIn('deployment_type', ['onprem', 'both'])->exists();
+    }
+
+    /**
+     * Check if this product is a pre-built "pay and deploy" product
+     */
+    public function isPrebuilt(): bool
+    {
+        return $this->type === 'prebuilt';
+    }
+
+    /**
+     * Scope for pre-built products
+     */
+    public function scopePrebuilt($query)
+    {
+        return $query->where('type', 'prebuilt');
+    }
+
+    /**
+     * Scope for custom (quote/demo) products
+     */
+    public function scopeCustom($query)
+    {
+        return $query->where('type', 'custom');
     }
 
     /**

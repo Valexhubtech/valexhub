@@ -3,11 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Str;
 use Wave\ActivityLog;
+use Wave\AffiliateCommission;
+use Wave\Deployment;
+use Wave\Invoice;
+use Wave\PaymentTransaction;
 use Wave\Traits\HasProfileKeyValues;
 use Wave\User as WaveUser;
 
@@ -64,6 +70,60 @@ class User extends WaveUser
             ->exists();
     }
 
+    /**
+     * Get the user who referred this user (their affiliate)
+     */
+    public function referrer(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'referrer_id');
+    }
+
+    /**
+     * Get the users this user has referred (their clients)
+     */
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(self::class, 'referrer_id');
+    }
+
+    /**
+     * Check if this user is a sub-affiliate enroller, i.e. has referred
+     * users who have themselves gone on to refer others.
+     */
+    public function hasSubAffiliates(): bool
+    {
+        return $this->referrals()->whereHas('referrals')->exists();
+    }
+
+    /**
+     * Get the commissions this user has earned as an affiliate
+     */
+    public function affiliateCommissions(): HasMany
+    {
+        return $this->hasMany(AffiliateCommission::class, 'affiliate_id');
+    }
+
+    /**
+     * Get the deployments this user owns
+     */
+    public function deployments(): HasMany
+    {
+        return $this->hasMany(Deployment::class);
+    }
+
+    /**
+     * Get the payment transactions belonging to this user
+     */
+    public function paymentTransactions(): HasMany
+    {
+        return $this->hasMany(PaymentTransaction::class);
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -80,6 +140,23 @@ class User extends WaveUser
                     $i++;
                 }
                 $user->username = $username;
+            }
+
+            // Generate a unique referral code for this user's own referral link
+            if (empty($user->referral_code)) {
+                do {
+                    $referralCode = Str::lower(Str::random(8));
+                } while (self::where('referral_code', $referralCode)->exists());
+                $user->referral_code = $referralCode;
+            }
+
+            // Capture the referring affiliate from the signed cookie set by ReferralController,
+            // guarding against self-referral and unknown/forged codes.
+            if (empty($user->referrer_id) && Cookie::has('referral_code')) {
+                $referrer = self::where('referral_code', Cookie::get('referral_code'))->first();
+                if ($referrer && $referrer->email !== $user->email) {
+                    $user->referrer_id = $referrer->id;
+                }
             }
         });
 

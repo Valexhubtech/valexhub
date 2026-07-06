@@ -30,7 +30,9 @@ class PageResource extends Resource
 
     protected static BackedEnum|string|null $navigationIcon = 'phosphor-files-duotone';
 
-    protected static ?int $navigationSort = 5;
+    protected static string|\UnitEnum|null $navigationGroup = 'Content';
+
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {

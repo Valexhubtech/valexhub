@@ -24,7 +24,9 @@ class SettingResource extends Resource
 
     protected static BackedEnum|string|null $navigationIcon = 'phosphor-gear-fine-duotone';
 
-    protected static ?int $navigationSort = 9;
+    protected static string|\UnitEnum|null $navigationGroup = 'Settings & System';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {

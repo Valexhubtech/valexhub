@@ -19,7 +19,12 @@ return [
     'dev_bar' => env('WAVE_BAR', false),
     'default_user_role' => 'registered',
 
-    'billing_provider' => env('BILLING_PROVIDER', 'stripe'),
+    'billing_provider' => env('BILLING_PROVIDER', 'paystack'),
+
+    'paystack' => [
+        'public_key' => env('PAYSTACK_PUBLIC_KEY'),
+        'secret_key' => env('PAYSTACK_SECRET_KEY'),
+    ],
 
     'paddle' => [
         'vendor' => env('PADDLE_VENDOR_ID', ''),

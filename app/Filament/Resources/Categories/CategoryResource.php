@@ -24,7 +24,9 @@ class CategoryResource extends Resource
 
     protected static BackedEnum|string|null $navigationIcon = 'phosphor-folder-open-duotone';
 
-    protected static ?int $navigationSort = 6;
+    protected static string|\UnitEnum|null $navigationGroup = 'Products & Catalog';
+
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {

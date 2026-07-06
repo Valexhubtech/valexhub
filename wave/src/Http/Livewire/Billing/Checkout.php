@@ -2,6 +2,7 @@
 
 namespace Wave\Http\Livewire\Billing;
 
+use App\Services\Paystack\PaystackService;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Http;
 use Livewire\Attributes\On;
@@ -63,6 +64,37 @@ class Checkout extends Component
         ]);
 
         return redirect()->to($checkout_session->url);
+    }
+
+    public function redirectToPaystackCheckout(Plan $plan)
+    {
+        $price = $this->billing_cycle_selected == 'month' ? $plan->monthly_price : $plan->yearly_price;
+        $planCode = $this->billing_cycle_selected == 'month' ? $plan->paystack_plan_code_monthly : $plan->paystack_plan_code_yearly;
+
+        $response = app(PaystackService::class)->initializeTransaction(
+            email: auth()->user()->email,
+            amountKobo: (int) round(((float) $price) * 100),
+            metadata: [
+                'type' => 'subscription_initial',
+                'billable_type' => 'user',
+                'billable_id' => auth()->user()->id,
+                'plan_id' => $plan->id,
+                'billing_cycle' => $this->billing_cycle_selected,
+            ],
+            callbackUrl: url('subscription/welcome'),
+            planCode: $planCode,
+        );
+
+        if (! ($response['status'] ?? false)) {
+            Notification::make()
+                ->title('Unable to start checkout with Paystack. Please try again.')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        return redirect()->to($response['data']['authorization_url']);
     }
 
     public function updateCycleBasedOnPlans()

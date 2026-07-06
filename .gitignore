@@ -1,4 +1,5 @@
 /node_modules
+/coolify
 /public/hot
 /public/storage
 /storage/*.key

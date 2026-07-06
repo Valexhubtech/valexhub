@@ -31,7 +31,9 @@ class PlanResource extends Resource
 
     protected static BackedEnum|string|null $navigationIcon = 'phosphor-credit-card-duotone';
 
-    protected static ?int $navigationSort = 3;
+    protected static string|\UnitEnum|null $navigationGroup = 'Finance & Billing';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
@@ -87,6 +89,18 @@ class PlanResource extends Resource
                                 '£' => '£',     
                                 '¥' => '¥',
                             ]),
+                    ])->columns(2),
+                Section::make('Paystack Plan Codes')
+                    ->description('Paystack plan codes are required for recurring subscription billing. Create plans in your Paystack dashboard first, then paste the plan_code here.')
+                    ->schema([
+                        TextInput::make('paystack_plan_code_monthly')
+                            ->label('Monthly Plan Code')
+                            ->hint('e.g. PLN_xxxxxxxxxx')
+                            ->maxLength(191),
+                        TextInput::make('paystack_plan_code_yearly')
+                            ->label('Yearly Plan Code')
+                            ->hint('e.g. PLN_xxxxxxxxxx')
+                            ->maxLength(191),
                     ])->columns(2),
                 Section::make('Plan Status')
                     ->description('Make the plan default or active/inactive and set the sort order')

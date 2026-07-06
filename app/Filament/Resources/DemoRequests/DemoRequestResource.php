@@ -34,7 +34,9 @@ class DemoRequestResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Demo Requests';
 
-    protected static ?int $navigationSort = 8;
+    protected static string|\UnitEnum|null $navigationGroup = 'Finance & Billing';
+
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {

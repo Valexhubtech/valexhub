@@ -22,6 +22,8 @@ class PermissionResource extends Resource
 
     protected static BackedEnum|string|null $navigationIcon = 'phosphor-shield-check-duotone';
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Users & Affiliates';
+
     protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
