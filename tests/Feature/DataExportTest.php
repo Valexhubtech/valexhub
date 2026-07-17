@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Wave\ActivityLog;
 use Wave\Plan;
 use Wave\Post;
@@ -123,8 +124,15 @@ test('export handles subscription with string ends_at date', function () {
     // Clean up any existing subscriptions for this test
     Subscription::where('billable_id', $user->id)->delete();
 
-    // Get a plan to use
-    $plan = Plan::first();
+    // Get or create a plan to use
+    $plan = Plan::first() ?? Plan::create([
+        'name' => 'Test Plan',
+        'slug' => 'test-plan-'.time(),
+        'monthly_price_id' => 'dummy_monthly',
+        'yearly_price_id' => 'dummy_yearly',
+        'monthly_price' => '9',
+        'yearly_price' => '90',
+    ]);
 
     // Create a subscription directly in the database with ends_at as a string
     // This simulates a cancelled subscription scenario where ends_at might not be cast properly
