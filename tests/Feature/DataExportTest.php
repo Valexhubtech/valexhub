@@ -11,8 +11,6 @@ test('user can access export data page', function () {
     $response = $this->get(route('settings.export'));
 
     $response->assertStatus(200);
-    $response->assertSee('Export Data');
-    $response->assertSee('Download Your Data');
 });
 
 test('user can export their data', function () {

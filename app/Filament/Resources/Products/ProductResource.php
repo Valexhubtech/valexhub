@@ -178,6 +178,13 @@ class ProductResource extends Resource
                             ->hidden(fn (Get $get): bool => $get('coolify_deploy_type') !== 'git_repo')
                             ->nullable(),
 
+                        TextInput::make('login_path')
+                            ->label('Login Path')
+                            ->placeholder('/dashboard')
+                            ->default('/dashboard')
+                            ->helperText('Path appended to the app URL for the login page. e.g. "/dashboard" → https://app.example.com/dashboard. Used for the one-click login button.')
+                            ->nullable(),
+
                         Repeater::make('coolify_env_template')
                             ->label('Environment Variable Template')
                             ->schema([

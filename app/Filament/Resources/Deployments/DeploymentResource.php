@@ -2,14 +2,20 @@
 
 namespace App\Filament\Resources\Deployments;
 
+use App\Filament\Resources\Deployments\Pages\AdminDeployDeployment;
 use App\Filament\Resources\Deployments\Pages\EditDeployment;
 use App\Filament\Resources\Deployments\Pages\ListDeployments;
+use App\Filament\Resources\Deployments\Pages\ManageDeployment;
 use App\Mail\InvoiceMail;
 use App\Services\InvoiceService;
+use App\Services\ProductDeploymentService;
+use App\Services\Coolify\RealCoolifyDeploymentService;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
 use Filament\Schemas\Components\Html;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
@@ -50,6 +56,10 @@ class DeploymentResource extends Resource
                             ->dehydrated(false)
                             ->formatStateUsing(fn ($record) =>
                                 ($record->user->name ?? '—').' ('.$record->user->email.')'),
+
+                        TextInput::make('business_name')
+                            ->label('Business Name')
+                            ->disabled(),
 
                         TextInput::make('deploy_for_display')
                             ->label('Deploying For')
@@ -174,8 +184,14 @@ class DeploymentResource extends Resource
                     ->color(fn (string $state): string => $state === 'client' ? 'warning' : 'gray')
                     ->formatStateUsing(fn ($state): string => $state === 'client' ? 'Client' : 'Self'),
 
+                TextColumn::make('business_name')
+                    ->label('Business')
+                    ->placeholder('—')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('client_name')
-                    ->label('Client')
+                    ->label('Client Contact')
                     ->description(fn ($record) => $record->client_email ?? '')
                     ->placeholder('—')
                     ->toggleable(),
@@ -236,123 +252,157 @@ class DeploymentResource extends Resource
                     ]),
             ])
             ->recordActions([
-                Action::make('suspend')
-                    ->label('Suspend')
-                    ->icon('phosphor-pause-circle-duotone')
-                    ->color('warning')
-                    ->requiresConfirmation()
-                    ->modalHeading('Suspend Deployment')
-                    ->modalDescription('This will suspend the deployment and the client\'s service. They will no longer be able to access the app.')
-                    ->modalSubmitActionLabel('Yes, Suspend')
-                    ->action(function (Deployment $record): void {
-                        $record->update(['status' => 'suspended']);
-                        $record->userProduct?->update(['status' => 'suspended']);
-                    })
-                    ->successNotificationTitle('Deployment suspended.')
-                    ->visible(fn (Deployment $record): bool => $record->status === 'active'),
-
-                Action::make('reactivate')
-                    ->label('Reactivate')
-                    ->icon('phosphor-play-circle-duotone')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->modalHeading('Reactivate Deployment')
-                    ->modalDescription('This will mark the deployment and user product as active again.')
-                    ->modalSubmitActionLabel('Yes, Reactivate')
-                    ->action(function (Deployment $record): void {
-                        $record->update(['status' => 'active']);
-                        $record->userProduct?->update(['status' => 'active']);
-                    })
-                    ->successNotificationTitle('Deployment reactivated.')
-                    ->visible(fn (Deployment $record): bool => $record->status === 'suspended'),
-
-                Action::make('terminate')
-                    ->label('Terminate')
-                    ->icon('phosphor-prohibit-duotone')
-                    ->color('danger')
-                    ->requiresConfirmation()
-                    ->modalHeading('Terminate Deployment')
-                    ->modalDescription('This permanently terminates the deployment. The client will lose access. This cannot be undone without a manual restore.')
-                    ->modalSubmitActionLabel('Yes, Terminate Permanently')
-                    ->action(function (Deployment $record): void {
-                        $record->update(['status' => 'terminated']);
-                        $record->userProduct?->update(['status' => 'cancelled']);
-                    })
-                    ->successNotificationTitle('Deployment terminated.')
-                    ->visible(fn (Deployment $record): bool => ! in_array($record->status, ['terminated', 'pending'])),
-
-                Action::make('send_invoice')
-                    ->label('Send Invoice')
-                    ->icon('phosphor-paper-plane-duotone')
-                    ->color('info')
-                    ->modalHeading('Create & Send Invoice')
-                    ->modalDescription('Review the line items pre-filled from this deployment, adjust if needed, then send.')
-                    ->schema(function (Deployment $record, InvoiceService $invoiceService): array {
-                        $lineItems = $record->userProduct
-                            ? $invoiceService->buildLineItems(
-                                $record->userProduct->load(['pricing', 'orderAddons.addon'])
-                            )
-                            : [];
-                        return [
-                            \Filament\Schemas\Components\Section::make('Line Items')
-                                ->schema([
-                                    \Filament\Forms\Components\Repeater::make('line_items')
-                                        ->label('')
-                                        ->schema([
-                                            TextInput::make('label')
-                                                ->label('Description')
-                                                ->required()
-                                                ->columnSpan(2),
-                                            TextInput::make('amount')
-                                                ->label('Amount (₦)')
-                                                ->numeric()
-                                                ->required()
-                                                ->minValue(0),
-                                            Select::make('type')
-                                                ->label('Type')
-                                                ->options(['onetime' => 'One-time', 'recurring' => 'Recurring'])
-                                                ->default('onetime')
-                                                ->required(),
-                                        ])
-                                        ->columns(4)
-                                        ->default($lineItems)
-                                        ->minItems(1)
-                                        ->required(),
-                                ]),
-                            DatePicker::make('due_date')
-                                ->label('Due Date (optional)')
-                                ->nullable(),
-                        ];
-                    })
-                    ->action(function (Deployment $record, array $data, InvoiceService $invoiceService): void {
-                        $lineItems = $data['line_items'];
-                        $amount    = collect($lineItems)->sum('amount');
-
-                        $invoice = Invoice::create([
-                            'user_id'         => $record->user_id,
-                            'user_product_id' => $record->user_product_id,
-                            'deployment_id'   => $record->id,
-                            'amount'          => $amount,
-                            'currency'        => 'NGN',
-                            'status'          => 'sent',
-                            'line_items'      => $lineItems,
-                            'due_date'        => $data['due_date'] ?? null,
-                        ]);
-
-                        $invoiceService->generatePdf($invoice);
-                        Mail::to($record->user->email)->queue(new InvoiceMail($invoice));
-                    })
-                    ->successNotificationTitle('Invoice created and sent to client.')
-                    ->visible(fn (Deployment $record): bool => $record->user_id !== null),
-
-                Action::make('view_invoices')
-                    ->label('Invoices')
-                    ->icon('phosphor-receipt-duotone')
+                Action::make('manage')
+                    ->label('Manage')
+                    ->icon('phosphor-sliders-duotone')
                     ->color('gray')
-                    ->url(fn (Deployment $record): string => '/admin/invoices')
-                    ->openUrlInNewTab(false),
+                    ->url(fn (Deployment $record): string => static::getUrl('manage', ['record' => $record->id])),
 
-                EditAction::make(),
+                ActionGroup::make([
+                    // ── Coolify container controls ────────────────────────────
+
+                    Action::make('coolify_restart')
+                        ->label('Restart Container')
+                        ->icon('phosphor-arrows-clockwise-duotone')
+                        ->color('gray')
+                        ->requiresConfirmation()
+                        ->modalHeading('Restart Container')
+                        ->modalDescription('Sends a restart signal to the running container. UUID and domain stay the same.')
+                        ->modalSubmitActionLabel('Restart')
+                        ->action(function (Deployment $record, RealCoolifyDeploymentService $coolify): void {
+                            $ok = $coolify->restartApp($record);
+                            if (! $ok) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Restart failed')
+                                    ->body('Could not reach the Coolify API. Check the logs.')
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->successNotificationTitle('Restart signal sent.')
+                        ->visible(fn (Deployment $record): bool => $record->coolify_app_id !== null),
+
+                    Action::make('coolify_fix_redeploy')
+                        ->label('Fix & Redeploy')
+                        ->icon('phosphor-wrench-duotone')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('Fix & Redeploy')
+                        ->modalDescription('Re-injects all env vars into the existing Coolify app and triggers a fresh deploy. UUID and domain are preserved.')
+                        ->modalSubmitActionLabel('Fix & Redeploy')
+                        ->action(function (Deployment $record, RealCoolifyDeploymentService $coolify): void {
+                            $ok = $coolify->redeployWithEnvFix($record);
+                            if ($ok) {
+                                $record->update([
+                                    'status'         => 'provisioning',
+                                    'failure_reason' => null,
+                                ]);
+                            } else {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Fix & Redeploy failed')
+                                    ->body('Could not reach Coolify. Check the server logs.')
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->successNotificationTitle('Re-injected env vars and triggered fresh deploy.')
+                        ->visible(fn (Deployment $record): bool => $record->coolify_app_id !== null),
+
+                    Action::make('coolify_wipe_recreate')
+                        ->label('Wipe & Recreate')
+                        ->icon('phosphor-trash-duotone')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Wipe & Recreate')
+                        ->modalDescription('Deletes the Coolify app (volumes included) and provisions a brand-new container. UUID will change. Use only when the app is unrecoverable.')
+                        ->modalSubmitActionLabel('Yes, Wipe & Recreate')
+                        ->action(function (Deployment $record, RealCoolifyDeploymentService $coolify, ProductDeploymentService $deploymentService): void {
+                            $coolify->deleteApp($record);
+                            $record->update([
+                                'status'         => 'pending',
+                                'coolify_app_id' => null,
+                                'deployment_url' => null,
+                                'failure_reason' => null,
+                            ]);
+                            $deploymentService->fulfill($record->fresh());
+                        })
+                        ->successNotificationTitle('Old container wiped. New container is provisioning.')
+                        ->visible(fn (Deployment $record): bool => $record->coolify_app_id !== null),
+
+                    // ── Lifecycle ─────────────────────────────────────────────
+
+                    Action::make('suspend')
+                        ->label('Suspend')
+                        ->icon('phosphor-pause-circle-duotone')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('Suspend Deployment')
+                        ->modalDescription('The client will lose access to the app immediately.')
+                        ->modalSubmitActionLabel('Yes, Suspend')
+                        ->action(function (Deployment $record): void {
+                            $record->update(['status' => 'suspended']);
+                            $record->userProduct?->update(['status' => 'suspended']);
+                        })
+                        ->successNotificationTitle('Deployment suspended.')
+                        ->visible(fn (Deployment $record): bool => $record->status === 'active'),
+
+                    Action::make('reactivate')
+                        ->label('Reactivate')
+                        ->icon('phosphor-play-circle-duotone')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Reactivate Deployment')
+                        ->modalDescription('Marks the deployment and user product as active again.')
+                        ->modalSubmitActionLabel('Yes, Reactivate')
+                        ->action(function (Deployment $record): void {
+                            $record->update(['status' => 'active']);
+                            $record->userProduct?->update(['status' => 'active']);
+                        })
+                        ->successNotificationTitle('Deployment reactivated.')
+                        ->visible(fn (Deployment $record): bool => $record->status === 'suspended'),
+
+                    Action::make('terminate')
+                        ->label('Terminate')
+                        ->icon('phosphor-prohibit-duotone')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Terminate Deployment')
+                        ->modalDescription('Permanently terminates the deployment. The client will lose access and this cannot be undone without a manual restore.')
+                        ->modalSubmitActionLabel('Yes, Terminate Permanently')
+                        ->action(function (Deployment $record): void {
+                            $record->update(['status' => 'terminated']);
+                            $record->userProduct?->update(['status' => 'cancelled']);
+                        })
+                        ->successNotificationTitle('Deployment terminated.')
+                        ->visible(fn (Deployment $record): bool => ! in_array($record->status, ['terminated', 'pending'])),
+
+                    // ── Invoicing ─────────────────────────────────────────────
+
+                    Action::make('send_invoice')
+                        ->label('Send Invoice')
+                        ->icon('phosphor-paper-plane-duotone')
+                        ->color('info')
+                        ->modalHeading('Create & Send Invoice')
+                        ->modalDescription('Review the pre-filled sections, adjust amounts, then send.')
+                        ->schema(fn (Deployment $record): array => static::buildInvoiceFormSchema($record))
+                        ->action(function (Deployment $record, array $data): void {
+                            static::dispatchInvoice($record, $data);
+                        })
+                        ->successNotificationTitle('Invoice created and sent to client.')
+                        ->visible(fn (Deployment $record): bool => $record->user_id !== null),
+
+                    Action::make('view_invoices')
+                        ->label('Invoices')
+                        ->icon('phosphor-receipt-duotone')
+                        ->color('gray')
+                        ->url(fn (Deployment $record): string => '/admin/invoices'),
+
+                    EditAction::make(),
+                ])
+                ->label('Actions')
+                ->icon('phosphor-caret-down')
+                ->color('gray')
+                ->button(),
             ])
             ->defaultSort('created_at', 'desc');
     }
@@ -360,9 +410,113 @@ class DeploymentResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListDeployments::route('/'),
-            'edit'  => EditDeployment::route('/{record}/edit'),
+            'index'  => ListDeployments::route('/'),
+            'deploy' => AdminDeployDeployment::route('/deploy'),
+            'edit'   => EditDeployment::route('/{record}/edit'),
+            'manage' => ManageDeployment::route('/{record}/manage'),
         ];
+    }
+
+    public static function buildInvoiceFormSchema(Deployment $record): array
+    {
+        $up = $record->userProduct?->load(['pricing', 'orderAddons.addon']);
+
+        $projectItems = [];
+        if ($up) {
+            if ((float) ($up->setup_amount ?? 0) > 0) {
+                $projectItems[] = [
+                    'label'  => $up->deployment_type === 'onprem' ? 'License & Setup Fee' : 'Setup Fee',
+                    'amount' => (float) $up->setup_amount,
+                    'type'   => 'onetime',
+                ];
+            }
+            if ($up->pricing) {
+                $projectItems[] = [
+                    'label'  => $up->pricing->label . ' (recurring)',
+                    'amount' => (float) $up->pricing->amount,
+                    'type'   => 'recurring',
+                ];
+            }
+        }
+
+        $moduleItems = [];
+        if ($up) {
+            foreach ($up->orderAddons as $oa) {
+                if ($oa->addon?->module_key) {
+                    $moduleItems[] = [
+                        'label'  => $oa->addon->name ?? ucwords(str_replace('_', ' ', $oa->addon->module_key)),
+                        'amount' => (float) $oa->amount_paid,
+                        'type'   => $oa->price_type ?? 'onetime',
+                    ];
+                }
+            }
+        }
+
+        $itemSchema = fn (string $labelPlaceholder) => [
+            TextInput::make('label')->label('Description')->placeholder($labelPlaceholder)->required()->columnSpan(2),
+            TextInput::make('amount')->label('Amount (₦)')->numeric()->required()->minValue(0)->default(0),
+            Select::make('type')->label('Type')->options(['onetime' => 'One-time', 'recurring' => 'Recurring'])->default('onetime')->required(),
+        ];
+
+        return [
+            Section::make('Client Project')
+                ->description('Pre-filled from the linked purchase record. Edit amounts as needed.')
+                ->schema([
+                    Repeater::make('project_items')
+                        ->label('')
+                        ->schema($itemSchema('e.g. Setup Fee'))
+                        ->columns(4)
+                        ->default($projectItems)
+                        ->addActionLabel('Add project item'),
+                ]),
+
+            Section::make('Modules')
+                ->description('Enabled modules — remove any you do not want to bill for.')
+                ->schema([
+                    Repeater::make('module_items')
+                        ->label('')
+                        ->schema($itemSchema('Module name'))
+                        ->columns(4)
+                        ->default($moduleItems),
+                ]),
+
+            Section::make('Custom Work')
+                ->description('Ad-hoc charges for work not covered above.')
+                ->schema([
+                    Repeater::make('custom_items')
+                        ->label('')
+                        ->schema($itemSchema('e.g. Custom integration'))
+                        ->columns(4)
+                        ->default([]),
+                ]),
+
+            DatePicker::make('due_date')->label('Due Date (optional)')->nullable(),
+        ];
+    }
+
+    public static function dispatchInvoice(Deployment $record, array $data): void
+    {
+        $lineItems = array_values(array_filter(array_merge(
+            $data['project_items'] ?? [],
+            $data['module_items'] ?? [],
+            $data['custom_items'] ?? [],
+        )));
+
+        $amount = collect($lineItems)->sum('amount');
+
+        $invoice = Invoice::create([
+            'user_id'         => $record->user_id,
+            'user_product_id' => $record->user_product_id,
+            'deployment_id'   => $record->id,
+            'amount'          => $amount,
+            'currency'        => 'NGN',
+            'status'          => 'sent',
+            'line_items'      => $lineItems,
+            'due_date'        => $data['due_date'] ?? null,
+        ]);
+
+        app(InvoiceService::class)->generatePdf($invoice);
+        Mail::to($record->user->email)->queue(new InvoiceMail($invoice));
     }
 
     private static function summaryRow(string $label, mixed $amount): string

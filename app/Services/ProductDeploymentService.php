@@ -54,28 +54,42 @@ class ProductDeploymentService
         ]);
 
         $result = $this->coolify->deploy($deployment->product, $deployment->user, [
-            'deploy_for'  => $deployment->deploy_for,
-            'client_name' => $deployment->client_name,
-            'client_email'=> $deployment->client_email,
-            'server'      => $server,
+            'deploy_for'      => $deployment->deploy_for,
+            'business_name'   => $deployment->business_name,
+            'client_name'     => $deployment->client_name,
+            'client_email'    => $deployment->client_email,
+            'server'          => $server,
+            'user_product_id' => $deployment->user_product_id,
+            'extra_env_vars'  => $deployment->extra_env_vars ?? [],
+            'env_inject_mode' => $deployment->env_inject_mode ?? 'alongside',
         ]);
 
         if ($result->success) {
             $deployment->update([
-                'status'                 => 'active',
-                'coolify_app_id'         => $result->appId,
-                'deployment_url'         => $result->deploymentUrl,
-                'credentials_encrypted'  => [
-                    'username'  => $result->loginUsername,
-                    'password'  => $result->loginPassword,
-                    'admin_url' => $result->adminUrl,
+                'coolify_app_id'        => $result->appId,
+                'deployment_url'        => $result->deploymentUrl, // known at creation time from Coolify
+                'central_api_key'       => $result->centralApiKey,
+                'credentials_encrypted' => [
+                    'email'              => $result->loginUsername,
+                    'password'           => $result->loginPassword,
+                    'db_name'            => $result->dbName,
+                    'better_auth_secret' => $result->betterAuthSecret,
                 ],
-                'deployed_at' => now(),
             ]);
 
-            $deployment->userProduct?->markAsActive();
-
-            Mail::to($deployment->user->email)->queue(new DeploymentCredentialsMail($deployment));
+            if ($result->isProvisional) {
+                // Real Coolify deploy — container is booting. Active status comes via setup-complete webhook.
+                $deployment->update(['status' => 'provisioning']);
+            } else {
+                // Mock deploy — treat as immediately active (no real container).
+                $deployment->update([
+                    'status'         => 'active',
+                    'deployment_url' => $result->deploymentUrl,
+                    'deployed_at'    => now(),
+                ]);
+                $deployment->userProduct?->markAsActive();
+                Mail::to($deployment->user->email)->queue(new DeploymentCredentialsMail($deployment));
+            }
         } else {
             $deployment->update([
                 'status'         => 'failed',

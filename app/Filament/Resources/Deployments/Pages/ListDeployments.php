@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Deployments\Pages;
 
 use App\Filament\Resources\Deployments\DeploymentResource;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
 
 class ListDeployments extends ListRecords
@@ -11,6 +12,12 @@ class ListDeployments extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+            Action::make('deploy_for_client')
+                ->label('Deploy for Client')
+                ->icon('phosphor-rocket-launch-duotone')
+                ->color('success')
+                ->url(DeploymentResource::getUrl('deploy')),
+        ];
     }
 }
