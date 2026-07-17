@@ -96,7 +96,7 @@
                                 @endif
                                 
                                 <div class="flex flex-col gap-2">
-                                    <a href="{{ route('products.show', ['category' => $product->category->slug, 'product' => $product->slug]) }}" class="text-center px-4 py-2 text-sm font-medium text-white bg-zinc-900 rounded-md hover:bg-zinc-800">View Details</a>
+                                    <a href="{{ $product->category ? route('products.show', ['category' => $product->category->slug, 'product' => $product->slug]) : route('products') }}" class="text-center px-4 py-2 text-sm font-medium text-white bg-zinc-900 rounded-md hover:bg-zinc-800">View Details</a>
                                     <x-elements.quote-demo-modal :product="$product" size="compact" />
                                 </div>
                             </div>

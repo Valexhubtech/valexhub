@@ -232,7 +232,8 @@ class AdminDeployDeployment extends Page
                     ->collapsible()
                     ->schema([
                         TextInput::make('amount_paid')
-                            ->label('Amount Paid')
+                            ->label('Amount Paid (this transaction)')
+                            ->helperText('What the customer actually paid now — may differ from the standard rate.')
                             ->numeric()
                             ->prefix('₦')
                             ->default(0)
@@ -246,6 +247,23 @@ class AdminDeployDeployment extends Page
                             ])
                             ->live()
                             ->default('onetime'),
+
+                        TextInput::make('renewal_amount')
+                            ->label('Renewal Rate (₦)')
+                            ->helperText('What they will pay at each renewal. Leave blank to use the amount paid above.')
+                            ->numeric()
+                            ->prefix('₦')
+                            ->minValue(0)
+                            ->visible(fn (Get $get) => $get('price_type') === 'recurring'),
+
+                        Select::make('billing_cycle')
+                            ->label('Billing Cycle')
+                            ->options([
+                                'monthly' => 'Monthly',
+                                'quarterly' => 'Quarterly',
+                                'yearly' => 'Yearly',
+                            ])
+                            ->visible(fn (Get $get) => $get('price_type') === 'recurring'),
 
                         DatePicker::make('renewal_date')
                             ->label('Next Renewal Date')
@@ -302,15 +320,25 @@ class AdminDeployDeployment extends Page
         }
 
         // ── 2. Create UserProduct ─────────────────────────────────────────────
+        $isRecurring = ($data['price_type'] ?? 'onetime') === 'recurring';
+        $amountPaid = $data['amount_paid'] ?? 0;
+
+        // Renewal rate falls back to amount_paid if not explicitly set
+        $renewalAmount = $isRecurring && ! empty($data['renewal_amount'])
+            ? $data['renewal_amount']
+            : ($isRecurring ? $amountPaid : null);
+
         $userProduct = UserProduct::create([
             'user_id' => $data['user_id'],
             'product_id' => $product->id,
-            'amount_paid' => $data['amount_paid'] ?? 0,
-            'setup_amount' => $data['amount_paid'] ?? 0,
+            'amount_paid' => $amountPaid,
+            'setup_amount' => $amountPaid,
             'purchase_date' => now(),
-            'next_renewal_date' => ($data['price_type'] === 'recurring' && ! empty($data['renewal_date']))
+            'next_renewal_date' => ($isRecurring && ! empty($data['renewal_date']))
                 ? $data['renewal_date']
                 : null,
+            'renewal_amount' => $renewalAmount,
+            'billing_cycle' => $isRecurring ? ($data['billing_cycle'] ?? null) : null,
             'status' => 'active',
             'deployment_type' => $deployType,
         ]);

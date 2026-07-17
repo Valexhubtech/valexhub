@@ -13,6 +13,7 @@ class UserProduct extends Model
 
     protected $casts = [
         'amount_paid' => 'decimal:2',
+        'renewal_amount' => 'decimal:2',
         'purchase_date' => 'datetime',
         'next_renewal_date' => 'datetime',
     ];
