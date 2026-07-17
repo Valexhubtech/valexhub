@@ -25,21 +25,21 @@ class PricingRelationManager extends RelationManager
         return $schema->components([
             Select::make('deployment_type')
                 ->options([
-                    'cloud'  => 'Cloud',
+                    'cloud' => 'Cloud',
                     'onprem' => 'On-Premises',
-                    'both'   => 'Both',
+                    'both' => 'Both',
                 ])
                 ->required()
                 ->default('both'),
 
             Select::make('price_type')
                 ->options([
-                    'setup'     => 'Setup Fee (one-time)',
-                    'license'   => 'License Fee (on-prem, one-time)',
-                    'monthly'   => 'Monthly Subscription',
+                    'setup' => 'Setup Fee (one-time)',
+                    'license' => 'License Fee (on-prem, one-time)',
+                    'monthly' => 'Monthly Subscription',
                     'quarterly' => 'Quarterly Subscription',
-                    'yearly'    => 'Yearly Subscription',
-                    'onetime'   => 'One-time Purchase',
+                    'yearly' => 'Yearly Subscription',
+                    'onetime' => 'One-time Purchase',
                 ])
                 ->required()
                 ->live(),
@@ -77,9 +77,9 @@ class PricingRelationManager extends RelationManager
                 TextColumn::make('deployment_type')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'cloud'  => 'info',
+                        'cloud' => 'info',
                         'onprem' => 'warning',
-                        default  => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('price_type')

@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Mail\DemoRequestConfirmation;
+use App\Mail\DemoRequestNotification;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Wave\DemoRequest;
 use Wave\Product;
-use App\Mail\DemoRequestNotification;
-use App\Mail\DemoRequestConfirmation;
 
 class DemoRequestController extends Controller
 {
@@ -46,7 +47,7 @@ class DemoRequestController extends Controller
             try {
                 // Send notification email to company
                 Mail::to(config('mail.from.address'))->send(new DemoRequestNotification($demoRequest));
-                
+
                 // Send confirmation email to customer
                 Mail::to($demoRequest->email)->send(new DemoRequestConfirmation($demoRequest));
             } catch (\Exception $emailError) {
@@ -68,7 +69,7 @@ class DemoRequestController extends Controller
                 'request_id' => $demoRequest->id,
             ]);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Please check your input and try again.',

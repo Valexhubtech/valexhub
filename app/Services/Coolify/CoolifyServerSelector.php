@@ -20,6 +20,7 @@ class CoolifyServerSelector
 
         if ($servers->isEmpty()) {
             Log::warning('CoolifyServerSelector: no active Coolify servers configured.');
+
             return null;
         }
 
@@ -45,14 +46,14 @@ class CoolifyServerSelector
         $servers = CoolifyServer::active()->get();
 
         $totalSlots = $servers->sum('max_deployments');
-        $usedSlots  = $servers->sum(fn ($s) => $s->used_slots);
+        $usedSlots = $servers->sum(fn ($s) => $s->used_slots);
 
         return [
-            'active_servers'  => $servers->count(),
-            'total_slots'     => $totalSlots,
-            'used_slots'      => $usedSlots,
+            'active_servers' => $servers->count(),
+            'total_slots' => $totalSlots,
+            'used_slots' => $usedSlots,
             'available_slots' => max(0, $totalSlots - $usedSlots),
-            'all_full'        => $usedSlots >= $totalSlots && $totalSlots > 0,
+            'all_full' => $usedSlots >= $totalSlots && $totalSlots > 0,
         ];
     }
 }

@@ -25,7 +25,7 @@ return new class() extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             $table->foreign('subscription_id')->references('id')->on('subscriptions')->onDelete('set null');
-            
+
             $table->index(['user_id', 'status'], 'idx_user_status');
             $table->index(['product_id', 'status'], 'idx_product_status');
             $table->unique(['user_id', 'product_id'], 'unique_user_product');

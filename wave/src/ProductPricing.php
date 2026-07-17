@@ -12,9 +12,9 @@ class ProductPricing extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'amount'      => 'decimal:2',
+        'amount' => 'decimal:2',
         'is_required' => 'boolean',
-        'is_active'   => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     public function product(): BelongsTo
@@ -30,13 +30,13 @@ class ProductPricing extends Model
     public function getLabelAttribute(): string
     {
         return match ($this->price_type) {
-            'monthly'   => 'Monthly',
+            'monthly' => 'Monthly',
             'quarterly' => 'Quarterly',
-            'yearly'    => 'Yearly',
-            'setup'     => 'Setup Fee',
-            'license'   => 'License Fee',
-            'onetime'   => 'One-time',
-            default     => ucfirst($this->price_type),
+            'yearly' => 'Yearly',
+            'setup' => 'Setup Fee',
+            'license' => 'License Fee',
+            'onetime' => 'One-time',
+            default => ucfirst($this->price_type),
         };
     }
 }

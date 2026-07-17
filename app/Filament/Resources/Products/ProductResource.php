@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Products;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
+use App\Filament\Resources\Products\RelationManagers\AddonsRelationManager;
+use App\Filament\Resources\Products\RelationManagers\PricingRelationManager;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -18,10 +20,9 @@ use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
@@ -152,7 +153,7 @@ class ProductResource extends Resource
                             ->label('Deploy Type')
                             ->options([
                                 'docker_image' => 'Docker Image',
-                                'git_repo'     => 'Public Git Repository',
+                                'git_repo' => 'Public Git Repository',
                             ])
                             ->nullable()
                             ->live()
@@ -235,14 +236,16 @@ class ProductResource extends Resource
                     ->formatStateUsing(function ($record) {
                         if ($record->low_price && $record->high_price) {
                             if ($record->low_price == $record->high_price) {
-                                return '₦' . number_format($record->low_price, 2);
+                                return '₦'.number_format($record->low_price, 2);
                             }
-                            return '₦' . number_format($record->low_price, 2) . ' - ₦' . number_format($record->high_price, 2);
+
+                            return '₦'.number_format($record->low_price, 2).' - ₦'.number_format($record->high_price, 2);
                         } elseif ($record->low_price) {
-                            return 'From ₦' . number_format($record->low_price, 2);
+                            return 'From ₦'.number_format($record->low_price, 2);
                         } elseif ($record->high_price) {
-                            return 'Up to ₦' . number_format($record->high_price, 2);
+                            return 'Up to ₦'.number_format($record->high_price, 2);
                         }
+
                         return 'Contact for pricing';
                     })
                     ->sortable(),
@@ -292,8 +295,8 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
-            \App\Filament\Resources\Products\RelationManagers\PricingRelationManager::class,
-            \App\Filament\Resources\Products\RelationManagers\AddonsRelationManager::class,
+            PricingRelationManager::class,
+            AddonsRelationManager::class,
         ];
     }
 

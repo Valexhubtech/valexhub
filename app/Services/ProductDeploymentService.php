@@ -31,17 +31,17 @@ class ProductDeploymentService
 
         if ($server === null) {
             $reason = 'No Coolify server is available. All servers are full or none are configured. '
-                . 'Please add a new server in the admin panel and re-queue this deployment.';
+                .'Please add a new server in the admin panel and re-queue this deployment.';
 
             $deployment->update([
-                'status'         => 'failed',
+                'status' => 'failed',
                 'failure_reason' => $reason,
             ]);
 
             Log::critical('Deployment failed: no available Coolify server', [
                 'deployment_id' => $deployment->id,
-                'product_id'    => $deployment->product_id,
-                'user_id'       => $deployment->user_id,
+                'product_id' => $deployment->product_id,
+                'user_id' => $deployment->user_id,
             ]);
 
             return;
@@ -49,30 +49,30 @@ class ProductDeploymentService
 
         // ── Provision ─────────────────────────────────────────────────────────
         $deployment->update([
-            'status'            => 'provisioning',
+            'status' => 'provisioning',
             'coolify_server_id' => $server->id,
         ]);
 
         $result = $this->coolify->deploy($deployment->product, $deployment->user, [
-            'deploy_for'      => $deployment->deploy_for,
-            'business_name'   => $deployment->business_name,
-            'client_name'     => $deployment->client_name,
-            'client_email'    => $deployment->client_email,
-            'server'          => $server,
+            'deploy_for' => $deployment->deploy_for,
+            'business_name' => $deployment->business_name,
+            'client_name' => $deployment->client_name,
+            'client_email' => $deployment->client_email,
+            'server' => $server,
             'user_product_id' => $deployment->user_product_id,
-            'extra_env_vars'  => $deployment->extra_env_vars ?? [],
+            'extra_env_vars' => $deployment->extra_env_vars ?? [],
             'env_inject_mode' => $deployment->env_inject_mode ?? 'alongside',
         ]);
 
         if ($result->success) {
             $deployment->update([
-                'coolify_app_id'        => $result->appId,
-                'deployment_url'        => $result->deploymentUrl, // known at creation time from Coolify
-                'central_api_key'       => $result->centralApiKey,
+                'coolify_app_id' => $result->appId,
+                'deployment_url' => $result->deploymentUrl, // known at creation time from Coolify
+                'central_api_key' => $result->centralApiKey,
                 'credentials_encrypted' => [
-                    'email'              => $result->loginUsername,
-                    'password'           => $result->loginPassword,
-                    'db_name'            => $result->dbName,
+                    'email' => $result->loginUsername,
+                    'password' => $result->loginPassword,
+                    'db_name' => $result->dbName,
                     'better_auth_secret' => $result->betterAuthSecret,
                 ],
             ]);
@@ -83,23 +83,23 @@ class ProductDeploymentService
             } else {
                 // Mock deploy — treat as immediately active (no real container).
                 $deployment->update([
-                    'status'         => 'active',
+                    'status' => 'active',
                     'deployment_url' => $result->deploymentUrl,
-                    'deployed_at'    => now(),
+                    'deployed_at' => now(),
                 ]);
                 $deployment->userProduct?->markAsActive();
                 Mail::to($deployment->user->email)->queue(new DeploymentCredentialsMail($deployment));
             }
         } else {
             $deployment->update([
-                'status'         => 'failed',
+                'status' => 'failed',
                 'failure_reason' => $result->failureReason,
             ]);
 
             Log::error('Coolify deployment failed', [
                 'deployment_id' => $deployment->id,
-                'server_id'     => $server->id,
-                'reason'        => $result->failureReason,
+                'server_id' => $server->id,
+                'reason' => $result->failureReason,
             ]);
         }
     }

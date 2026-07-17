@@ -22,7 +22,7 @@ class SupportTicketCreatedMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '[Support] ' . $this->ticket->subject . ' (Ticket #' . $this->ticket->id . ')',
+            subject: '[Support] '.$this->ticket->subject.' (Ticket #'.$this->ticket->id.')',
         );
     }
 

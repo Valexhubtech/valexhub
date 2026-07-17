@@ -11,15 +11,15 @@ class HospitalManagementSystemSeeder extends Seeder
     public function run(): void
     {
         $product = Product::create([
-            'name'              => 'Hospital Management System',
-            'slug'              => 'hospital-management-system',
-            'category_id'       => 1,
-            'type'              => 'prebuilt',
+            'name' => 'Hospital Management System',
+            'slug' => 'hospital-management-system',
+            'category_id' => 1,
+            'type' => 'prebuilt',
             'short_description' => 'A complete hospital management platform for Nigerian healthcare facilities.',
-            'description'       => 'Manage patient records, appointments, billing, lab results, pharmacy, and staff — all in one place. Deploy instantly and start running your facility digitally today.',
-            'low_price'         => 17000,
-            'high_price'        => 350000,
-            'features'          => [
+            'description' => 'Manage patient records, appointments, billing, lab results, pharmacy, and staff — all in one place. Deploy instantly and start running your facility digitally today.',
+            'low_price' => 17000,
+            'high_price' => 350000,
+            'features' => [
                 'Patient records & history',
                 'Appointment scheduling',
                 'Billing & invoicing',
@@ -29,7 +29,7 @@ class HospitalManagementSystemSeeder extends Seeder
                 'Insurance claims tracking',
                 'Ward & bed management',
             ],
-            'is_active'  => true,
+            'is_active' => true,
             'sort_order' => 2,
         ]);
 

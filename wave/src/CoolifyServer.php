@@ -10,10 +10,10 @@ class CoolifyServer extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'api_token'       => 'encrypted',
+        'api_token' => 'encrypted',
         'max_deployments' => 'integer',
-        'monthly_cost'    => 'decimal:2',
-        'sort_order'      => 'integer',
+        'monthly_cost' => 'decimal:2',
+        'sort_order' => 'integer',
     ];
 
     public function deployments(): HasMany

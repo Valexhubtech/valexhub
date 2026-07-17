@@ -36,18 +36,18 @@ class DemoRequest extends Model
     public function generateWhatsAppUrl(): string
     {
         $phoneNumber = '2347082938319'; // Nigerian number
-        
+
         if ($this->request_type === 'demo') {
             $message = "Hi, my name is {$this->name}, and I'd like to book a demo for {$this->product->name}. You can reach me at {$this->email}.";
         } else {
             $message = "Hi, my name is {$this->name}, and I want a quote for {$this->product->name}. You can reach me at {$this->email}.";
         }
-        
+
         if ($this->referral_code) {
             $message .= " Referral code: {$this->referral_code}";
         }
-        
-        return "https://wa.me/{$phoneNumber}?text=" . urlencode($message);
+
+        return "https://wa.me/{$phoneNumber}?text=".urlencode($message);
     }
 
     /**

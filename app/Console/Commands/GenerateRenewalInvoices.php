@@ -4,11 +4,14 @@ namespace App\Console\Commands;
 
 use App\Services\InvoiceService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
+use Wave\Invoice;
 use Wave\UserProduct;
 
 class GenerateRenewalInvoices extends Command
 {
-    protected $signature   = 'invoices:generate-renewals {--days=7 : Days before renewal date to generate the invoice}';
+    protected $signature = 'invoices:generate-renewals {--days=7 : Days before renewal date to generate the invoice}';
+
     protected $description = 'Generate and email renewal invoices for subscriptions due within the given number of days.';
 
     public function handle(InvoiceService $invoiceService): int
@@ -31,7 +34,7 @@ class GenerateRenewalInvoices extends Command
 
         foreach ($due as $userProduct) {
             // Skip if we already generated a renewal invoice for this billing period
-            $alreadyGenerated = \Wave\Invoice::where('user_product_id', $userProduct->id)
+            $alreadyGenerated = Invoice::where('user_product_id', $userProduct->id)
                 ->whereDate('created_at', '>=', now()->startOfDay())
                 ->where('paystack_reference', null)
                 ->exists();
@@ -48,9 +51,9 @@ class GenerateRenewalInvoices extends Command
 
                 if ($userProduct->pricing) {
                     $lineItems[] = [
-                        'label'  => $userProduct->pricing->label . ' (renewal)',
+                        'label' => $userProduct->pricing->label.' (renewal)',
                         'amount' => (float) $userProduct->pricing->amount,
-                        'type'   => 'recurring',
+                        'type' => 'recurring',
                     ];
                 }
 
@@ -59,9 +62,9 @@ class GenerateRenewalInvoices extends Command
                         continue;
                     }
                     $lineItems[] = [
-                        'label'  => ($oa->addon?->name ?? 'Add-on') . ' (' . ($oa->addon?->billing_cycle ?? 'recurring') . ')',
+                        'label' => ($oa->addon?->name ?? 'Add-on').' ('.($oa->addon?->billing_cycle ?? 'recurring').')',
                         'amount' => (float) $oa->amount_paid,
-                        'type'   => 'recurring',
+                        'type' => 'recurring',
                     ];
                 }
 
@@ -71,15 +74,15 @@ class GenerateRenewalInvoices extends Command
 
                 $amount = collect($lineItems)->sum('amount');
 
-                $invoice = \Wave\Invoice::create([
-                    'user_id'        => $userProduct->user_id,
-                    'user_product_id'=> $userProduct->id,
-                    'deployment_id'  => $deployment?->id,
-                    'amount'         => $amount,
-                    'currency'       => 'NGN',
-                    'status'         => 'sent',
-                    'line_items'     => $lineItems,
-                    'due_date'       => $userProduct->next_renewal_date,
+                $invoice = Invoice::create([
+                    'user_id' => $userProduct->user_id,
+                    'user_product_id' => $userProduct->id,
+                    'deployment_id' => $deployment?->id,
+                    'amount' => $amount,
+                    'currency' => 'NGN',
+                    'status' => 'sent',
+                    'line_items' => $lineItems,
+                    'due_date' => $userProduct->next_renewal_date,
                 ]);
 
                 $invoiceService->generatePdf($invoice);
@@ -89,14 +92,15 @@ class GenerateRenewalInvoices extends Command
                 $this->line("Renewal invoice generated for user #{$userProduct->user_id} — {$userProduct->product->name}");
             } catch (\Throwable $e) {
                 $this->error("Failed for UserProduct #{$userProduct->id}: {$e->getMessage()}");
-                \Illuminate\Support\Facades\Log::error('Renewal invoice generation failed', [
+                Log::error('Renewal invoice generation failed', [
                     'user_product_id' => $userProduct->id,
-                    'error'           => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
 
         $this->info("Done. {$count} renewal invoice(s) generated.");
+
         return self::SUCCESS;
     }
 }

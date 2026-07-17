@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 use Wave\ActivityLog;
 use Wave\AffiliateCommission;
 use Wave\Deployment;
@@ -16,6 +17,7 @@ use Wave\Invoice;
 use Wave\PaymentTransaction;
 use Wave\Traits\HasProfileKeyValues;
 use Wave\User as WaveUser;
+use Wave\UserProduct;
 
 class User extends WaveUser
 {
@@ -48,7 +50,7 @@ class User extends WaveUser
      */
     public function userProducts(): HasMany
     {
-        return $this->hasMany(\Wave\UserProduct::class);
+        return $this->hasMany(UserProduct::class);
     }
 
     /**
@@ -167,7 +169,7 @@ class User extends WaveUser
 
             // Assign the default role if it exists
             $defaultRole = config('wave.default_user_role', 'registered');
-            if (\Spatie\Permission\Models\Role::where('name', $defaultRole)->where('guard_name', 'web')->exists()) {
+            if (Role::where('name', $defaultRole)->where('guard_name', 'web')->exists()) {
                 $user->assignRole($defaultRole);
             }
         });

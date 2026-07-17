@@ -7,21 +7,22 @@ use App\Filament\Resources\Deployments\Pages\EditDeployment;
 use App\Filament\Resources\Deployments\Pages\ListDeployments;
 use App\Filament\Resources\Deployments\Pages\ManageDeployment;
 use App\Mail\InvoiceMail;
+use App\Services\Coolify\RealCoolifyDeploymentService;
 use App\Services\InvoiceService;
 use App\Services\ProductDeploymentService;
-use App\Services\Coolify\RealCoolifyDeploymentService;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
-use Filament\Schemas\Components\Html;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Html;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -54,8 +55,7 @@ class DeploymentResource extends Resource
                             ->label('Ordered By')
                             ->disabled()
                             ->dehydrated(false)
-                            ->formatStateUsing(fn ($record) =>
-                                ($record->user->name ?? '—').' ('.$record->user->email.')'),
+                            ->formatStateUsing(fn ($record) => ($record->user->name ?? '—').' ('.$record->user->email.')'),
 
                         TextInput::make('business_name')
                             ->label('Business Name')
@@ -140,18 +140,18 @@ class DeploymentResource extends Resource
 
                         Select::make('status')
                             ->options([
-                                'pending'      => 'Pending',
+                                'pending' => 'Pending',
                                 'provisioning' => 'Provisioning',
-                                'active'       => 'Active',
-                                'failed'       => 'Failed',
-                                'suspended'    => 'Suspended',
-                                'terminated'   => 'Terminated',
+                                'active' => 'Active',
+                                'failed' => 'Failed',
+                                'suspended' => 'Suspended',
+                                'terminated' => 'Terminated',
                             ]),
 
                         Select::make('domain_option')
                             ->options([
                                 'self_managed' => 'Self-managed',
-                                'requested'    => 'Requested from team',
+                                'requested' => 'Requested from team',
                             ])
                             ->nullable(),
 
@@ -212,12 +212,12 @@ class DeploymentResource extends Resource
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'active'       => 'success',
+                        'active' => 'success',
                         'provisioning' => 'warning',
-                        'failed'       => 'danger',
-                        'suspended'    => 'warning',
-                        'terminated'   => 'danger',
-                        default        => 'gray',
+                        'failed' => 'danger',
+                        'suspended' => 'warning',
+                        'terminated' => 'danger',
+                        default => 'gray',
                     })
                     ->sortable(),
 
@@ -236,18 +236,18 @@ class DeploymentResource extends Resource
             ->filters([
                 SelectFilter::make('status')
                     ->options([
-                        'pending'      => 'Pending',
+                        'pending' => 'Pending',
                         'provisioning' => 'Provisioning',
-                        'active'       => 'Active',
-                        'failed'       => 'Failed',
-                        'suspended'    => 'Suspended',
-                        'terminated'   => 'Terminated',
+                        'active' => 'Active',
+                        'failed' => 'Failed',
+                        'suspended' => 'Suspended',
+                        'terminated' => 'Terminated',
                     ]),
 
                 SelectFilter::make('deploy_for')
                     ->label('Deployed For')
                     ->options([
-                        'self'   => 'Self',
+                        'self' => 'Self',
                         'client' => 'Client',
                     ]),
             ])
@@ -272,7 +272,7 @@ class DeploymentResource extends Resource
                         ->action(function (Deployment $record, RealCoolifyDeploymentService $coolify): void {
                             $ok = $coolify->restartApp($record);
                             if (! $ok) {
-                                \Filament\Notifications\Notification::make()
+                                Notification::make()
                                     ->title('Restart failed')
                                     ->body('Could not reach the Coolify API. Check the logs.')
                                     ->danger()
@@ -294,11 +294,11 @@ class DeploymentResource extends Resource
                             $ok = $coolify->redeployWithEnvFix($record);
                             if ($ok) {
                                 $record->update([
-                                    'status'         => 'provisioning',
+                                    'status' => 'provisioning',
                                     'failure_reason' => null,
                                 ]);
                             } else {
-                                \Filament\Notifications\Notification::make()
+                                Notification::make()
                                     ->title('Fix & Redeploy failed')
                                     ->body('Could not reach Coolify. Check the server logs.')
                                     ->danger()
@@ -319,7 +319,7 @@ class DeploymentResource extends Resource
                         ->action(function (Deployment $record, RealCoolifyDeploymentService $coolify, ProductDeploymentService $deploymentService): void {
                             $coolify->deleteApp($record);
                             $record->update([
-                                'status'         => 'pending',
+                                'status' => 'pending',
                                 'coolify_app_id' => null,
                                 'deployment_url' => null,
                                 'failure_reason' => null,
@@ -399,10 +399,10 @@ class DeploymentResource extends Resource
 
                     EditAction::make(),
                 ])
-                ->label('Actions')
-                ->icon('phosphor-caret-down')
-                ->color('gray')
-                ->button(),
+                    ->label('Actions')
+                    ->icon('phosphor-caret-down')
+                    ->color('gray')
+                    ->button(),
             ])
             ->defaultSort('created_at', 'desc');
     }
@@ -410,9 +410,9 @@ class DeploymentResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListDeployments::route('/'),
+            'index' => ListDeployments::route('/'),
             'deploy' => AdminDeployDeployment::route('/deploy'),
-            'edit'   => EditDeployment::route('/{record}/edit'),
+            'edit' => EditDeployment::route('/{record}/edit'),
             'manage' => ManageDeployment::route('/{record}/manage'),
         ];
     }
@@ -425,16 +425,16 @@ class DeploymentResource extends Resource
         if ($up) {
             if ((float) ($up->setup_amount ?? 0) > 0) {
                 $projectItems[] = [
-                    'label'  => $up->deployment_type === 'onprem' ? 'License & Setup Fee' : 'Setup Fee',
+                    'label' => $up->deployment_type === 'onprem' ? 'License & Setup Fee' : 'Setup Fee',
                     'amount' => (float) $up->setup_amount,
-                    'type'   => 'onetime',
+                    'type' => 'onetime',
                 ];
             }
             if ($up->pricing) {
                 $projectItems[] = [
-                    'label'  => $up->pricing->label . ' (recurring)',
+                    'label' => $up->pricing->label.' (recurring)',
                     'amount' => (float) $up->pricing->amount,
-                    'type'   => 'recurring',
+                    'type' => 'recurring',
                 ];
             }
         }
@@ -444,9 +444,9 @@ class DeploymentResource extends Resource
             foreach ($up->orderAddons as $oa) {
                 if ($oa->addon?->module_key) {
                     $moduleItems[] = [
-                        'label'  => $oa->addon->name ?? ucwords(str_replace('_', ' ', $oa->addon->module_key)),
+                        'label' => $oa->addon->name ?? ucwords(str_replace('_', ' ', $oa->addon->module_key)),
                         'amount' => (float) $oa->amount_paid,
-                        'type'   => $oa->price_type ?? 'onetime',
+                        'type' => $oa->price_type ?? 'onetime',
                     ];
                 }
             }
@@ -505,14 +505,14 @@ class DeploymentResource extends Resource
         $amount = collect($lineItems)->sum('amount');
 
         $invoice = Invoice::create([
-            'user_id'         => $record->user_id,
+            'user_id' => $record->user_id,
             'user_product_id' => $record->user_product_id,
-            'deployment_id'   => $record->id,
-            'amount'          => $amount,
-            'currency'        => 'NGN',
-            'status'          => 'sent',
-            'line_items'      => $lineItems,
-            'due_date'        => $data['due_date'] ?? null,
+            'deployment_id' => $record->id,
+            'amount' => $amount,
+            'currency' => 'NGN',
+            'status' => 'sent',
+            'line_items' => $lineItems,
+            'due_date' => $data['due_date'] ?? null,
         ]);
 
         app(InvoiceService::class)->generatePdf($invoice);

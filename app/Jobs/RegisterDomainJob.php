@@ -17,6 +17,7 @@ class RegisterDomainJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $backoff = 60;
 
     public function __construct(
@@ -34,17 +35,18 @@ class RegisterDomainJob implements ShouldQueue
         // Local dev: skip real Hostinger API calls to avoid registering live domains
         if (app()->environment('local')) {
             Log::info('RegisterDomainJob: local env — simulating registration', [
-                'domain'      => $purchase->domain,
+                'domain' => $purchase->domain,
                 'purchase_id' => $purchase->id,
             ]);
             $purchase->update([
                 'registration_status' => 'registered',
-                'dns_status'          => 'configured',
+                'dns_status' => 'configured',
             ]);
             if ($purchase->deployment_id) {
                 Deployment::where('id', $purchase->deployment_id)
                     ->update(['custom_domain' => $purchase->domain]);
             }
+
             return;
         }
 
@@ -62,9 +64,10 @@ class RegisterDomainJob implements ShouldQueue
         if (! $registered) {
             $purchase->update(['registration_status' => 'failed']);
             Log::error('RegisterDomainJob: Hostinger registration failed', [
-                'domain'      => $purchase->domain,
+                'domain' => $purchase->domain,
                 'purchase_id' => $purchase->id,
             ]);
+
             return;
         }
 
@@ -75,10 +78,11 @@ class RegisterDomainJob implements ShouldQueue
 
         if (! $serverIp) {
             Log::warning('RegisterDomainJob: no server IP available for DNS setup', [
-                'purchase_id'   => $purchase->id,
+                'purchase_id' => $purchase->id,
                 'deployment_id' => $purchase->deployment_id,
             ]);
             $purchase->update(['dns_status' => 'failed']);
+
             return;
         }
 
@@ -92,8 +96,8 @@ class RegisterDomainJob implements ShouldQueue
         }
 
         Log::info('RegisterDomainJob: completed', [
-            'domain'      => $purchase->domain,
-            'dns_ok'      => $dnsOk,
+            'domain' => $purchase->domain,
+            'dns_ok' => $dnsOk,
             'purchase_id' => $purchase->id,
         ]);
     }

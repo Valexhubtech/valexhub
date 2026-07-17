@@ -22,6 +22,7 @@ class ExchangeRateService
                     $rate = $response->json('rates.NGN');
                     if ($rate && is_numeric($rate) && $rate > 500) {
                         Log::debug('ExchangeRateService: fetched live USD/NGN', ['rate' => $rate]);
+
                         return (float) $rate;
                     }
                 }

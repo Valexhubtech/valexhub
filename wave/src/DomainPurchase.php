@@ -10,10 +10,10 @@ class DomainPurchase extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'paid_at'         => 'datetime',
-        'nameservers'     => 'array',
-        'dns_records'     => 'array',
-        'registrar_data'  => 'array',
+        'paid_at' => 'datetime',
+        'nameservers' => 'array',
+        'dns_records' => 'array',
+        'registrar_data' => 'array',
     ];
 
     public function user(): BelongsTo

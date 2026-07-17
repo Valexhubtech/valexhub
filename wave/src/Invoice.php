@@ -12,9 +12,9 @@ class Invoice extends Model
 
     protected $casts = [
         'line_items' => 'array',
-        'amount'     => 'decimal:2',
-        'due_date'   => 'datetime',
-        'paid_at'    => 'datetime',
+        'amount' => 'decimal:2',
+        'due_date' => 'datetime',
+        'paid_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
@@ -39,11 +39,11 @@ class Invoice extends Model
 
     public function formattedAmount(): string
     {
-        return '₦' . number_format((float) $this->amount, 2);
+        return '₦'.number_format((float) $this->amount, 2);
     }
 
     public function invoiceNumber(): string
     {
-        return 'INV-' . str_pad($this->id, 6, '0', STR_PAD_LEFT);
+        return 'INV-'.str_pad($this->id, 6, '0', STR_PAD_LEFT);
     }
 }

@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ModelHasRolesTableSeeder::class);
         $this->call(SettingsTableSeeder::class);
         $this->call(ThemesTableSeeder::class);
-        
+
         // Demo/Sample data - commented out for production
         // $this->call(ChangelogsTableSeeder::class);
         // $this->call(ApiKeysTableSeeder::class);
@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
         // $this->call(PlansTableSeeder::class);
         // $this->call(PostsTableSeeder::class);
         // $this->call(ProfileKeyValuesTableSeeder::class);
-        
+
         fixPostgresSequence();
     }
 }

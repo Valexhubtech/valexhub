@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Deployments\Pages;
 
 use App\Filament\Resources\Deployments\DeploymentResource;
+use App\Models\User;
 use App\Services\ProductDeploymentService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
@@ -35,13 +36,13 @@ class AdminDeployDeployment extends Page
     public function mount(): void
     {
         $this->form->fill([
-            'deploy_for'          => 'self',
-            'project_type'        => 'existing_product',
-            'custom_deploy_type'  => 'docker_image',
-            'custom_git_branch'   => 'main',
-            'deployment_type'     => 'cloud',
-            'price_type'          => 'onetime',
-            'amount_paid'         => 0,
+            'deploy_for' => 'self',
+            'project_type' => 'existing_product',
+            'custom_deploy_type' => 'docker_image',
+            'custom_git_branch' => 'main',
+            'deployment_type' => 'cloud',
+            'price_type' => 'onetime',
+            'amount_paid' => 0,
         ]);
     }
 
@@ -63,9 +64,10 @@ class AdminDeployDeployment extends Page
                     ->schema([
                         Select::make('user_id')
                             ->label('Client Account')
-                            ->options(fn () => \App\Models\User::orderBy('name')
-                                ->pluck('name', 'id')
-                                ->map(fn ($name, $id) => $name . ' — ' . \App\Models\User::find($id)?->email)
+                            ->options(
+                                fn () => User::orderBy('name')
+                                    ->pluck('name', 'id')
+                                    ->map(fn ($name, $id) => $name.' — '.User::find($id)?->email)
                             )
                             ->searchable()
                             ->required()
@@ -79,7 +81,7 @@ class AdminDeployDeployment extends Page
                         Select::make('deploy_for')
                             ->label('Deploying For')
                             ->options([
-                                'self'   => 'Self (client is the account owner)',
+                                'self' => 'Self (client is the account owner)',
                                 'client' => 'Client (account owner is managing for someone else)',
                             ])
                             ->required()
@@ -106,7 +108,7 @@ class AdminDeployDeployment extends Page
                             ->label('Deployment Type')
                             ->options([
                                 'existing_product' => 'Existing Product (from catalog)',
-                                'custom_work'      => 'Custom Work (Docker image / Git repo)',
+                                'custom_work' => 'Custom Work (Docker image / Git repo)',
                             ])
                             ->required()
                             ->live()
@@ -132,21 +134,21 @@ class AdminDeployDeployment extends Page
                         CheckboxList::make('enabled_modules')
                             ->label('Modules to Enable')
                             ->options([
-                                'auth'             => 'Auth & Users',
-                                'org'              => 'Organisation',
-                                'dashboard'        => 'Dashboard',
-                                'contacts'         => 'Contacts / CRM',
-                                'catalog'          => 'Product Catalog',
-                                'inventory'        => 'Inventory',
-                                'pos'              => 'Point of Sale',
-                                'invoicing'        => 'Invoicing',
-                                'staff'            => 'Staff Management',
-                                'booking'          => 'Booking & Scheduling',
-                                'notifications'    => 'Notifications',
-                                'audit_log'        => 'Audit Log',
-                                'platform'         => 'Platform / Settings',
+                                'auth' => 'Auth & Users',
+                                'org' => 'Organisation',
+                                'dashboard' => 'Dashboard',
+                                'contacts' => 'Contacts / CRM',
+                                'catalog' => 'Product Catalog',
+                                'inventory' => 'Inventory',
+                                'pos' => 'Point of Sale',
+                                'invoicing' => 'Invoicing',
+                                'staff' => 'Staff Management',
+                                'booking' => 'Booking & Scheduling',
+                                'notifications' => 'Notifications',
+                                'audit_log' => 'Audit Log',
+                                'platform' => 'Platform / Settings',
                                 'digital_products' => 'Digital Products',
-                                'video_courses'    => 'Video Courses',
+                                'video_courses' => 'Video Courses',
                             ])
                             ->columns(3)
                             ->visible(fn (Get $get) => $get('project_type') === 'existing_product')
@@ -163,7 +165,7 @@ class AdminDeployDeployment extends Page
                             ->label('Source Type')
                             ->options([
                                 'docker_image' => 'Docker Image',
-                                'git_repo'     => 'Git Repository',
+                                'git_repo' => 'Git Repository',
                             ])
                             ->live()
                             ->visible(fn (Get $get) => $get('project_type') === 'custom_work'),
@@ -171,23 +173,20 @@ class AdminDeployDeployment extends Page
                         TextInput::make('custom_docker_image')
                             ->label('Docker Image')
                             ->placeholder('e.g. ghcr.io/valexhub-dev-s/core:latest')
-                            ->visible(fn (Get $get) =>
-                                $get('project_type') === 'custom_work' &&
+                            ->visible(fn (Get $get) => $get('project_type') === 'custom_work' &&
                                 $get('custom_deploy_type') === 'docker_image'),
 
                         TextInput::make('custom_git_repo')
                             ->label('Git Repository URL')
                             ->url()
                             ->placeholder('https://github.com/org/repo')
-                            ->visible(fn (Get $get) =>
-                                $get('project_type') === 'custom_work' &&
+                            ->visible(fn (Get $get) => $get('project_type') === 'custom_work' &&
                                 $get('custom_deploy_type') === 'git_repo'),
 
                         TextInput::make('custom_git_branch')
                             ->label('Branch')
                             ->default('main')
-                            ->visible(fn (Get $get) =>
-                                $get('project_type') === 'custom_work' &&
+                            ->visible(fn (Get $get) => $get('project_type') === 'custom_work' &&
                                 $get('custom_deploy_type') === 'git_repo'),
 
                         Repeater::make('extra_env_vars')
@@ -242,7 +241,7 @@ class AdminDeployDeployment extends Page
                         Select::make('price_type')
                             ->label('Billing Type')
                             ->options([
-                                'onetime'   => 'One-time / Perpetual',
+                                'onetime' => 'One-time / Perpetual',
                                 'recurring' => 'Recurring',
                             ])
                             ->live()
@@ -280,40 +279,40 @@ class AdminDeployDeployment extends Page
         $isCustom = $data['project_type'] === 'custom_work';
 
         if (! $isCustom) {
-            $product    = Product::findOrFail($data['product_id']);
+            $product = Product::findOrFail($data['product_id']);
             $deployType = $data['deployment_type'] ?? 'cloud';
-            $modules    = $data['enabled_modules'] ?? [];
-            $extraVars  = [];
+            $modules = $data['enabled_modules'] ?? [];
+            $extraVars = [];
             $injectMode = 'alongside';
         } else {
             $product = Product::create([
-                'name'                 => $data['custom_name'],
-                'slug'                 => Str::slug($data['custom_name']) . '-' . Str::random(6),
-                'type'                 => 'prebuilt',
-                'coolify_deploy_type'  => $data['custom_deploy_type'],
+                'name' => $data['custom_name'],
+                'slug' => Str::slug($data['custom_name']).'-'.Str::random(6),
+                'type' => 'prebuilt',
+                'coolify_deploy_type' => $data['custom_deploy_type'],
                 'coolify_docker_image' => $data['custom_docker_image'] ?? null,
-                'coolify_git_repo'     => $data['custom_git_repo'] ?? null,
-                'coolify_git_branch'   => $data['custom_git_branch'] ?? 'main',
-                'is_active'            => false,
+                'coolify_git_repo' => $data['custom_git_repo'] ?? null,
+                'coolify_git_branch' => $data['custom_git_branch'] ?? 'main',
+                'is_active' => false,
             ]);
             $deployType = $data['deployment_type'] ?? 'cloud';
-            $modules    = [];
-            $extraVars  = $data['extra_env_vars'] ?? [];
+            $modules = [];
+            $extraVars = $data['extra_env_vars'] ?? [];
             $injectMode = ($data['env_inject_alongside'] ?? true) ? 'alongside' : 'standalone';
         }
 
         // ── 2. Create UserProduct ─────────────────────────────────────────────
         $userProduct = UserProduct::create([
-            'user_id'          => $data['user_id'],
-            'product_id'       => $product->id,
-            'amount_paid'      => $data['amount_paid'] ?? 0,
-            'setup_amount'     => $data['amount_paid'] ?? 0,
-            'purchase_date'    => now(),
-            'next_renewal_date'=> ($data['price_type'] === 'recurring' && ! empty($data['renewal_date']))
+            'user_id' => $data['user_id'],
+            'product_id' => $product->id,
+            'amount_paid' => $data['amount_paid'] ?? 0,
+            'setup_amount' => $data['amount_paid'] ?? 0,
+            'purchase_date' => now(),
+            'next_renewal_date' => ($data['price_type'] === 'recurring' && ! empty($data['renewal_date']))
                 ? $data['renewal_date']
                 : null,
-            'status'           => 'active',
-            'deployment_type'  => $deployType,
+            'status' => 'active',
+            'deployment_type' => $deployType,
         ]);
 
         // ── 3. Link module addons (existing product only) ─────────────────────
@@ -321,25 +320,25 @@ class AdminDeployDeployment extends Page
             $addon = ProductAddon::where('module_key', $moduleKey)->first();
             if ($addon) {
                 OrderAddon::create([
-                    'user_product_id'  => $userProduct->id,
+                    'user_product_id' => $userProduct->id,
                     'product_addon_id' => $addon->id,
-                    'amount_paid'      => 0,
-                    'price_type'       => 'onetime',
+                    'amount_paid' => 0,
+                    'price_type' => 'onetime',
                 ]);
             }
         }
 
         // ── 4. Create Deployment record ───────────────────────────────────────
         $deployment = Deployment::create([
-            'user_id'         => $data['user_id'],
-            'product_id'      => $product->id,
+            'user_id' => $data['user_id'],
+            'product_id' => $product->id,
             'user_product_id' => $userProduct->id,
-            'deploy_for'      => $data['deploy_for'],
-            'business_name'   => $data['business_name'],
-            'client_name'     => $data['client_name'] ?? null,
-            'client_email'    => $data['client_email'] ?? null,
-            'status'          => 'pending',
-            'extra_env_vars'  => count($extraVars) > 0 ? $extraVars : null,
+            'deploy_for' => $data['deploy_for'],
+            'business_name' => $data['business_name'],
+            'client_name' => $data['client_name'] ?? null,
+            'client_email' => $data['client_email'] ?? null,
+            'status' => 'pending',
+            'extra_env_vars' => count($extraVars) > 0 ? $extraVars : null,
             'env_inject_mode' => $injectMode,
         ]);
 

@@ -11,6 +11,14 @@
 |
 */
 
+use App\Http\Controllers\Billing\PaystackWebhookController;
+use App\Http\Controllers\DemoRequestController;
+use App\Http\Controllers\DeploymentLoginController;
+use App\Http\Controllers\DomainCheckoutController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\ProductCheckoutController;
+use App\Http\Controllers\ReferralController;
+use App\Http\Controllers\SupportTicketController;
 use Illuminate\Support\Facades\Route;
 use Wave\Facades\Wave;
 
@@ -18,39 +26,39 @@ use Wave\Facades\Wave;
 Wave::routes();
 
 // Demo Request Routes
-Route::post('/demo-request', [\App\Http\Controllers\DemoRequestController::class, 'store'])->name('demo-request.store');
+Route::post('/demo-request', [DemoRequestController::class, 'store'])->name('demo-request.store');
 
 // Pay & Deploy (Pathway A) checkout
 Route::middleware('auth')->group(function () {
-    Route::post('/products/{product}/checkout', [\App\Http\Controllers\ProductCheckoutController::class, 'initialize'])
+    Route::post('/products/{product}/checkout', [ProductCheckoutController::class, 'initialize'])
         ->name('products.checkout');
-    Route::get('/products/checkout/callback', [\App\Http\Controllers\ProductCheckoutController::class, 'callback'])
+    Route::get('/products/checkout/callback', [ProductCheckoutController::class, 'callback'])
         ->name('products.checkout.callback');
 
-    Route::get('/deployments/{deployment}/one-click-login', [\App\Http\Controllers\DeploymentLoginController::class, 'redirect'])
+    Route::get('/deployments/{deployment}/one-click-login', [DeploymentLoginController::class, 'redirect'])
         ->middleware(['signed', 'authorize-deployment-access'])
         ->name('deployments.one-click-login');
 
-    Route::get('/dashboard/invoices/{invoice}/download', [\App\Http\Controllers\InvoiceController::class, 'download'])
+    Route::get('/dashboard/invoices/{invoice}/download', [InvoiceController::class, 'download'])
         ->name('dashboard.invoices.download');
-    Route::get('/dashboard/invoices/{invoice}/pay', [\App\Http\Controllers\InvoiceController::class, 'pay'])
+    Route::get('/dashboard/invoices/{invoice}/pay', [InvoiceController::class, 'pay'])
         ->name('dashboard.invoices.pay');
-    Route::get('/dashboard/invoices/{invoice}/pay/callback', [\App\Http\Controllers\InvoiceController::class, 'payCallback'])
+    Route::get('/dashboard/invoices/{invoice}/pay/callback', [InvoiceController::class, 'payCallback'])
         ->name('dashboard.invoices.pay.callback');
 
-    Route::post('/dashboard/support/tickets', [\App\Http\Controllers\SupportTicketController::class, 'store'])
+    Route::post('/dashboard/support/tickets', [SupportTicketController::class, 'store'])
         ->name('support.tickets.store');
 
     // Domain purchase callback
-    Route::get('/dashboard/domain/callback', [\App\Http\Controllers\DomainCheckoutController::class, 'callback'])
+    Route::get('/dashboard/domain/callback', [DomainCheckoutController::class, 'callback'])
         ->name('dashboard.domain.callback');
 });
 
 // Paystack webhook (no auth - signature-verified instead)
-Route::post('/webhook/paystack', [\App\Http\Controllers\Billing\PaystackWebhookController::class, 'handler'])
+Route::post('/webhook/paystack', [PaystackWebhookController::class, 'handler'])
     ->middleware('paystack-webhook-signature')
     ->name('webhook.paystack');
 
 // Affiliate referral link capture
-Route::get('/r/{referralCode}', [\App\Http\Controllers\ReferralController::class, 'capture'])
+Route::get('/r/{referralCode}', [ReferralController::class, 'capture'])
     ->name('referral.capture');

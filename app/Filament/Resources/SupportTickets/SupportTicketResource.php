@@ -41,17 +41,17 @@ class SupportTicketResource extends Resource
                 ->schema([
                     Select::make('status')
                         ->options([
-                            'open'        => 'Open',
+                            'open' => 'Open',
                             'in_progress' => 'In Progress',
-                            'resolved'    => 'Resolved',
-                            'closed'      => 'Closed',
+                            'resolved' => 'Resolved',
+                            'closed' => 'Closed',
                         ]),
 
                     Select::make('priority')
                         ->options([
-                            'low'    => 'Low',
+                            'low' => 'Low',
                             'medium' => 'Medium',
-                            'high'   => 'High',
+                            'high' => 'High',
                             'urgent' => 'Urgent',
                         ]),
                 ]),
@@ -83,11 +83,11 @@ class SupportTicketResource extends Resource
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'open'        => 'success',
+                        'open' => 'success',
                         'in_progress' => 'warning',
-                        'resolved'    => 'info',
-                        'closed'      => 'gray',
-                        default       => 'gray',
+                        'resolved' => 'info',
+                        'closed' => 'gray',
+                        default => 'gray',
                     })
                     ->sortable(),
 
@@ -95,9 +95,9 @@ class SupportTicketResource extends Resource
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'urgent' => 'danger',
-                        'high'   => 'warning',
+                        'high' => 'warning',
                         'medium' => 'info',
-                        default  => 'gray',
+                        default => 'gray',
                     })
                     ->sortable(),
 
@@ -114,16 +114,16 @@ class SupportTicketResource extends Resource
             ->filters([
                 SelectFilter::make('status')
                     ->options([
-                        'open'        => 'Open',
+                        'open' => 'Open',
                         'in_progress' => 'In Progress',
-                        'resolved'    => 'Resolved',
-                        'closed'      => 'Closed',
+                        'resolved' => 'Resolved',
+                        'closed' => 'Closed',
                     ]),
                 SelectFilter::make('priority')
                     ->options([
-                        'low'    => 'Low',
+                        'low' => 'Low',
                         'medium' => 'Medium',
-                        'high'   => 'High',
+                        'high' => 'High',
                         'urgent' => 'Urgent',
                     ]),
             ])
@@ -140,19 +140,19 @@ class SupportTicketResource extends Resource
                         Select::make('status')
                             ->label('Update Status To')
                             ->options([
-                                'open'        => 'Open',
+                                'open' => 'Open',
                                 'in_progress' => 'In Progress',
-                                'resolved'    => 'Resolved',
-                                'closed'      => 'Closed',
+                                'resolved' => 'Resolved',
+                                'closed' => 'Closed',
                             ])
                             ->nullable(),
                     ])
                     ->action(function (SupportTicket $record, array $data): void {
                         $message = SupportMessage::create([
                             'ticket_id' => $record->id,
-                            'user_id'   => auth()->id(),
-                            'body'      => $data['body'],
-                            'is_admin'  => true,
+                            'user_id' => auth()->id(),
+                            'body' => $data['body'],
+                            'is_admin' => true,
                         ]);
 
                         if ($data['status']) {
@@ -173,8 +173,8 @@ class SupportTicketResource extends Resource
     {
         return [
             'index' => ListSupportTickets::route('/'),
-            'view'  => ViewSupportTicket::route('/{record}'),
-            'edit'  => EditSupportTicket::route('/{record}/edit'),
+            'view' => ViewSupportTicket::route('/{record}'),
+            'edit' => EditSupportTicket::route('/{record}/edit'),
         ];
     }
 }

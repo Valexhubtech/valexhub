@@ -16,11 +16,9 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
-use Wave\Deployment;
-use Wave\UserProduct;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -30,6 +28,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Wave\Deployment;
 use Wave\Invoice;
 
 class InvoiceResource extends Resource
@@ -60,8 +59,9 @@ class InvoiceResource extends Resource
                     ->schema([
                         Select::make('user_id')
                             ->label('Client')
-                            ->options(fn () => User::orderBy('name')->get()
-                                ->mapWithKeys(fn ($u) => [$u->id => ($u->name ?: $u->email) . ' — ' . $u->email])
+                            ->options(
+                                fn () => User::orderBy('name')->get()
+                                    ->mapWithKeys(fn ($u) => [$u->id => ($u->name ?: $u->email).' — '.$u->email])
                             )
                             ->searchable()
                             ->required()
@@ -80,13 +80,14 @@ class InvoiceResource extends Resource
                                 if (! $userId) {
                                     return [];
                                 }
+
                                 return Deployment::where('user_id', $userId)
                                     ->with('product')
                                     ->get()
                                     ->mapWithKeys(fn (Deployment $d) => [
                                         $d->id => ($d->product?->name ?? 'Unknown Product')
-                                            . ' — ' . ucfirst($d->status)
-                                            . ($d->client_name ? ' (for ' . $d->client_name . ')' : ''),
+                                            .' — '.ucfirst($d->status)
+                                            .($d->client_name ? ' (for '.$d->client_name.')' : ''),
                                     ])
                                     ->all();
                             })
@@ -126,7 +127,7 @@ class InvoiceResource extends Resource
                                 Select::make('type')
                                     ->label('Type')
                                     ->options([
-                                        'onetime'   => 'One-time',
+                                        'onetime' => 'One-time',
                                         'recurring' => 'Recurring',
                                     ])
                                     ->default('onetime')
@@ -142,17 +143,17 @@ class InvoiceResource extends Resource
                     ])
                     ->action(function (array $data, InvoiceService $invoiceService): void {
                         $lineItems = $data['line_items'];
-                        $amount    = collect($lineItems)->sum('amount');
+                        $amount = collect($lineItems)->sum('amount');
 
                         $invoice = Invoice::create([
-                            'user_id'         => $data['user_id'],
+                            'user_id' => $data['user_id'],
                             'user_product_id' => $data['user_product_id'] ?? null,
-                            'deployment_id'   => $data['deployment_id'] ?? null,
-                            'amount'          => $amount,
-                            'currency'        => 'NGN',
-                            'status'          => 'draft',
-                            'line_items'      => $lineItems,
-                            'due_date'        => $data['due_date'] ?? null,
+                            'deployment_id' => $data['deployment_id'] ?? null,
+                            'amount' => $amount,
+                            'currency' => 'NGN',
+                            'status' => 'draft',
+                            'line_items' => $lineItems,
+                            'due_date' => $data['due_date'] ?? null,
                         ]);
 
                         $invoiceService->generatePdf($invoice);
@@ -162,7 +163,7 @@ class InvoiceResource extends Resource
             ->columns([
                 TextColumn::make('id')
                     ->label('Invoice #')
-                    ->formatStateUsing(fn ($state) => 'INV-' . str_pad($state, 6, '0', STR_PAD_LEFT))
+                    ->formatStateUsing(fn ($state) => 'INV-'.str_pad($state, 6, '0', STR_PAD_LEFT))
                     ->sortable(),
 
                 TextColumn::make('user.name')
@@ -177,14 +178,14 @@ class InvoiceResource extends Resource
 
                 TextColumn::make('amount')
                     ->label('Amount')
-                    ->formatStateUsing(fn ($state) => '₦' . number_format($state, 2))
+                    ->formatStateUsing(fn ($state) => '₦'.number_format($state, 2))
                     ->sortable(),
 
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'paid'  => 'success',
-                        'sent'  => 'info',
+                        'paid' => 'success',
+                        'sent' => 'info',
                         default => 'gray',
                     })
                     ->sortable(),
@@ -218,8 +219,8 @@ class InvoiceResource extends Resource
                 SelectFilter::make('status')
                     ->options([
                         'draft' => 'Draft',
-                        'sent'  => 'Sent',
-                        'paid'  => 'Paid',
+                        'sent' => 'Sent',
+                        'paid' => 'Paid',
                     ]),
 
                 Filter::make('client')
@@ -228,20 +229,22 @@ class InvoiceResource extends Resource
                         TextInput::make('client_search')->label('Name or Email')->placeholder('Search client…'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
-                        return $query->when($data['client_search'], fn ($q, $search) =>
-                            $q->whereHas('user', fn ($u) =>
-                                $u->where('name', 'like', "%{$search}%")
-                                  ->orWhere('email', 'like', "%{$search}%")
+                        return $query->when(
+                            $data['client_search'],
+                            fn ($q, $search) => $q->whereHas(
+                                'user',
+                                fn ($u) => $u->where('name', 'like', "%{$search}%")
+                                    ->orWhere('email', 'like', "%{$search}%")
                             )
                         );
                     }),
 
                 Filter::make('overdue')
                     ->label('Overdue Only')
-                    ->query(fn (Builder $q) =>
-                        $q->where('status', '!=', 'paid')
-                          ->whereNotNull('due_date')
-                          ->where('due_date', '<', now())
+                    ->query(
+                        fn (Builder $q) => $q->where('status', '!=', 'paid')
+                            ->whereNotNull('due_date')
+                            ->where('due_date', '<', now())
                     ),
             ])
             ->recordActions([
@@ -254,7 +257,8 @@ class InvoiceResource extends Resource
                             $invoiceService->generatePdf($record);
                             $record->refresh();
                         }
-                        return Storage::download($record->pdf_path, $record->invoiceNumber() . '.pdf');
+
+                        return Storage::download($record->pdf_path, $record->invoiceNumber().'.pdf');
                     }),
 
                 Action::make('resend')
@@ -296,17 +300,17 @@ class InvoiceResource extends Resource
                             ->options(
                                 collect($record->line_items ?? [])
                                     ->mapWithKeys(fn ($item, $i) => [
-                                        $i => $item['label'] . ' — ₦' . number_format($item['amount'], 2),
+                                        $i => $item['label'].' — ₦'.number_format($item['amount'], 2),
                                     ])
                                     ->all()
                             )
                             ->required(),
                     ])
                     ->action(function (Invoice $record, array $data, InvoiceService $invoiceService): void {
-                        $allItems     = $record->line_items ?? [];
+                        $allItems = $record->line_items ?? [];
                         $splitIndexes = array_map('intval', $data['items_to_split']);
 
-                        $splitItems     = [];
+                        $splitItems = [];
                         $remainingItems = [];
 
                         foreach ($allItems as $i => $item) {
@@ -323,22 +327,22 @@ class InvoiceResource extends Resource
 
                         // Update original invoice
                         $record->update([
-                            'amount'     => collect($remainingItems)->sum('amount'),
+                            'amount' => collect($remainingItems)->sum('amount'),
                             'line_items' => array_values($remainingItems),
-                            'pdf_path'   => null,
-                            'status'     => 'draft',
+                            'pdf_path' => null,
+                            'status' => 'draft',
                         ]);
 
                         // Create new split invoice
                         $newInvoice = Invoice::create([
-                            'user_id'        => $record->user_id,
-                            'user_product_id'=> $record->user_product_id,
-                            'deployment_id'  => $record->deployment_id,
-                            'amount'         => collect($splitItems)->sum('amount'),
-                            'currency'       => $record->currency,
-                            'status'         => 'draft',
-                            'line_items'     => array_values($splitItems),
-                            'due_date'       => $record->due_date,
+                            'user_id' => $record->user_id,
+                            'user_product_id' => $record->user_product_id,
+                            'deployment_id' => $record->deployment_id,
+                            'amount' => collect($splitItems)->sum('amount'),
+                            'currency' => $record->currency,
+                            'status' => 'draft',
+                            'line_items' => array_values($splitItems),
+                            'due_date' => $record->due_date,
                         ]);
 
                         $invoiceService->generatePdf($record);
@@ -362,8 +366,8 @@ class InvoiceResource extends Resource
                                 return;
                             }
 
-                            $first     = $records->first();
-                            $allItems  = [];
+                            $first = $records->first();
+                            $allItems = [];
 
                             foreach ($records as $inv) {
                                 foreach ($inv->line_items ?? [] as $item) {
@@ -372,14 +376,14 @@ class InvoiceResource extends Resource
                             }
 
                             $merged = Invoice::create([
-                                'user_id'        => $first->user_id,
-                                'user_product_id'=> $first->user_product_id,
-                                'deployment_id'  => $first->deployment_id,
-                                'amount'         => collect($allItems)->sum('amount'),
-                                'currency'       => $first->currency,
-                                'status'         => 'draft',
-                                'line_items'     => $allItems,
-                                'due_date'       => $records->max('due_date'),
+                                'user_id' => $first->user_id,
+                                'user_product_id' => $first->user_product_id,
+                                'deployment_id' => $first->deployment_id,
+                                'amount' => collect($allItems)->sum('amount'),
+                                'currency' => $first->currency,
+                                'status' => 'draft',
+                                'line_items' => $allItems,
+                                'due_date' => $records->max('due_date'),
                             ]);
 
                             $invoiceService->generatePdf($merged);

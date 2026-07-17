@@ -114,7 +114,7 @@ class UserProduct extends Model
      */
     public function hasRenewal(): bool
     {
-        return !is_null($this->next_renewal_date);
+        return ! is_null($this->next_renewal_date);
     }
 
     /**
@@ -122,7 +122,7 @@ class UserProduct extends Model
      */
     public function isDueForRenewal(): bool
     {
-        if (!$this->hasRenewal()) {
+        if (! $this->hasRenewal()) {
             return false;
         }
 
@@ -135,6 +135,7 @@ class UserProduct extends Model
     public function markAsActive(): bool
     {
         $this->status = 'active';
+
         return $this->save();
     }
 
@@ -144,6 +145,7 @@ class UserProduct extends Model
     public function markAsExpired(): bool
     {
         $this->status = 'expired';
+
         return $this->save();
     }
 
@@ -153,6 +155,7 @@ class UserProduct extends Model
     public function markAsCancelled(): bool
     {
         $this->status = 'cancelled';
+
         return $this->save();
     }
 
@@ -162,6 +165,7 @@ class UserProduct extends Model
     public function markAsInactive(): bool
     {
         $this->status = 'inactive';
+
         return $this->save();
     }
 
@@ -171,7 +175,7 @@ class UserProduct extends Model
     public function extendRenewal($period = 'month', $count = 1): bool
     {
         $currentDate = $this->next_renewal_date ?? now();
-        
+
         switch ($period) {
             case 'month':
                 $this->next_renewal_date = $currentDate->addMonths($count);
@@ -194,7 +198,7 @@ class UserProduct extends Model
      */
     public function getFormattedAmountAttribute(): string
     {
-        return '$' . number_format($this->amount_paid, 2);
+        return '$'.number_format($this->amount_paid, 2);
     }
 
     /**
@@ -202,7 +206,7 @@ class UserProduct extends Model
      */
     public function getDaysUntilRenewalAttribute(): ?int
     {
-        if (!$this->hasRenewal()) {
+        if (! $this->hasRenewal()) {
             return null;
         }
 

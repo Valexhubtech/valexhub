@@ -18,8 +18,7 @@ class PayoutRequestMail extends Mailable implements ShouldQueue
         public User $affiliate,
         public float $amount,
         public array $bankDetails,
-    ) {
-    }
+    ) {}
 
     public function envelope(): Envelope
     {
@@ -33,8 +32,8 @@ class PayoutRequestMail extends Mailable implements ShouldQueue
         return new Content(
             view: 'emails.payout-request',
             with: [
-                'affiliate'   => $this->affiliate,
-                'amount'      => $this->amount,
+                'affiliate' => $this->affiliate,
+                'amount' => $this->amount,
                 'bankDetails' => $this->bankDetails,
             ],
         );

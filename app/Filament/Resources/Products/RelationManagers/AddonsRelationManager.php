@@ -39,7 +39,7 @@ class AddonsRelationManager extends RelationManager
 
             Select::make('price_type')
                 ->options([
-                    'onetime'   => 'One-time',
+                    'onetime' => 'One-time',
                     'recurring' => 'Recurring',
                 ])
                 ->required()
@@ -48,9 +48,9 @@ class AddonsRelationManager extends RelationManager
 
             Select::make('billing_cycle')
                 ->options([
-                    'monthly'   => 'Monthly',
+                    'monthly' => 'Monthly',
                     'quarterly' => 'Quarterly',
-                    'yearly'    => 'Yearly',
+                    'yearly' => 'Yearly',
                 ])
                 ->nullable()
                 ->helperText('Only for recurring add-ons.'),
@@ -63,9 +63,9 @@ class AddonsRelationManager extends RelationManager
 
             Select::make('deployment_type')
                 ->options([
-                    'cloud'  => 'Cloud only',
+                    'cloud' => 'Cloud only',
                     'onprem' => 'On-Premises only',
-                    'both'   => 'Both',
+                    'both' => 'Both',
                 ])
                 ->required()
                 ->default('both'),
@@ -99,9 +99,9 @@ class AddonsRelationManager extends RelationManager
                 TextColumn::make('deployment_type')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'cloud'  => 'info',
+                        'cloud' => 'info',
                         'onprem' => 'warning',
-                        default  => 'gray',
+                        default => 'gray',
                     }),
 
                 IconColumn::make('is_active')->label('Active')->boolean(),

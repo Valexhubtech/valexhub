@@ -26,13 +26,15 @@ class FinancialDashboard extends Page
 
     // ── Filters ───────────────────────────────────────────────────────────────
     public string $startDate = '';
-    public string $endDate   = '';
-    public string $groupBy   = 'month';  // month | week | day
+
+    public string $endDate = '';
+
+    public string $groupBy = 'month';  // month | week | day
 
     public function mount(): void
     {
         $this->startDate = now()->subMonths(11)->startOfMonth()->format('Y-m-d');
-        $this->endDate   = now()->endOfMonth()->format('Y-m-d');
+        $this->endDate = now()->endOfMonth()->format('Y-m-d');
     }
 
     // ── Computed data ─────────────────────────────────────────────────────────
@@ -41,7 +43,7 @@ class FinancialDashboard extends Page
     public function getRevenueSeriesProperty(): array
     {
         $start = Carbon::parse($this->startDate)->startOfDay();
-        $end   = Carbon::parse($this->endDate)->endOfDay();
+        $end = Carbon::parse($this->endDate)->endOfDay();
 
         $format = $this->groupBy === 'day' ? '%Y-%m-%d' : ($this->groupBy === 'week' ? '%Y-%u' : '%Y-%m');
 
@@ -54,7 +56,7 @@ class FinancialDashboard extends Page
 
         return [
             'labels' => $rows->pluck('period')->toArray(),
-            'data'   => $rows->pluck('total')->map(fn ($v) => round((float) $v, 2))->toArray(),
+            'data' => $rows->pluck('total')->map(fn ($v) => round((float) $v, 2))->toArray(),
         ];
     }
 
@@ -62,7 +64,7 @@ class FinancialDashboard extends Page
     public function getRevenueByProductProperty(): array
     {
         $start = Carbon::parse($this->startDate)->startOfDay();
-        $end   = Carbon::parse($this->endDate)->endOfDay();
+        $end = Carbon::parse($this->endDate)->endOfDay();
 
         return Invoice::where('status', 'paid')
             ->whereBetween('paid_at', [$start, $end])
@@ -71,8 +73,8 @@ class FinancialDashboard extends Page
             ->groupBy(fn ($inv) => $inv->userProduct?->product?->name ?? 'Manual / Other')
             ->map(fn ($group, $name) => [
                 'product' => $name,
-                'count'   => $group->count(),
-                'total'   => round($group->sum('amount'), 2),
+                'count' => $group->count(),
+                'total' => round($group->sum('amount'), 2),
             ])
             ->sortByDesc('total')
             ->values()
@@ -83,7 +85,7 @@ class FinancialDashboard extends Page
     public function getSummaryProperty(): array
     {
         $start = Carbon::parse($this->startDate)->startOfDay();
-        $end   = Carbon::parse($this->endDate)->endOfDay();
+        $end = Carbon::parse($this->endDate)->endOfDay();
 
         $productRevenue = (float) Invoice::where('status', 'paid')
             ->whereBetween('paid_at', [$start, $end])
@@ -99,23 +101,29 @@ class FinancialDashboard extends Page
         // Expenditure within range
         $months = max(1, (int) Carbon::parse($this->startDate)->diffInMonths(Carbon::parse($this->endDate)) + 1);
         $serverCostPerMonth = (float) CoolifyServer::where('status', 'active')->sum('monthly_cost');
-        $serverCostPeriod   = $serverCostPerMonth * $months;
+        $serverCostPeriod = $serverCostPerMonth * $months;
 
         $payoutsPaid = (float) PayoutRequest::where('status', 'paid')
             ->whereBetween('processed_at', [$start, $end])
             ->sum('amount');
 
         $totalExpenditure = $serverCostPeriod + $payoutsPaid;
-        $netProfit        = $totalRevenue - $totalExpenditure;
+        $netProfit = $totalRevenue - $totalExpenditure;
 
         $pendingPayouts = (float) PayoutRequest::where('status', 'pending')->sum('amount');
-        $accruedComms   = (float) AffiliateCommission::where('status', 'accrued')->sum('commission_amount');
+        $accruedComms = (float) AffiliateCommission::where('status', 'accrued')->sum('commission_amount');
 
         return compact(
-            'productRevenue', 'subRevenue', 'totalRevenue',
-            'serverCostPerMonth', 'serverCostPeriod', 'payoutsPaid',
-            'totalExpenditure', 'netProfit',
-            'pendingPayouts', 'accruedComms',
+            'productRevenue',
+            'subRevenue',
+            'totalRevenue',
+            'serverCostPerMonth',
+            'serverCostPeriod',
+            'payoutsPaid',
+            'totalExpenditure',
+            'netProfit',
+            'pendingPayouts',
+            'accruedComms',
         );
     }
 
@@ -123,11 +131,11 @@ class FinancialDashboard extends Page
     public function getDeploymentStatsProperty(): array
     {
         $start = Carbon::parse($this->startDate)->startOfDay();
-        $end   = Carbon::parse($this->endDate)->endOfDay();
+        $end = Carbon::parse($this->endDate)->endOfDay();
 
         return [
-            'new'       => Deployment::whereBetween('created_at', [$start, $end])->count(),
-            'active'    => Deployment::where('status', 'active')->count(),
+            'new' => Deployment::whereBetween('created_at', [$start, $end])->count(),
+            'active' => Deployment::where('status', 'active')->count(),
             'suspended' => Deployment::where('status', 'suspended')->count(),
         ];
     }
@@ -136,11 +144,11 @@ class FinancialDashboard extends Page
     public function getAffiliateStatsProperty(): array
     {
         $start = Carbon::parse($this->startDate)->startOfDay();
-        $end   = Carbon::parse($this->endDate)->endOfDay();
+        $end = Carbon::parse($this->endDate)->endOfDay();
 
         return [
-            'earned'          => (float) AffiliateCommission::whereBetween('accrued_at', [$start, $end])->sum('commission_amount'),
-            'paid_out'        => (float) PayoutRequest::where('status', 'paid')->whereBetween('processed_at', [$start, $end])->sum('amount'),
+            'earned' => (float) AffiliateCommission::whereBetween('accrued_at', [$start, $end])->sum('commission_amount'),
+            'paid_out' => (float) PayoutRequest::where('status', 'paid')->whereBetween('processed_at', [$start, $end])->sum('amount'),
             'pending_payouts' => PayoutRequest::where('status', 'pending')->count(),
         ];
     }
@@ -151,11 +159,11 @@ class FinancialDashboard extends Page
         $months = max(1, (int) Carbon::parse($this->startDate)->diffInMonths(Carbon::parse($this->endDate)) + 1);
 
         return CoolifyServer::orderBy('sort_order')->get()->map(fn (CoolifyServer $s) => [
-            'name'         => $s->name,
-            'status'       => $s->status,
-            'slots'        => $s->used_slots . ' / ' . $s->max_deployments,
+            'name' => $s->name,
+            'status' => $s->status,
+            'slots' => $s->used_slots.' / '.$s->max_deployments,
             'monthly_cost' => (float) $s->monthly_cost,
-            'period_cost'  => round((float) $s->monthly_cost * $months, 2),
+            'period_cost' => round((float) $s->monthly_cost * $months, 2),
         ])->toArray();
     }
 }

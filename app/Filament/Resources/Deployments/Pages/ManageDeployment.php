@@ -3,15 +3,13 @@
 namespace App\Filament\Resources\Deployments\Pages;
 
 use App\Filament\Resources\Deployments\DeploymentResource;
-use App\Mail\InvoiceMail;
+use App\Mail\DeploymentCredentialsMail;
 use App\Services\Coolify\RealCoolifyDeploymentService;
-use App\Services\InvoiceService;
 use App\Services\ProductDeploymentService;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Mail;
-use Wave\Invoice;
 use Wave\OrderAddon;
 use Wave\ProductAddon;
 
@@ -43,7 +41,7 @@ class ManageDeployment extends ViewRecord
 
     public function getTitle(): string
     {
-        return 'Manage Deployment #' . $this->record->getKey();
+        return 'Manage Deployment #'.$this->record->getKey();
     }
 
     protected function getHeaderActions(): array
@@ -82,13 +80,13 @@ class ManageDeployment extends ViewRecord
                 ->modalSubmitActionLabel('Mark Active & Send Credentials')
                 ->action(function (): void {
                     $this->record->update([
-                        'status'      => 'active',
+                        'status' => 'active',
                         'deployed_at' => now(),
                     ]);
                     $this->record->userProduct?->markAsActive();
                     if ($this->record->user?->email) {
-                        \Illuminate\Support\Facades\Mail::to($this->record->user->email)
-                            ->queue(new \App\Mail\DeploymentCredentialsMail($this->record));
+                        Mail::to($this->record->user->email)
+                            ->queue(new DeploymentCredentialsMail($this->record));
                     }
                     $this->record->refresh();
                     Notification::make()->title('Marked active. Credentials email queued.')->success()->send();
@@ -122,7 +120,7 @@ class ManageDeployment extends ViewRecord
 
         if ($ok) {
             $this->record->update([
-                'status'         => 'provisioning',
+                'status' => 'provisioning',
                 'failure_reason' => null,
             ]);
             $this->record->refresh();
@@ -137,7 +135,7 @@ class ManageDeployment extends ViewRecord
         app(RealCoolifyDeploymentService::class)->deleteApp($this->record);
 
         $this->record->update([
-            'status'         => 'pending',
+            'status' => 'pending',
             'coolify_app_id' => null,
             'deployment_url' => null,
             'failure_reason' => null,
@@ -179,6 +177,7 @@ class ManageDeployment extends ViewRecord
     {
         if (! $this->record->user_product_id) {
             Notification::make()->title('No purchase record linked — cannot update modules.')->danger()->send();
+
             return;
         }
 
@@ -188,8 +187,8 @@ class ManageDeployment extends ViewRecord
             ->get();
 
         $existingKeys = $existing->pluck('addon.module_key')->filter()->toArray();
-        $toAdd        = array_diff($this->enabledModules, $existingKeys);
-        $toRemove     = array_diff($existingKeys, $this->enabledModules);
+        $toAdd = array_diff($this->enabledModules, $existingKeys);
+        $toRemove = array_diff($existingKeys, $this->enabledModules);
 
         // Remove de-selected modules
         foreach ($toRemove as $key) {
@@ -206,10 +205,10 @@ class ManageDeployment extends ViewRecord
             $addon = ProductAddon::where('module_key', $key)->first();
             if ($addon) {
                 OrderAddon::create([
-                    'user_product_id'  => $this->record->user_product_id,
+                    'user_product_id' => $this->record->user_product_id,
                     'product_addon_id' => $addon->id,
-                    'amount_paid'      => 0,
-                    'price_type'       => 'onetime',
+                    'amount_paid' => 0,
+                    'price_type' => 'onetime',
                 ]);
             }
         }

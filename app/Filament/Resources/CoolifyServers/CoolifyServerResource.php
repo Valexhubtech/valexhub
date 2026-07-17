@@ -97,9 +97,9 @@ class CoolifyServerResource extends Resource
 
                 Select::make('status')
                     ->options([
-                        'active'      => 'Active',
+                        'active' => 'Active',
                         'maintenance' => 'Maintenance',
-                        'offline'     => 'Offline',
+                        'offline' => 'Offline',
                     ])
                     ->default('active')
                     ->required(),
@@ -127,12 +127,14 @@ class CoolifyServerResource extends Resource
                 Action::make('capacity_overview')
                     ->label(function (): string {
                         $summary = app(CoolifyServerSelector::class)->capacitySummary();
-                        return $summary['active_servers'] . ' servers · '
-                            . $summary['used_slots'] . '/' . $summary['total_slots'] . ' slots used';
+
+                        return $summary['active_servers'].' servers · '
+                            .$summary['used_slots'].'/'.$summary['total_slots'].' slots used';
                     })
                     ->icon('phosphor-chart-bar-duotone')
                     ->color(function (): string {
                         $summary = app(CoolifyServerSelector::class)->capacitySummary();
+
                         return $summary['all_full'] ? 'danger' : 'gray';
                     })
                     ->disabled(),
@@ -146,21 +148,21 @@ class CoolifyServerResource extends Resource
 
                 TextColumn::make('used_slots')
                     ->label('Deployments')
-                    ->getStateUsing(fn (CoolifyServer $r) => $r->used_slots . ' / ' . $r->max_deployments)
+                    ->getStateUsing(fn (CoolifyServer $r) => $r->used_slots.' / '.$r->max_deployments)
                     ->badge()
                     ->color(fn (CoolifyServer $r): string => $r->isFull() ? 'danger' : ($r->used_slots / max(1, $r->max_deployments) > 0.8 ? 'warning' : 'success')),
 
                 TextColumn::make('monthly_cost')
                     ->label('Monthly Cost')
-                    ->formatStateUsing(fn ($state) => '₦' . number_format($state, 2))
+                    ->formatStateUsing(fn ($state) => '₦'.number_format($state, 2))
                     ->sortable(),
 
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'active'      => 'success',
+                        'active' => 'success',
                         'maintenance' => 'warning',
-                        default       => 'danger',
+                        default => 'danger',
                     })
                     ->sortable(),
 
@@ -177,9 +179,9 @@ class CoolifyServerResource extends Resource
             ->filters([
                 SelectFilter::make('status')
                     ->options([
-                        'active'      => 'Active',
+                        'active' => 'Active',
                         'maintenance' => 'Maintenance',
-                        'offline'     => 'Offline',
+                        'offline' => 'Offline',
                     ]),
             ])
             ->recordActions([
@@ -206,9 +208,9 @@ class CoolifyServerResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListCoolifyServers::route('/'),
+            'index' => ListCoolifyServers::route('/'),
             'create' => CreateCoolifyServer::route('/create'),
-            'edit'   => EditCoolifyServer::route('/{record}/edit'),
+            'edit' => EditCoolifyServer::route('/{record}/edit'),
         ];
     }
 }

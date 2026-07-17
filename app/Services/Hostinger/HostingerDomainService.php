@@ -47,16 +47,18 @@ class HostingerDomainService
             $out = [];
             foreach ($result as $item) {
                 $out[$item->getDomain()] = [
-                    'domain'    => $item->getDomain(),
+                    'domain' => $item->getDomain(),
                     'available' => $item->getIsAvailable() ?? false,
                 ];
             }
+
             return $out;
         } catch (\Throwable $e) {
             Log::error('Hostinger domain availability check failed', [
                 'domain' => $domainName,
-                'error'  => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
+
             return [];
         }
     }
@@ -69,34 +71,36 @@ class HostingerDomainService
     public function getPricing(?string $nameFilter = null): array
     {
         try {
-            $api    = new BillingCatalogApi(config: $this->config);
+            $api = new BillingCatalogApi(config: $this->config);
             $result = $api->getCatalogItemListV1('DOMAIN', $nameFilter);
 
             $items = [];
             foreach ($result as $item) {
                 foreach ($item->getPrices() ?? [] as $price) {
-                    $period     = (int)   ($price->getPeriod()     ?? 0);
-                    $periodUnit =          $price->getPeriodUnit()  ?? '';
+                    $period = (int) ($price->getPeriod() ?? 0);
+                    $periodUnit = $price->getPeriodUnit() ?? '';
 
                     if ($period <= 0 || $periodUnit !== 'year') {
                         continue; // skip transfers / period-0 entries
                     }
 
                     $items[] = [
-                        'item_id'           => $price->getId(),        // price-specific ID e.g. hostingercom-domain-biz-usd-1y
-                        'parent_item_id'    => $item->getId(),          // TLD-level ID e.g. hostingercom-domain-biz
-                        'name'              => $item->getName(),
-                        'price_cents'       => (int) $price->getPrice(),
-                        'promo_cents'       => (int) ($price->getFirstPeriodPrice() ?? $price->getPrice()),
-                        'period'            => $period,
-                        'period_unit'       => $periodUnit,
-                        'currency'          => $price->getCurrency() ?? 'USD',
+                        'item_id' => $price->getId(),        // price-specific ID e.g. hostingercom-domain-biz-usd-1y
+                        'parent_item_id' => $item->getId(),          // TLD-level ID e.g. hostingercom-domain-biz
+                        'name' => $item->getName(),
+                        'price_cents' => (int) $price->getPrice(),
+                        'promo_cents' => (int) ($price->getFirstPeriodPrice() ?? $price->getPrice()),
+                        'period' => $period,
+                        'period_unit' => $periodUnit,
+                        'currency' => $price->getCurrency() ?? 'USD',
                     ];
                 }
             }
+
             return $items;
         } catch (\Throwable $e) {
             Log::error('Hostinger catalog pricing failed', ['error' => $e->getMessage()]);
+
             return [];
         }
     }
@@ -111,7 +115,7 @@ class HostingerDomainService
      */
     public function getAvailableTlds(): array
     {
-        $raw  = $this->getPricing();
+        $raw = $this->getPricing();
         $tlds = [];
 
         foreach ($raw as $item) {
@@ -130,11 +134,11 @@ class HostingerDomainService
             }
 
             $tlds[$tld] = [
-                'item_id'             => $item['item_id'],      // use for purchase
-                'promo_cents'         => $item['promo_cents'],  // first-year promo price
-                'regular_cents'       => $item['price_cents'],  // renewal price
+                'item_id' => $item['item_id'],      // use for purchase
+                'promo_cents' => $item['promo_cents'],  // first-year promo price
+                'regular_cents' => $item['price_cents'],  // renewal price
                 'registration_period' => $period,
-                'currency'            => $item['currency'],
+                'currency' => $item['currency'],
             ];
         }
 
@@ -184,12 +188,14 @@ class HostingerDomainService
             $api->purchaseNewDomainV1($request);
 
             Log::info('Domain purchased via Hostinger', ['domain' => $domain]);
+
             return true;
         } catch (\Throwable $e) {
             Log::error('Hostinger domain purchase failed', [
                 'domain' => $domain,
-                'error'  => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -209,12 +215,14 @@ class HostingerDomainService
                 ->setNs4($ns4);
 
             $api->updateDomainNameserversV1($domain, $request);
+
             return true;
         } catch (\Throwable $e) {
             Log::error('Hostinger nameserver update failed', [
                 'domain' => $domain,
-                'error'  => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -250,12 +258,14 @@ class HostingerDomainService
             $api->updateDNSRecordsV1($domain, $request);
 
             Log::info('DNS A records added via Hostinger', ['domain' => $domain, 'ip' => $ip]);
+
             return true;
         } catch (\Throwable $e) {
             Log::error('Hostinger DNS A record failed', [
                 'domain' => $domain,
-                'error'  => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
