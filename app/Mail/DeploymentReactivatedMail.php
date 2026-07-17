@@ -18,7 +18,7 @@ class DeploymentReactivatedMail extends Mailable implements ShouldQueue
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Your Service Has Been Reactivated — ' . $this->deployment->product?->name);
+        return new Envelope(subject: 'Your Service Has Been Reactivated — '.$this->deployment->product?->name);
     }
 
     public function content(): Content

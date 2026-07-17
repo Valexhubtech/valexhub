@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Jobs\FulfillProductDeployment;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -12,6 +13,7 @@ class DeploymentStatus extends Component
     {
         /** @var User $user */
         $user = Auth::user();
+
         return $user;
     }
 
@@ -51,7 +53,7 @@ class DeploymentStatus extends Component
 
         $deployment->update(['status' => 'pending', 'failure_reason' => null]);
 
-        \App\Jobs\FulfillProductDeployment::dispatch($deployment);
+        FulfillProductDeployment::dispatch($deployment);
     }
 
     public function render()

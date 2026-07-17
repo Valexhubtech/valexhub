@@ -10,7 +10,7 @@ class ProductAddon extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'price'     => 'decimal:2',
+        'price' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 

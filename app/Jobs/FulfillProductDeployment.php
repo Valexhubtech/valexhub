@@ -14,9 +14,7 @@ class FulfillProductDeployment implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public Deployment $deployment)
-    {
-    }
+    public function __construct(public Deployment $deployment) {}
 
     public function handle(ProductDeploymentService $service): void
     {

@@ -27,8 +27,8 @@ class DeploymentAlertMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         $subject = $this->audience === 'support'
-            ? '[Action Required] Deployment issue: ' . ($this->deployment->user->email ?? '?')
-            : 'Important update about your ' . ($this->deployment->product->name ?? 'deployment');
+            ? '[Action Required] Deployment issue: '.($this->deployment->user->email ?? '?')
+            : 'Important update about your '.($this->deployment->product->name ?? 'deployment');
 
         return new Envelope(subject: $subject);
     }
@@ -39,8 +39,8 @@ class DeploymentAlertMail extends Mailable implements ShouldQueue
             view: 'emails.deployment-alert',
             with: [
                 'deployment' => $this->deployment,
-                'reason'     => $this->reason,
-                'audience'   => $this->audience,
+                'reason' => $this->reason,
+                'audience' => $this->audience,
             ],
         );
     }

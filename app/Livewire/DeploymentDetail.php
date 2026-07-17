@@ -44,7 +44,7 @@ class DeploymentDetail extends Component
     {
         return view('livewire.deployment-detail', [
             'deployment' => $this->deployment,
-            'isPolling'  => $this->isPolling,
+            'isPolling' => $this->isPolling,
         ]);
     }
 }

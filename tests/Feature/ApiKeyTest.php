@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Carbon\Carbon;
+use Wave\ActivityLog;
 use Wave\ApiKey;
 
 beforeEach(function () {
@@ -199,7 +200,7 @@ describe('API Key Settings Page', function () {
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('api_keys', [
-            'name'    => 'my-test-key',
+            'name' => 'my-test-key',
             'user_id' => $this->user->id,
         ]);
     });
@@ -218,7 +219,7 @@ describe('API Key Activity Logging', function () {
         $this->actingAs($this->user);
 
         // Clear existing activity logs
-        \Wave\ActivityLog::where('user_id', $this->user->id)->delete();
+        ActivityLog::where('user_id', $this->user->id)->delete();
 
         $this->user->createApiKey('Logged Key');
 

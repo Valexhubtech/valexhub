@@ -2,9 +2,9 @@
 
 namespace App\Livewire;
 
-use App\Mail\SupportReplyMail;
 use App\Mail\SupportTicketCreatedMail;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 use Wave\SupportMessage;
 use Wave\SupportTicket;
@@ -12,12 +12,14 @@ use Wave\SupportTicket;
 class SupportThread extends Component
 {
     public SupportTicket $ticket;
+
     public string $reply = '';
 
     protected function user(): User
     {
         /** @var User $user */
         $user = auth()->user();
+
         return $user;
     }
 
@@ -36,9 +38,9 @@ class SupportThread extends Component
 
         SupportMessage::create([
             'ticket_id' => $this->ticket->id,
-            'user_id'   => $this->user()->id,
-            'body'      => $this->reply,
-            'is_admin'  => false,
+            'user_id' => $this->user()->id,
+            'body' => $this->reply,
+            'is_admin' => false,
         ]);
 
         if ($this->ticket->status === 'open') {
@@ -46,7 +48,7 @@ class SupportThread extends Component
         }
 
         // Notify admin of client reply
-        \Illuminate\Support\Facades\Mail::to(config('mail.from.address'))
+        Mail::to(config('mail.from.address'))
             ->queue(new SupportTicketCreatedMail($this->ticket, $this->reply));
 
         $this->reply = '';

@@ -6,6 +6,7 @@ use App\Jobs\RegisterDomainJob;
 use App\Services\Paystack\PaystackService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Wave\DomainPurchase;
 use Wave\Invoice;
@@ -22,7 +23,7 @@ class DomainCheckoutController extends Controller
 
         // Find the pending purchase
         $purchase = DomainPurchase::where('paystack_reference', $reference)
-            ->where('user_id', \Illuminate\Support\Facades\Auth::id())
+            ->where('user_id', Auth::id())
             ->first();
 
         if (! $purchase) {
@@ -42,46 +43,47 @@ class DomainCheckoutController extends Controller
             $paymentStatus = $result['data']['status'] ?? '';
 
             Log::info('DomainCheckout: Paystack verify response', [
-                'reference'      => $reference,
+                'reference' => $reference,
                 'payment_status' => $paymentStatus,
-                'top_status'     => $result['status'] ?? null,
+                'top_status' => $result['status'] ?? null,
             ]);
 
             if ($paymentStatus !== 'success') {
                 $purchase->update(['payment_status' => 'failed']);
+
                 return redirect()->route('dashboard.deployments.show', ['deployment' => $purchase->deployment_id])
                     ->with('error', 'Payment was not completed on Paystack. Please try again.');
             }
 
             $purchase->update([
                 'payment_status' => 'paid',
-                'paid_at'        => now(),
+                'paid_at' => now(),
             ]);
 
             // Issue invoice so the user has a receipt
             Invoice::create([
-                'user_id'            => $purchase->user_id,
-                'deployment_id'      => $purchase->deployment_id,
-                'amount'             => $purchase->total_kobo / 100,
-                'currency'           => 'NGN',
-                'status'             => 'paid',
+                'user_id' => $purchase->user_id,
+                'deployment_id' => $purchase->deployment_id,
+                'amount' => $purchase->total_kobo / 100,
+                'currency' => 'NGN',
+                'status' => 'paid',
                 'paystack_reference' => $reference,
-                'paid_at'            => now(),
-                'line_items'         => [
+                'paid_at' => now(),
+                'line_items' => [
                     [
-                        'description' => 'Domain registration: ' . $purchase->domain . ' (1 year)',
-                        'amount'      => $purchase->domain_price_kobo / 100,
+                        'description' => 'Domain registration: '.$purchase->domain.' (1 year)',
+                        'amount' => $purchase->domain_price_kobo / 100,
                     ],
                     [
                         'description' => 'Setup & DNS configuration fee',
-                        'amount'      => $purchase->setup_fee_kobo / 100,
+                        'amount' => $purchase->setup_fee_kobo / 100,
                     ],
                 ],
             ]);
 
             Log::info('Domain payment confirmed', [
                 'purchase_id' => $purchase->id,
-                'domain'      => $purchase->domain,
+                'domain' => $purchase->domain,
             ]);
 
             // On sync queue (shared hosting) this runs immediately in the same request.
@@ -93,7 +95,7 @@ class DomainCheckoutController extends Controller
             } catch (\Throwable $e) {
                 Log::error('DomainCheckout: registration job failed', [
                     'purchase_id' => $purchase->id,
-                    'error'       => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
                 // Don't rethrow — payment is confirmed, registration can be retried from admin
             }
@@ -103,8 +105,9 @@ class DomainCheckoutController extends Controller
         } catch (\Throwable $e) {
             Log::error('DomainCheckout: Paystack verify failed', [
                 'reference' => $reference,
-                'error'     => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
+
             return redirect()->route('dashboard')->with('error', 'Could not verify payment. Contact support if charged.');
         }
     }
@@ -115,6 +118,7 @@ class DomainCheckoutController extends Controller
             return redirect()->route('dashboard.deployments.show', ['deployment' => $purchase->deployment_id])
                 ->with('status', $message);
         }
+
         return redirect()->route('dashboard')->with('status', $message);
     }
 }

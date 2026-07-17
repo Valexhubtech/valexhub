@@ -23,7 +23,7 @@ class SupportReplyMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Re: ' . $this->ticket->subject . ' (Ticket #' . $this->ticket->id . ')',
+            subject: 'Re: '.$this->ticket->subject.' (Ticket #'.$this->ticket->id.')',
         );
     }
 

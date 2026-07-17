@@ -28,15 +28,15 @@ class CoreServiceProductSeeder extends Seeder
 
         // ── Seed the one test product ────────────────────────────────────────
         $product = Product::create([
-            'name'               => 'ValexHub Core Platform',
-            'slug'               => 'core-platform',
-            'category_id'        => null,
-            'type'               => 'prebuilt',
-            'short_description'  => 'The full ValexHub business platform — deploy the modules your business needs.',
-            'description'        => '<p>ValexHub Core Platform is a modular business management system. Select only the modules your business needs — POS, inventory, bookings, invoicing, staff management, and more — and deploy your own private instance in minutes.</p>',
-            'low_price'          => 15000,
-            'high_price'         => 145000,
-            'features'           => [
+            'name' => 'ValexHub Core Platform',
+            'slug' => 'core-platform',
+            'category_id' => null,
+            'type' => 'prebuilt',
+            'short_description' => 'The full ValexHub business platform — deploy the modules your business needs.',
+            'description' => '<p>ValexHub Core Platform is a modular business management system. Select only the modules your business needs — POS, inventory, bookings, invoicing, staff management, and more — and deploy your own private instance in minutes.</p>',
+            'low_price' => 15000,
+            'high_price' => 145000,
+            'features' => [
                 'Modular — enable only what you need',
                 'Private instance on your own subdomain',
                 'Booking & appointment management',
@@ -48,10 +48,10 @@ class CoreServiceProductSeeder extends Seeder
                 'SMS & WhatsApp notifications',
                 'Analytics dashboard',
             ],
-            'coolify_deploy_type'   => 'docker_image',
-            'coolify_docker_image'  => 'ghcr.io/valexhub-dev-s/core-service:latest',
-            'is_active'             => true,
-            'sort_order'            => 1,
+            'coolify_deploy_type' => 'docker_image',
+            'coolify_docker_image' => 'ghcr.io/valexhub-dev-s/core-service:latest',
+            'is_active' => true,
+            'sort_order' => 1,
         ]);
 
         // ── Cloud pricing ────────────────────────────────────────────────────
@@ -85,22 +85,22 @@ class CoreServiceProductSeeder extends Seeder
 
         foreach ($addons as $addon) {
             DB::table('product_addons')->insert([
-                'product_id'     => $product->id,
-                'name'           => $addon['name'],
-                'module_key'     => $addon['module_key'],
-                'description'    => $addon['description'],
-                'price'          => $addon['price'],
-                'price_type'     => $addon['price_type'],
-                'billing_cycle'  => $addon['billing_cycle'],
-                'deployment_type'=> 'cloud',
-                'is_active'      => true,
-                'sort_order'     => $addon['sort_order'],
-                'created_at'     => now(),
-                'updated_at'     => now(),
+                'product_id' => $product->id,
+                'name' => $addon['name'],
+                'module_key' => $addon['module_key'],
+                'description' => $addon['description'],
+                'price' => $addon['price'],
+                'price_type' => $addon['price_type'],
+                'billing_cycle' => $addon['billing_cycle'],
+                'deployment_type' => 'cloud',
+                'is_active' => true,
+                'sort_order' => $addon['sort_order'],
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 
-        $this->command->info('ValexHub Core Platform seeded with ' . count($addons) . ' module add-ons.');
+        $this->command->info('ValexHub Core Platform seeded with '.count($addons).' module add-ons.');
         $this->command->info('Docker image: ghcr.io/valexhub-dev-s/core-service:latest');
     }
 }

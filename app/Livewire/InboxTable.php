@@ -11,28 +11,35 @@ class InboxTable extends Component
     use WithPagination;
 
     public $search = '';
+
     public $status = '';
+
     public $selectedEmail = null;
+
     public $showModal = false;
+
     public $emailEvents = [];
+
     public $showEvents = false;
+
     public $configuredDomain = '';
-    
+
     protected $resendService;
-    
+
     public function mount()
     {
         $this->resendService = new ResendEmailService();
-        
+
         // Get the configured domain from environment
         $this->configuredDomain = $this->resendService->getConfiguredDomain() ?? 'Not configured';
     }
-    
+
     protected function getResendService()
     {
-        if (!$this->resendService) {
+        if (! $this->resendService) {
             $this->resendService = new ResendEmailService();
         }
+
         return $this->resendService;
     }
 
@@ -46,15 +53,14 @@ class InboxTable extends Component
         $this->resetPage();
     }
 
-
     public function viewEmail($emailId)
     {
         $resendService = $this->getResendService();
         $emails = $resendService->getSentEmails(100);
         $formatted = $resendService->formatEmailsForDisplay($emails);
-        
+
         $this->selectedEmail = $formatted->firstWhere('id', $emailId);
-        
+
         if ($this->selectedEmail) {
             // Get full email details
             $emailDetails = $resendService->getEmail($emailId);
@@ -70,11 +76,11 @@ class InboxTable extends Component
                     'cc' => is_array($emailDetails['cc'] ?? []) ? implode(', ', $emailDetails['cc']) : ($emailDetails['cc'] ?? ''),
                     'reply_to' => is_array($emailDetails['reply_to'] ?? []) ? implode(', ', $emailDetails['reply_to']) : ($emailDetails['reply_to'] ?? ''),
                 ];
-                
+
                 $this->selectedEmail = array_merge($this->selectedEmail, $formattedDetails);
             }
         }
-        
+
         $this->showModal = true;
     }
 
@@ -107,11 +113,11 @@ class InboxTable extends Component
     {
         $resendService = $this->getResendService();
         $result = $resendService->testConnection();
-        
+
         if ($result['success']) {
-            session()->flash('api_test', 'API connection successful! Found ' . count($result['data']['data'] ?? []) . ' domains.');
+            session()->flash('api_test', 'API connection successful! Found '.count($result['data']['data'] ?? []).' domains.');
         } else {
-            session()->flash('api_error', 'API connection failed: ' . $result['error']);
+            session()->flash('api_error', 'API connection failed: '.$result['error']);
         }
     }
 
@@ -120,14 +126,15 @@ class InboxTable extends Component
         $resendService = $this->getResendService();
         $emails = $resendService->getSentEmails(10); // Get just 10 for debugging
         $formatted = $resendService->formatEmailsForDisplay($emails);
-        
+
         $domains = $formatted->pluck('from')->unique()->values();
         $configuredDomain = $resendService->getConfiguredDomain();
-        
-        session()->flash('debug_info', 
-            'Configured Domain: ' . $configuredDomain . 
-            ' | Found Domains: ' . $domains->implode(', ') . 
-            ' | Total Emails: ' . $formatted->count()
+
+        session()->flash(
+            'debug_info',
+            'Configured Domain: '.$configuredDomain.
+            ' | Found Domains: '.$domains->implode(', ').
+            ' | Total Emails: '.$formatted->count()
         );
     }
 
@@ -143,7 +150,7 @@ class InboxTable extends Component
         $resendService = $this->getResendService();
         $emails = $resendService->getSentEmails(100);
         $formatted = $resendService->formatEmailsForDisplay($emails);
-        
+
         // Apply filters
         if ($this->search) {
             $formatted = $formatted->filter(function ($email) {
@@ -152,11 +159,11 @@ class InboxTable extends Component
                        str_contains(strtolower($email['subject']), strtolower($this->search));
             });
         }
-        
+
         if ($this->status) {
             $formatted = $formatted->where('status', $this->status);
         }
-        
+
         return $formatted->sortByDesc('created_at');
     }
 
@@ -164,7 +171,7 @@ class InboxTable extends Component
     {
         $emails = $this->emails;
         $paginatedEmails = $emails->forPage($this->getPage(), 25);
-        
+
         return view('livewire.inbox-table', [
             'emails' => $paginatedEmails,
             'totalEmails' => $emails->count(),

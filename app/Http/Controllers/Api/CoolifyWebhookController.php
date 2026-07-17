@@ -30,10 +30,10 @@ class CoolifyWebhookController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $data    = $request->json()->all();
-        $event   = $data['event'] ?? null;
+        $data = $request->json()->all();
+        $event = $data['event'] ?? null;
         $appUuid = $data['application_uuid'] ?? null;
-        $fqdn    = $data['fqdn'] ?? null;
+        $fqdn = $data['fqdn'] ?? null;
 
         Log::info('Coolify webhook received', ['event' => $event, 'app_uuid' => $appUuid]);
 
@@ -48,11 +48,11 @@ class CoolifyWebhookController extends Controller
         }
 
         match ($event) {
-            'deployment_success'    => $this->onDeploymentSuccess($deployment, $fqdn),
-            'deployment_failed'     => $this->onDeploymentFailed($deployment),
-            'status_changed'        => $this->onStatusChanged($deployment),
+            'deployment_success' => $this->onDeploymentSuccess($deployment, $fqdn),
+            'deployment_failed' => $this->onDeploymentFailed($deployment),
+            'status_changed' => $this->onStatusChanged($deployment),
             'restart_limit_reached' => $this->onRestartLimitReached($deployment),
-            default                 => null,
+            default => null,
         };
 
         return response()->json(['ok' => true]);
@@ -65,7 +65,7 @@ class CoolifyWebhookController extends Controller
         // Container is up. Bootstrap is running inside it.
         // Status stays "provisioning" — setup-complete webhook flips it to "active".
         if ($fqdn) {
-            $appUrl = str_starts_with($fqdn, 'http') ? $fqdn : 'https://' . ltrim($fqdn, '/');
+            $appUrl = str_starts_with($fqdn, 'http') ? $fqdn : 'https://'.ltrim($fqdn, '/');
             $deployment->update(['deployment_url' => $appUrl]);
 
             // Push BETTER_AUTH_URL and NEXT_PUBLIC_APP_URL into Coolify now that we know the URL.
@@ -81,7 +81,7 @@ class CoolifyWebhookController extends Controller
         }
 
         $deployment->update([
-            'status'         => 'failed',
+            'status' => 'failed',
             'failure_reason' => 'Container failed to start. Check Coolify deployment logs.',
         ]);
 
@@ -109,7 +109,7 @@ class CoolifyWebhookController extends Controller
         }
 
         $deployment->update([
-            'status'         => 'failed',
+            'status' => 'failed',
             'failure_reason' => 'Container reached its restart limit — crash-looping. Manual intervention required.',
         ]);
 
@@ -127,7 +127,7 @@ class CoolifyWebhookController extends Controller
         }
 
         $baseUrl = rtrim($server->api_url, '/');
-        $token   = $server->api_token;
+        $token = $server->api_token;
 
         foreach (['BETTER_AUTH_URL', 'NEXT_PUBLIC_APP_URL'] as $key) {
             try {
@@ -136,10 +136,10 @@ class CoolifyWebhookController extends Controller
                     ->acceptJson()
                     ->timeout(10)
                     ->post("/api/v1/applications/{$deployment->coolify_app_id}/envs", [
-                        'key'        => $key,
-                        'value'      => $appUrl,
+                        'key' => $key,
+                        'value' => $appUrl,
                         'is_preview' => false,
-                        'is_secret'  => false,
+                        'is_secret' => false,
                     ]);
             } catch (\Throwable) {
                 Log::warning("Failed to update {$key} in Coolify", ['deployment_id' => $deployment->id]);

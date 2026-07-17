@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\Paystack\PaystackService;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Wave\Deployment;
 use Wave\Product;
 use Wave\UserProduct;

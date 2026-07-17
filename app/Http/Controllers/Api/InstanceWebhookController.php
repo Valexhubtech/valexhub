@@ -33,24 +33,26 @@ class InstanceWebhookController extends Controller
 
         if (! $deployment) {
             Log::warning('setup-complete webhook: no matching deployment', ['token_prefix' => substr($token, 0, 8)]);
+
             return response()->json(['error' => 'Not found'], 404);
         }
 
         // Verify HMAC signature
-        $rawBody  = $request->getContent();
+        $rawBody = $request->getContent();
         $expected = hash_hmac('sha256', $rawBody, $token);
         $received = $request->header('X-Valexhub-Signature', '');
 
         if (! hash_equals($expected, $received)) {
             Log::warning('setup-complete webhook: invalid signature', ['deployment_id' => $deployment->id]);
+
             return response()->json(['error' => 'Invalid signature'], 401);
         }
 
-        $data   = $request->json()->all();
+        $data = $request->json()->all();
         $appUrl = $data['app_url'] ?? null;
 
         $updates = [
-            'status'      => 'active',
+            'status' => 'active',
             'deployed_at' => now(),
         ];
 
@@ -67,7 +69,7 @@ class InstanceWebhookController extends Controller
 
         Log::info('Deployment marked active via setup-complete webhook', [
             'deployment_id' => $deployment->id,
-            'app_url'       => $appUrl,
+            'app_url' => $appUrl,
         ]);
 
         return response()->json(['ok' => true]);

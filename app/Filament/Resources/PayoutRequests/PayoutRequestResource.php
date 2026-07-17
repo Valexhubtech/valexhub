@@ -43,7 +43,7 @@ class PayoutRequestResource extends Resource
 
                 TextColumn::make('amount')
                     ->label('Amount Requested')
-                    ->formatStateUsing(fn ($state) => '₦' . number_format($state, 2))
+                    ->formatStateUsing(fn ($state) => '₦'.number_format($state, 2))
                     ->sortable(),
 
                 TextColumn::make('bank_name')
@@ -60,9 +60,9 @@ class PayoutRequestResource extends Resource
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'paid'     => 'success',
+                        'paid' => 'success',
                         'rejected' => 'danger',
-                        default    => 'warning',
+                        default => 'warning',
                     })
                     ->sortable(),
 
@@ -86,8 +86,8 @@ class PayoutRequestResource extends Resource
             ->filters([
                 SelectFilter::make('status')
                     ->options([
-                        'pending'  => 'Pending',
-                        'paid'     => 'Paid',
+                        'pending' => 'Pending',
+                        'paid' => 'Paid',
                         'rejected' => 'Rejected',
                     ]),
             ])
@@ -107,8 +107,8 @@ class PayoutRequestResource extends Resource
                     ])
                     ->action(function (PayoutRequest $record, array $data): void {
                         $record->update([
-                            'status'       => 'paid',
-                            'notes'        => $data['notes'] ?? null,
+                            'status' => 'paid',
+                            'notes' => $data['notes'] ?? null,
                             'processed_at' => now(),
                         ]);
 
@@ -133,8 +133,8 @@ class PayoutRequestResource extends Resource
                     ])
                     ->action(function (PayoutRequest $record, array $data): void {
                         $record->update([
-                            'status'       => 'rejected',
-                            'notes'        => $data['notes'],
+                            'status' => 'rejected',
+                            'notes' => $data['notes'],
                             'processed_at' => now(),
                         ]);
                     })

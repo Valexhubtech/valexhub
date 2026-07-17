@@ -25,14 +25,14 @@ class AdditionalProductsSeeder extends Seeder
         $product = Product::firstOrCreate(
             ['slug' => 'hospitality-management-system'],
             [
-                'name'              => 'Hospitality Management System',
-                'category_id'       => 1,
-                'type'              => 'prebuilt',
+                'name' => 'Hospitality Management System',
+                'category_id' => 1,
+                'type' => 'prebuilt',
                 'short_description' => 'A modular hospitality platform for hotels, restaurants, and guest houses.',
-                'description'       => 'Start with the core platform and activate only the modules your property needs — room booking, restaurant POS, inventory, and more. Pay for what you use, scale as you grow.',
-                'low_price'         => 15000,
-                'high_price'        => 400000,
-                'features'          => [
+                'description' => 'Start with the core platform and activate only the modules your property needs — room booking, restaurant POS, inventory, and more. Pay for what you use, scale as you grow.',
+                'low_price' => 15000,
+                'high_price' => 400000,
+                'features' => [
                     'Core platform with staff & roles',
                     'Dashboard & reporting',
                     'Guest & customer records',
@@ -40,7 +40,7 @@ class AdditionalProductsSeeder extends Seeder
                     'Select only the modules you need',
                     'Cloud or on-premises deployment',
                 ],
-                'is_active'  => true,
+                'is_active' => true,
                 'sort_order' => 3,
             ]
         );
@@ -84,14 +84,14 @@ class AdditionalProductsSeeder extends Seeder
         $product = Product::firstOrCreate(
             ['slug' => 'real-estate-management-system'],
             [
-                'name'              => 'Real Estate Management System',
-                'category_id'       => 1,
-                'type'              => 'prebuilt',
+                'name' => 'Real Estate Management System',
+                'category_id' => 1,
+                'type' => 'prebuilt',
                 'short_description' => 'Manage properties, tenants, rent collection, and maintenance in one platform.',
-                'description'       => 'Built for Nigerian property managers and landlords. Track rent payments, manage tenant agreements, handle maintenance requests, and generate financial reports — all in one place.',
-                'low_price'         => 18000,
-                'high_price'        => 340000,
-                'features'          => [
+                'description' => 'Built for Nigerian property managers and landlords. Track rent payments, manage tenant agreements, handle maintenance requests, and generate financial reports — all in one place.',
+                'low_price' => 18000,
+                'high_price' => 340000,
+                'features' => [
                     'Property & unit management',
                     'Tenant records & agreements',
                     'Rent collection & receipts',
@@ -100,7 +100,7 @@ class AdditionalProductsSeeder extends Seeder
                     'Agent & staff management',
                     'Financial reports & statements',
                 ],
-                'is_active'  => true,
+                'is_active' => true,
                 'sort_order' => 4,
             ]
         );
@@ -140,14 +140,14 @@ class AdditionalProductsSeeder extends Seeder
         $product = Product::firstOrCreate(
             ['slug' => 'service-business-suite'],
             [
-                'name'              => 'Service & Retail Business Suite',
-                'category_id'       => 1,
-                'type'              => 'prebuilt',
+                'name' => 'Service & Retail Business Suite',
+                'category_id' => 1,
+                'type' => 'prebuilt',
                 'short_description' => 'Bookings, POS, inventory, and client management for service and retail businesses.',
-                'description'       => 'Built for salons, clinics, gyms, spas, tailors, and any service-based business. Manage appointments, walk-ins, staff shifts, inventory, and payments — all from one dashboard.',
-                'low_price'         => 12000,
-                'high_price'        => 240000,
-                'features'          => [
+                'description' => 'Built for salons, clinics, gyms, spas, tailors, and any service-based business. Manage appointments, walk-ins, staff shifts, inventory, and payments — all from one dashboard.',
+                'low_price' => 12000,
+                'high_price' => 240000,
+                'features' => [
                     'Appointment & booking management',
                     'Walk-in queue management',
                     'Client records & history',
@@ -156,7 +156,7 @@ class AdditionalProductsSeeder extends Seeder
                     'Inventory & stock control',
                     'Sales & revenue reports',
                 ],
-                'is_active'  => true,
+                'is_active' => true,
                 'sort_order' => 5,
             ]
         );

@@ -2,23 +2,34 @@
 
 namespace App\Livewire;
 
+use App\Mail\PayoutRequestMail;
+use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Wave\AffiliateCommission;
+use Wave\PaymentTransaction;
+use Wave\PayoutRequest;
 
 class AffiliateTracker extends Component
 {
     use WithPagination;
 
     public string $newClientName = '';
+
     public string $newClientEmail = '';
+
     public string $newClientPassword = '';
+
     public bool $showSignUpForm = false;
 
     public string $payoutAccountName = '';
+
     public string $payoutAccountNumber = '';
+
     public string $payoutBankName = '';
+
     public bool $showPayoutForm = false;
 
     public function getKpisProperty(): array
@@ -49,7 +60,7 @@ class AffiliateTracker extends Component
             ->get()
             ->flatMap->subscriptions
             ->sum(function ($sub) {
-                $confirmed = \Wave\PaymentTransaction::where('subscription_id', $sub->id)
+                $confirmed = PaymentTransaction::where('subscription_id', $sub->id)
                     ->whereIn('type', ['subscription_initial', 'subscription_renewal'])
                     ->count();
                 $nextMonth = $confirmed + 1;
@@ -62,40 +73,41 @@ class AffiliateTracker extends Component
     public function requestPayout(): void
     {
         $this->validate([
-            'payoutAccountName'   => 'required|string|max:255',
+            'payoutAccountName' => 'required|string|max:255',
             'payoutAccountNumber' => 'required|string|max:20',
-            'payoutBankName'      => 'required|string|max:255',
+            'payoutBankName' => 'required|string|max:255',
         ]);
 
-        $balance = \Wave\AffiliateCommission::where('affiliate_id', auth()->id())
+        $balance = AffiliateCommission::where('affiliate_id', auth()->id())
             ->where('status', 'accrued')
             ->sum('commission_amount');
 
         if ($balance <= 0) {
             session()->flash('payout_error', 'You have no claimable balance to request a payout.');
             $this->showPayoutForm = false;
+
             return;
         }
 
         $bankDetails = [
-            'bank_name'      => $this->payoutBankName,
-            'account_name'   => $this->payoutAccountName,
+            'bank_name' => $this->payoutBankName,
+            'account_name' => $this->payoutAccountName,
             'account_number' => $this->payoutAccountNumber,
         ];
 
         // Persist payout request in DB so admin can action it
-        \Wave\PayoutRequest::create([
-            'affiliate_id'   => auth()->id(),
-            'amount'         => $balance,
-            'bank_name'      => $bankDetails['bank_name'],
-            'account_name'   => $bankDetails['account_name'],
+        PayoutRequest::create([
+            'affiliate_id' => auth()->id(),
+            'amount' => $balance,
+            'bank_name' => $bankDetails['bank_name'],
+            'account_name' => $bankDetails['account_name'],
             'account_number' => $bankDetails['account_number'],
-            'status'         => 'pending',
+            'status' => 'pending',
         ]);
 
         // Also notify admin by email
-        \Illuminate\Support\Facades\Mail::to(config('mail.from.address'))->queue(
-            new \App\Mail\PayoutRequestMail(auth()->user(), $balance, $bankDetails)
+        Mail::to(config('mail.from.address'))->queue(
+            new PayoutRequestMail(auth()->user(), $balance, $bankDetails)
         );
 
         $this->reset(['payoutAccountName', 'payoutAccountNumber', 'payoutBankName', 'showPayoutForm']);
@@ -110,7 +122,7 @@ class AffiliateTracker extends Component
             'newClientPassword' => 'required|min:8',
         ]);
 
-        \App\Models\User::create([
+        User::create([
             'name' => $this->newClientName,
             'email' => $this->newClientEmail,
             'password' => bcrypt($this->newClientPassword),

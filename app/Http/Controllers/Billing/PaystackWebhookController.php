@@ -5,9 +5,8 @@ namespace App\Http\Controllers\Billing;
 use App\Http\Controllers\Controller;
 use App\Jobs\FulfillProductDeployment;
 use App\Mail\AffiliateCommissionEarnedMail;
-use App\Services\InvoiceService;
-use Wave\Invoice;
 use App\Models\User;
+use App\Services\InvoiceService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Wave\AffiliateCommission;
 use Wave\Deployment;
+use Wave\Invoice;
 use Wave\PaymentTransaction;
 use Wave\Plan;
 use Wave\Subscription;
@@ -37,11 +37,11 @@ class PaystackWebhookController extends Controller
         $data = $payload['data'] ?? [];
 
         match ($event) {
-            'charge.success'                                   => $this->handleChargeSuccess($data),
-            'charge.failed'                                    => $this->handleChargeFailed($data),
-            'invoice.payment_failed'                           => $this->handleInvoicePaymentFailed($data),
-            'subscription.disable', 'subscription.not_renew'  => $this->handleSubscriptionDisabled($data),
-            default                                            => null,
+            'charge.success' => $this->handleChargeSuccess($data),
+            'charge.failed' => $this->handleChargeFailed($data),
+            'invoice.payment_failed' => $this->handleInvoicePaymentFailed($data),
+            'subscription.disable', 'subscription.not_renew' => $this->handleSubscriptionDisabled($data),
+            default => null,
         };
 
         return response()->json(['status' => 'ok']);
@@ -67,9 +67,9 @@ class PaystackWebhookController extends Controller
             DB::transaction(function () use ($data, $reference, $metadata, $type) {
                 match ($type) {
                     'subscription_initial' => $this->processSubscriptionInitial($data, $reference, $metadata),
-                    'product_purchase'     => $this->processProductPurchase($data, $reference, $metadata),
-                    'invoice_payment'      => $this->processInvoicePayment($reference, $metadata),
-                    default                => $this->processSubscriptionRenewal($data, $reference),
+                    'product_purchase' => $this->processProductPurchase($data, $reference, $metadata),
+                    'invoice_payment' => $this->processInvoicePayment($reference, $metadata),
+                    default => $this->processSubscriptionRenewal($data, $reference),
                 };
             });
         } catch (QueryException $e) {
@@ -199,6 +199,7 @@ class PaystackWebhookController extends Controller
         $invoice = Invoice::find($metadata['invoice_id'] ?? null);
         if (! $invoice) {
             Log::warning('invoice_payment webhook: invoice not found', ['reference' => $reference, 'metadata' => $metadata]);
+
             return;
         }
 
@@ -207,35 +208,35 @@ class PaystackWebhookController extends Controller
         } catch (\Throwable $e) {
             Log::error('invoice_payment processing failed', [
                 'invoice_id' => $invoice->id,
-                'reference'  => $reference,
-                'error'      => $e->getMessage(),
+                'reference' => $reference,
+                'error' => $e->getMessage(),
             ]);
         }
     }
 
     protected function accrueProductCommissionIfReferred(UserProduct $userProduct, PaymentTransaction $transaction): void
     {
-        $buyer     = $userProduct->user;
+        $buyer = $userProduct->user;
         $affiliate = $buyer?->referrer;
         if (! $affiliate) {
             return;
         }
 
-        $rate   = 15.00;
+        $rate = 15.00;
         $amount = (float) $transaction->amount;
 
         try {
             $commission = AffiliateCommission::create([
-                'affiliate_id'           => $affiliate->id,
-                'referred_user_id'       => $buyer->id,
-                'subscription_id'        => null,
+                'affiliate_id' => $affiliate->id,
+                'referred_user_id' => $buyer->id,
+                'subscription_id' => null,
                 'payment_transaction_id' => $transaction->id,
-                'billing_month_number'   => 1,
-                'plan_monthly_price'     => $amount,
-                'commission_rate'        => $rate,
-                'commission_amount'      => round($amount * $rate / 100, 2),
-                'status'                 => 'accrued',
-                'accrued_at'             => now(),
+                'billing_month_number' => 1,
+                'plan_monthly_price' => $amount,
+                'commission_rate' => $rate,
+                'commission_amount' => round($amount * $rate / 100, 2),
+                'status' => 'accrued',
+                'accrued_at' => now(),
             ]);
         } catch (QueryException $e) {
             if ($this->isDuplicateKeyError($e)) {
@@ -249,7 +250,7 @@ class PaystackWebhookController extends Controller
         } catch (\Throwable $e) {
             Log::error('AffiliateCommission mail failed', [
                 'affiliate_id' => $affiliate->id,
-                'error'        => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -301,7 +302,7 @@ class PaystackWebhookController extends Controller
     protected function handleChargeFailed(array $data): void
     {
         $metadata = $data['metadata'] ?? [];
-        $type     = $metadata['type'] ?? null;
+        $type = $metadata['type'] ?? null;
 
         if ($type !== 'product_purchase') {
             return;
@@ -322,7 +323,7 @@ class PaystackWebhookController extends Controller
 
             Log::warning('Product purchase payment failed', [
                 'user_product_id' => $userProduct->id,
-                'reference'       => $data['reference'] ?? null,
+                'reference' => $data['reference'] ?? null,
             ]);
         }
     }
@@ -343,6 +344,7 @@ class PaystackWebhookController extends Controller
 
         if ($subscription) {
             $subscription->cancel();
+
             return;
         }
 
@@ -350,6 +352,7 @@ class PaystackWebhookController extends Controller
         $email = $data['customer']['email'] ?? null;
         if (! $email) {
             Log::warning('invoice.payment_failed: no email in payload', ['customer_code' => $customerCode]);
+
             return;
         }
 
@@ -372,7 +375,7 @@ class PaystackWebhookController extends Controller
                 ->update(['status' => 'suspended']);
 
             Log::info('UserProduct suspended due to invoice.payment_failed', [
-                'user_id'         => $user->id,
+                'user_id' => $user->id,
                 'user_product_id' => $userProduct->id,
             ]);
         }

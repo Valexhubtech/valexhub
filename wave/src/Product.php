@@ -18,11 +18,11 @@ class Product extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'features'             => 'array',
-        'images'               => 'array',
-        'is_active'            => 'boolean',
-        'low_price'            => 'decimal:2',
-        'high_price'           => 'decimal:2',
+        'features' => 'array',
+        'images' => 'array',
+        'is_active' => 'boolean',
+        'low_price' => 'decimal:2',
+        'high_price' => 'decimal:2',
         'coolify_env_template' => 'array',
     ];
 
@@ -40,7 +40,7 @@ class Product extends Model
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($product) {
             if (empty($product->slug)) {
                 $product->slug = Str::slug($product->name);
@@ -258,13 +258,13 @@ class Product extends Model
         if (app()->bound('cache')) {
             try {
                 Cache::forget('wave_active_products');
-                
+
                 // Clear category-specific caches
                 $categories = Category::pluck('id');
                 foreach ($categories as $categoryId) {
                     Cache::forget("wave_products_category_{$categoryId}");
                 }
-                
+
                 // Clear slug-specific caches
                 $slugs = self::pluck('slug');
                 foreach ($slugs as $slug) {
@@ -283,15 +283,16 @@ class Product extends Model
     {
         if ($this->low_price && $this->high_price) {
             if ($this->low_price == $this->high_price) {
-                return '₦' . number_format($this->low_price, 2);
+                return '₦'.number_format($this->low_price, 2);
             }
-            return '₦' . number_format($this->low_price, 2) . ' - ₦' . number_format($this->high_price, 2);
+
+            return '₦'.number_format($this->low_price, 2).' - ₦'.number_format($this->high_price, 2);
         } elseif ($this->low_price) {
-            return 'From ₦' . number_format($this->low_price, 2);
+            return 'From ₦'.number_format($this->low_price, 2);
         } elseif ($this->high_price) {
-            return 'Up to ₦' . number_format($this->high_price, 2);
+            return 'Up to ₦'.number_format($this->high_price, 2);
         }
-        
+
         return 'Contact for pricing';
     }
 
@@ -301,7 +302,8 @@ class Product extends Model
     public function getFirstImageAttribute()
     {
         $images = $this->images ?? [];
-        return !empty($images) ? $images[0] : null;
+
+        return ! empty($images) ? $images[0] : null;
     }
 
     /**

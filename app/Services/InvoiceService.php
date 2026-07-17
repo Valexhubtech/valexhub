@@ -21,15 +21,15 @@ class InvoiceService
         $lineItems = $this->buildLineItems($userProduct);
 
         $invoice = Invoice::create([
-            'user_id'             => $userProduct->user_id,
-            'user_product_id'     => $userProduct->id,
-            'deployment_id'       => $deployment?->id,
-            'amount'              => $userProduct->amount_paid,
-            'currency'            => 'NGN',
-            'status'              => 'paid',
-            'paystack_reference'  => $paystackReference,
-            'line_items'          => $lineItems,
-            'paid_at'             => now(),
+            'user_id' => $userProduct->user_id,
+            'user_product_id' => $userProduct->id,
+            'deployment_id' => $deployment?->id,
+            'amount' => $userProduct->amount_paid,
+            'currency' => 'NGN',
+            'status' => 'paid',
+            'paystack_reference' => $paystackReference,
+            'line_items' => $lineItems,
+            'paid_at' => now(),
         ]);
 
         $this->generatePdf($invoice);
@@ -44,7 +44,7 @@ class InvoiceService
 
         $pdf = Pdf::loadView('pdf.invoice', ['invoice' => $invoice]);
 
-        $path = 'invoices/' . $invoice->invoiceNumber() . '.pdf';
+        $path = 'invoices/'.$invoice->invoiceNumber().'.pdf';
         Storage::put($path, $pdf->output());
 
         $invoice->update(['pdf_path' => $path]);
@@ -68,8 +68,8 @@ class InvoiceService
         }
 
         $invoice->update([
-            'status'             => 'paid',
-            'paid_at'            => now(),
+            'status' => 'paid',
+            'paid_at' => now(),
             'paystack_reference' => $paystackReference,
         ]);
 
@@ -79,20 +79,20 @@ class InvoiceService
         } catch (\Throwable $e) {
             Log::error('Invoice PDF regeneration failed after payment', [
                 'invoice_id' => $invoice->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
 
         // Advance the renewal date on the linked user product (for recurring invoices)
         if ($invoice->user_product_id) {
-            $userProduct = \Wave\UserProduct::with('pricing')->find($invoice->user_product_id);
+            $userProduct = UserProduct::with('pricing')->find($invoice->user_product_id);
             if ($userProduct && $userProduct->pricing?->isRecurring()) {
                 $base = $userProduct->next_renewal_date ?? now();
                 $next = match ($userProduct->pricing->price_type) {
-                    'monthly'   => $base->copy()->addMonth(),
+                    'monthly' => $base->copy()->addMonth(),
                     'quarterly' => $base->copy()->addMonths(3),
-                    'yearly'    => $base->copy()->addYear(),
-                    default     => null,
+                    'yearly' => $base->copy()->addYear(),
+                    default => null,
                 };
                 if ($next) {
                     $userProduct->update(['next_renewal_date' => $next]);
@@ -114,7 +114,7 @@ class InvoiceService
                 } catch (\Throwable $e) {
                     Log::error('Reactivation email failed', [
                         'deployment_id' => $deployment->id,
-                        'error'         => $e->getMessage(),
+                        'error' => $e->getMessage(),
                     ]);
                 }
 
@@ -124,12 +124,12 @@ class InvoiceService
                         // TODO: app(CoolifyService::class)->start($deployment->coolify_app_id);
                         Log::info('Coolify reactivation pending implementation', [
                             'deployment_id' => $deployment->id,
-                            'app_id'        => $deployment->coolify_app_id,
+                            'app_id' => $deployment->coolify_app_id,
                         ]);
                     } catch (\Throwable $e) {
                         Log::error('Coolify reactivation failed', [
                             'deployment_id' => $deployment->id,
-                            'error'         => $e->getMessage(),
+                            'error' => $e->getMessage(),
                         ]);
                     }
                 }
@@ -145,29 +145,29 @@ class InvoiceService
 
         if ((float) $userProduct->setup_amount > 0) {
             $items[] = [
-                'label'  => $userProduct->deployment_type === 'onprem' ? 'License & Setup Fee' : 'Setup Fee',
+                'label' => $userProduct->deployment_type === 'onprem' ? 'License & Setup Fee' : 'Setup Fee',
                 'amount' => (float) $userProduct->setup_amount,
-                'type'   => 'onetime',
+                'type' => 'onetime',
             ];
         }
 
         if ($userProduct->pricing) {
             $items[] = [
-                'label'  => $userProduct->pricing->label . ' (first period)',
+                'label' => $userProduct->pricing->label.' (first period)',
                 'amount' => (float) $userProduct->pricing->amount,
-                'type'   => 'recurring',
+                'type' => 'recurring',
             ];
         }
 
         foreach ($userProduct->orderAddons as $orderAddon) {
             $name = $orderAddon->addon?->name ?? 'Add-on';
             if ($orderAddon->price_type === 'recurring') {
-                $name .= ' (' . ($orderAddon->addon?->billing_cycle ?? 'recurring') . ')';
+                $name .= ' ('.($orderAddon->addon?->billing_cycle ?? 'recurring').')';
             }
             $items[] = [
-                'label'  => $name,
+                'label' => $name,
                 'amount' => (float) $orderAddon->amount_paid,
-                'type'   => $orderAddon->price_type,
+                'type' => $orderAddon->price_type,
             ];
         }
 

@@ -8,6 +8,8 @@ use App\Jobs\RegisterDomainJob;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -32,36 +34,36 @@ class DomainPurchaseResource extends Resource
     {
         return $schema->components([
             Section::make('Domain Details')->schema([
-                \Filament\Forms\Components\TextInput::make('domain')->disabled(),
-                \Filament\Forms\Components\TextInput::make('tld')->label('TLD')->disabled(),
-                \Filament\Forms\Components\TextInput::make('hostinger_item_id')->label('Hostinger Item ID')->disabled(),
+                TextInput::make('domain')->disabled(),
+                TextInput::make('tld')->label('TLD')->disabled(),
+                TextInput::make('hostinger_item_id')->label('Hostinger Item ID')->disabled(),
             ])->columns(3),
 
             Section::make('Payment')->schema([
-                \Filament\Forms\Components\TextInput::make('paystack_reference')->label('Paystack Reference')->disabled(),
-                \Filament\Forms\Components\TextInput::make('total_kobo')
+                TextInput::make('paystack_reference')->label('Paystack Reference')->disabled(),
+                TextInput::make('total_kobo')
                     ->label('Total (₦)')
                     ->formatStateUsing(fn ($state) => number_format($state / 100, 2))
                     ->disabled(),
-                \Filament\Forms\Components\Select::make('payment_status')
+                Select::make('payment_status')
                     ->options(['pending' => 'Pending', 'paid' => 'Paid', 'failed' => 'Failed'])
                     ->disabled(),
             ])->columns(3),
 
             Section::make('Registration & DNS')->schema([
-                \Filament\Forms\Components\Select::make('registration_status')
+                Select::make('registration_status')
                     ->options([
-                        'pending'    => 'Pending',
+                        'pending' => 'Pending',
                         'processing' => 'Processing',
                         'registered' => 'Registered',
-                        'failed'     => 'Failed',
+                        'failed' => 'Failed',
                     ])
                     ->required(),
-                \Filament\Forms\Components\Select::make('dns_status')
+                Select::make('dns_status')
                     ->options([
-                        'pending'    => 'Pending',
+                        'pending' => 'Pending',
                         'configured' => 'Configured',
-                        'failed'     => 'Failed',
+                        'failed' => 'Failed',
                     ])
                     ->required(),
             ])->columns(2),
@@ -88,16 +90,16 @@ class DomainPurchaseResource extends Resource
 
                 TextColumn::make('total_kobo')
                     ->label('Total')
-                    ->formatStateUsing(fn ($state) => '₦' . number_format($state / 100, 2))
+                    ->formatStateUsing(fn ($state) => '₦'.number_format($state / 100, 2))
                     ->sortable(),
 
                 TextColumn::make('payment_status')
                     ->label('Payment')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'paid'    => 'success',
+                        'paid' => 'success',
                         'pending' => 'warning',
-                        default   => 'danger',
+                        default => 'danger',
                     })
                     ->sortable(),
 
@@ -107,8 +109,8 @@ class DomainPurchaseResource extends Resource
                     ->color(fn (string $state): string => match ($state) {
                         'registered' => 'success',
                         'processing' => 'warning',
-                        'pending'    => 'gray',
-                        default      => 'danger',
+                        'pending' => 'gray',
+                        default => 'danger',
                     })
                     ->sortable(),
 
@@ -117,8 +119,8 @@ class DomainPurchaseResource extends Resource
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'configured' => 'success',
-                        'pending'    => 'gray',
-                        default      => 'danger',
+                        'pending' => 'gray',
+                        default => 'danger',
                     })
                     ->sortable(),
 
@@ -132,16 +134,16 @@ class DomainPurchaseResource extends Resource
                     ->options(['pending' => 'Pending', 'paid' => 'Paid', 'failed' => 'Failed']),
                 SelectFilter::make('registration_status')
                     ->options([
-                        'pending'    => 'Pending',
+                        'pending' => 'Pending',
                         'processing' => 'Processing',
                         'registered' => 'Registered',
-                        'failed'     => 'Failed',
+                        'failed' => 'Failed',
                     ]),
                 SelectFilter::make('dns_status')
                     ->options([
-                        'pending'    => 'Pending',
+                        'pending' => 'Pending',
                         'configured' => 'Configured',
-                        'failed'     => 'Failed',
+                        'failed' => 'Failed',
                     ]),
             ])
             ->recordActions([
@@ -154,8 +156,8 @@ class DomainPurchaseResource extends Resource
                         $record->update(['registration_status' => 'pending', 'dns_status' => 'pending']);
                         RegisterDomainJob::dispatch($record->id);
                     })
-                    ->visible(fn (DomainPurchase $r): bool =>
-                        $r->payment_status === 'paid' &&
+                    ->visible(
+                        fn (DomainPurchase $r): bool => $r->payment_status === 'paid' &&
                         in_array($r->registration_status, ['failed', 'pending'])
                     ),
 
@@ -184,7 +186,7 @@ class DomainPurchaseResource extends Resource
     {
         return [
             'index' => ListDomainPurchases::route('/'),
-            'view'  => ViewDomainPurchase::route('/{record}'),
+            'view' => ViewDomainPurchase::route('/{record}'),
         ];
     }
 }

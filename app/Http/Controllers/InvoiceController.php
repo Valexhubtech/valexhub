@@ -23,7 +23,7 @@ class InvoiceController extends Controller
             $invoice->refresh();
         }
 
-        return Storage::download($invoice->pdf_path, $invoice->invoiceNumber() . '.pdf');
+        return Storage::download($invoice->pdf_path, $invoice->invoiceNumber().'.pdf');
     }
 
     public function pay(Request $request, Invoice $invoice, PaystackService $paystack): RedirectResponse
@@ -38,8 +38,8 @@ class InvoiceController extends Controller
                 email: $request->user()->email,
                 amountKobo: (int) round((float) $invoice->amount * 100),
                 metadata: [
-                    'type'          => 'invoice_payment',
-                    'invoice_id'    => $invoice->id,
+                    'type' => 'invoice_payment',
+                    'invoice_id' => $invoice->id,
                     'deployment_id' => $invoice->deployment_id,
                 ],
                 callbackUrl: $callbackUrl,
@@ -47,8 +47,9 @@ class InvoiceController extends Controller
         } catch (\Throwable $e) {
             Log::error('Invoice payment initialization failed', [
                 'invoice_id' => $invoice->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
+
             return redirect()->route('dashboard.invoices')
                 ->with('error', 'Could not initialize payment. Please try again or contact support.');
         }
@@ -84,9 +85,10 @@ class InvoiceController extends Controller
         } catch (\Throwable $e) {
             Log::error('Invoice payment verification failed', [
                 'invoice_id' => $invoice->id,
-                'reference'  => $reference,
-                'error'      => $e->getMessage(),
+                'reference' => $reference,
+                'error' => $e->getMessage(),
             ]);
+
             return redirect()->route('dashboard.invoices')
                 ->with('error', 'Could not verify payment. If you paid, it will be reflected within a few minutes.');
         }
