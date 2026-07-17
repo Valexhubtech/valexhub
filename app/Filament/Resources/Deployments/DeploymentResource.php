@@ -51,6 +51,10 @@ class DeploymentResource extends Resource
                             ->formatStateUsing(fn ($record) =>
                                 ($record->user->name ?? '—').' ('.$record->user->email.')'),
 
+                        TextInput::make('business_name')
+                            ->label('Business Name')
+                            ->disabled(),
+
                         TextInput::make('deploy_for_display')
                             ->label('Deploying For')
                             ->disabled()
@@ -174,8 +178,14 @@ class DeploymentResource extends Resource
                     ->color(fn (string $state): string => $state === 'client' ? 'warning' : 'gray')
                     ->formatStateUsing(fn ($state): string => $state === 'client' ? 'Client' : 'Self'),
 
+                TextColumn::make('business_name')
+                    ->label('Business')
+                    ->placeholder('—')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('client_name')
-                    ->label('Client')
+                    ->label('Client Contact')
                     ->description(fn ($record) => $record->client_email ?? '')
                     ->placeholder('—')
                     ->toggleable(),

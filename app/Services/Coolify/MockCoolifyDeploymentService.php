@@ -25,17 +25,20 @@ class MockCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             );
         }
 
-        $appId = (string) Str::uuid();
+        $appId   = (string) Str::uuid();
         $shortId = Str::lower(Str::random(6));
-        $slug = $product->slug ?: Str::slug($product->name);
+        $slug    = $product->slug ?: Str::slug($product->name);
+        $appUrl  = "https://{$slug}-{$shortId}.mock-coolify.app";
 
         return new CoolifyDeploymentResult(
             success: true,
             appId: $appId,
-            deploymentUrl: "https://{$slug}-{$shortId}.mock-coolify.app",
+            deploymentUrl: $appUrl,
             loginUsername: $user->email,
-            loginPassword: Str::password(16),
-            adminUrl: "https://{$slug}-{$shortId}.mock-coolify.app/admin",
+            loginPassword: Str::password(16, symbols: false),
+            adminUrl: "{$appUrl}/admin",
+            dbName: 'db_' . Str::lower(Str::random(20)),
+            betterAuthSecret: Str::random(64),
         );
     }
 

@@ -14,9 +14,10 @@ class ProductCheckout extends Component
     public string $deploymentType = '';
     public ?int   $selectedPricingId = null;
     public array  $selectedAddonIds  = [];
-    public string $deployFor   = 'self';
-    public string $clientName  = '';
-    public string $clientEmail = '';
+    public string $deployFor      = 'self';
+    public string $businessName   = '';
+    public string $clientName     = '';
+    public string $clientEmail    = '';
     public bool   $supportsCloud  = false;
     public bool   $supportsOnPrem = false;
 
@@ -77,6 +78,7 @@ class ProductCheckout extends Component
         $this->validate([
             'deploymentType' => 'required|in:cloud,onprem',
             'deployFor'      => 'required|in:self,client',
+            'businessName'   => 'required|string|min:2|max:255',
             'clientName'     => 'required_if:deployFor,client|nullable|string|max:255',
             'clientEmail'    => 'required_if:deployFor,client|nullable|email|max:255',
         ]);
@@ -145,6 +147,7 @@ class ProductCheckout extends Component
             'product_id'      => $product->id,
             'user_product_id' => $userProduct->id,
             'deploy_for'      => $this->deployFor,
+            'business_name'   => $this->businessName,
             'client_name'     => $this->clientName ?: null,
             'client_email'    => $this->clientEmail ?: null,
             'status'          => 'pending',

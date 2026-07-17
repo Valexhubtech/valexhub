@@ -175,12 +175,24 @@
                     <p class="text-sm font-medium text-zinc-900 dark:text-white">A Client</p>
                 </div>
             </div>
-            <div x-show="deployFor === 'client'" class="mt-3 space-y-2">
+
+            {{-- Business name — always required; label adapts to self vs client --}}
+            <div class="mt-3">
+                @error('businessName') <p class="text-sm text-red-600 mb-1">{{ $message }}</p> @enderror
+                <input type="text" wire:model="businessName"
+                    :placeholder="deployFor === 'client' ? 'Client\'s business name' : 'Your business name'"
+                    class="w-full px-3 py-2 text-sm border rounded-md border-zinc-300 dark:bg-neutral-700 dark:border-neutral-600">
+                <p class="mt-1 text-xs text-zinc-400"
+                   x-text="deployFor === 'client' ? 'The trading name of the business this software is for.' : 'The trading name of your business.'"></p>
+            </div>
+
+            {{-- Client contact details — only when deploying for a client --}}
+            <div x-show="deployFor === 'client'" class="mt-2 space-y-2">
                 @error('clientName') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
-                <input type="text" wire:model="clientName" placeholder="Client full name"
+                <input type="text" wire:model="clientName" placeholder="Client contact person's full name"
                     class="w-full px-3 py-2 text-sm border rounded-md border-zinc-300 dark:bg-neutral-700 dark:border-neutral-600">
                 @error('clientEmail') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
-                <input type="email" wire:model="clientEmail" placeholder="Client email address"
+                <input type="email" wire:model="clientEmail" placeholder="Client contact email address"
                     class="w-full px-3 py-2 text-sm border rounded-md border-zinc-300 dark:bg-neutral-700 dark:border-neutral-600">
             </div>
         </div>

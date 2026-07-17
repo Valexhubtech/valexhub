@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\CoolifyWebhookController;
+use App\Http\Controllers\Api\InstanceWebhookController;
 use Illuminate\Http\Request;
 
 /*
@@ -16,5 +18,11 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return auth()->user();
 });
+
+// Webhook from deployed instances — verified by central_api_key + HMAC signature
+Route::post('/instance-webhook/setup-complete', [InstanceWebhookController::class, 'setupComplete']);
+
+// Webhook from Coolify — token embedded in path to avoid query-string validation issues
+Route::post('/coolify-webhook/{token}', [CoolifyWebhookController::class, 'handle']);
 
 Wave::api();
