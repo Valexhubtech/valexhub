@@ -30,7 +30,6 @@ return [
     // Vars injected into every customer deployment via the Coolify API.
     // These replace Coolify shared project vars (4.1.2 does not auto-apply them).
     'deploy' => [
-        'node_env'     => env('DEPLOY_NODE_ENV', 'production'),
         'db_host'      => env('DEPLOY_DB_HOST'),
         'db_port'      => env('DEPLOY_DB_PORT', '5432'),
         'db_user'      => env('DEPLOY_DB_USER'),

@@ -80,6 +80,20 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
                 );
             }
 
+            // Fetch the FQDN Coolify auto-assigned to this app right after creation.
+            // It's available immediately (before deploy) as a sslip.io URL.
+            // We need it now so BETTER_AUTH_URL can be injected on the first deploy.
+            $appFqdn = $responseData['fqdn'] ?? null;
+            if (! $appFqdn) {
+                try {
+                    $info    = $this->http($baseUrl, $token)->get("/api/v1/applications/{$appUuid}")->json();
+                    $appFqdn = $info['fqdn'] ?? null;
+                } catch (\Throwable) {}
+            }
+            $appUrl = $appFqdn
+                ? (str_starts_with($appFqdn, 'http') ? $appFqdn : 'https://' . ltrim($appFqdn, '/'))
+                : null;
+
             // Inject all env vars before triggering the deploy
             $this->injectEnvVars(
                 appUuid: $appUuid,
@@ -93,23 +107,27 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
                 baseUrl: $baseUrl,
                 token: $token,
                 userProductId: $options['user_product_id'] ?? null,
+                appUrl: $appUrl,
+                extraEnvVars: $options['extra_env_vars'] ?? [],
+                standaloneMode: ($options['env_inject_mode'] ?? 'alongside') === 'standalone',
             );
 
             // Now trigger the actual deployment
             $this->http($baseUrl, $token)
-                ->post("/api/v1/deployments", ['uuid' => $appUuid]);
+                ->get('/api/v1/deploy', ['uuid' => $appUuid, 'force' => false]);
 
             Log::info('Coolify deployment triggered', ['app_uuid' => $appUuid, 'product' => $product->id]);
 
             return new CoolifyDeploymentResult(
                 success: true,
                 appId: $appUuid,
+                deploymentUrl: $appUrl,
                 loginUsername: $user->email,
                 loginPassword: $password,
                 dbName: $dbName,
                 betterAuthSecret: $betterAuthSecret,
                 centralApiKey: $centralApiKey,
-                isProvisional: true, // status comes via webhook, not immediately
+                isProvisional: true,
             );
         } catch (RequestException $e) {
             $responseBody = $e->response->json();
@@ -170,6 +188,9 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         string $baseUrl,
         string $token,
         ?int $userProductId = null,
+        ?string $appUrl = null,
+        array $extraEnvVars = [],
+        bool $standaloneMode = false,
     ): void {
         $d = config('services.deploy');
 
@@ -200,10 +221,8 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         // All vars to inject. Mark secrets so Coolify masks them in its UI.
         // Values are never logged — only keys appear in log output.
         $vars = [
-            // Runtime
-            ['key' => 'NODE_ENV',                            'value' => $d['node_env'] ?? 'production',   'secret' => false],
-
             // Database — full URL (required by service app) + individual parts (fallback)
+            // Note: NODE_ENV is intentionally omitted — it is baked into the Docker image
             ['key' => 'DATABASE_URL',                       'value' => $databaseUrl,                      'secret' => true],
             ['key' => 'DB_HOST',                            'value' => $d['db_host'],                     'secret' => false],
             ['key' => 'DB_PORT',                            'value' => $d['db_port'] ?? '5432',           'secret' => false],
@@ -241,6 +260,11 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             ['key' => 'BETTER_AUTH_SECRET',                 'value' => $betterAuthSecret,                 'secret' => true],
             ['key' => 'ENABLED_MODULES',                    'value' => $enabledModules,                   'secret' => false],
 
+            // App URL — injected at creation time so Better Auth accepts requests on first boot.
+            // BETTER_AUTH_URL must match the origin exactly or Better Auth rejects all logins.
+            ['key' => 'BETTER_AUTH_URL',                    'value' => $appUrl,                           'secret' => false],
+            ['key' => 'NEXT_PUBLIC_APP_URL',                'value' => $appUrl,                           'secret' => false],
+
             // Platform comms — bootstrap uses these to phone home on setup-complete
             ['key' => 'CENTRAL_API_URL',                    'value' => $d['central_api_url'],             'secret' => false],
             ['key' => 'CENTRAL_API_KEY',                    'value' => $centralApiKey,                    'secret' => true],
@@ -248,6 +272,16 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             // Encryption key — unique per instance, protects sensitive DB values
             ['key' => 'ENCRYPTION_KEY',                     'value' => $encryptionKey,                    'secret' => true],
         ];
+
+        // In standalone mode only inject the custom vars — skip the standard set entirely.
+        // In alongside mode (default) merge custom vars on top of the standard set.
+        $customVars = collect($extraEnvVars)
+            ->filter(fn ($item) => ! empty($item['key']) && isset($item['value']))
+            ->map(fn ($item) => ['key' => $item['key'], 'value' => $item['value'], 'secret' => true])
+            ->values()
+            ->all();
+
+        $vars = $standaloneMode ? $customVars : array_merge($vars, $customVars);
 
         $injected = [];
         $failed   = [];
@@ -258,16 +292,39 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             }
 
             try {
-                $this->http($baseUrl, $token)->post("/api/v1/applications/{$appUuid}/envs", [
-                    'key'        => $var['key'],
-                    'value'      => $var['value'],
-                    'is_preview' => false,
-                    'is_secret'  => $var['secret'],
-                ])->throw();
+                $payload = ['key' => $var['key'], 'value' => $var['value']];
 
-                $injected[] = $var['key'];
-            } catch (\Throwable) {
+                $response = $this->http($baseUrl, $token)
+                    ->post("/api/v1/applications/{$appUuid}/envs", $payload);
+
+                // 409 = var already exists — switch to PATCH to update it
+                if ($response->status() === 409) {
+                    $response = $this->http($baseUrl, $token)
+                        ->patch("/api/v1/applications/{$appUuid}/envs", $payload);
+                }
+
+                if ($response->failed()) {
+                    $failed[] = $var['key'];
+                    if (count($failed) === 1) {
+                        Log::error('Env var injection HTTP error', [
+                            'app_uuid' => $appUuid,
+                            'key'      => $var['key'],
+                            'status'   => $response->status(),
+                            'body'     => $response->body(),
+                        ]);
+                    }
+                } else {
+                    $injected[] = $var['key'];
+                }
+            } catch (\Throwable $e) {
                 $failed[] = $var['key'];
+                if (count($failed) === 1) {
+                    Log::error('Env var injection exception', [
+                        'app_uuid' => $appUuid,
+                        'key'      => $var['key'],
+                        'error'    => $e->getMessage(),
+                    ]);
+                }
             }
         }
 
@@ -276,6 +333,152 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         } else {
             Log::info('Env vars injected', ['app_uuid' => $appUuid, 'keys' => $injected]);
         }
+    }
+
+    // ── Admin operations ──────────────────────────────────────────────────────
+
+    /**
+     * Restart the running container in-place. UUID and domain stay the same.
+     * Use when the app is misbehaving but env vars are correct.
+     */
+    public function restartApp(\Wave\Deployment $deployment): bool
+    {
+        [$baseUrl, $token] = $this->serverCredentials($deployment);
+        if (! $baseUrl) {
+            return false;
+        }
+
+        try {
+            $this->http($baseUrl, $token)
+                ->post("/api/v1/applications/{$deployment->coolify_app_id}/restart")
+                ->throw();
+
+            Log::info('Coolify restart triggered', ['app_uuid' => $deployment->coolify_app_id]);
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Coolify restart failed', ['app_uuid' => $deployment->coolify_app_id, 'error' => $e->getMessage()]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Re-inject all env vars into the existing Coolify app and trigger a fresh deploy.
+     * UUID stays the same, so domain config is preserved.
+     * Credentials are reused from the deployment record; only encryption key is regenerated.
+     */
+    public function redeployWithEnvFix(\Wave\Deployment $deployment): bool
+    {
+        [$baseUrl, $token] = $this->serverCredentials($deployment);
+        if (! $baseUrl) {
+            return false;
+        }
+
+        $deployment->loadMissing('user');
+        $creds = $deployment->credentials_encrypted ?? [];
+
+        $password         = $creds['password']           ?? Str::password(16, symbols: false);
+        $dbName           = $creds['db_name']             ?? 'db_' . Str::lower(Str::random(20));
+        $betterAuthSecret = $creds['better_auth_secret']  ?? Str::random(64);
+        $centralApiKey    = $deployment->central_api_key  ?? Str::random(64);
+        $encryptionKey    = bin2hex(random_bytes(32)); // always fresh — old value is unrecoverable
+        $businessName     = $deployment->business_name ?? $deployment->user?->name ?? 'Business';
+
+        // Use the stored URL if we have one; otherwise fetch from Coolify
+        $appUrl = $deployment->deployment_url;
+        if (! $appUrl) {
+            try {
+                $info    = $this->http($baseUrl, $token)->get("/api/v1/applications/{$deployment->coolify_app_id}")->json();
+                $appFqdn = $info['fqdn'] ?? null;
+                $appUrl  = $appFqdn
+                    ? (str_starts_with($appFqdn, 'http') ? $appFqdn : 'https://' . ltrim($appFqdn, '/'))
+                    : null;
+            } catch (\Throwable) {}
+        }
+
+        $this->injectEnvVars(
+            appUuid: $deployment->coolify_app_id,
+            user: $deployment->user,
+            password: $password,
+            dbName: $dbName,
+            betterAuthSecret: $betterAuthSecret,
+            centralApiKey: $centralApiKey,
+            encryptionKey: $encryptionKey,
+            businessName: $businessName,
+            baseUrl: $baseUrl,
+            token: $token,
+            userProductId: $deployment->user_product_id,
+            appUrl: $appUrl,
+            extraEnvVars: $deployment->extra_env_vars ?? [],
+            standaloneMode: ($deployment->env_inject_mode ?? 'alongside') === 'standalone',
+        );
+
+        // Persist updated credentials so the setup-complete webhook and client area stay in sync
+        $deployment->update([
+            'central_api_key'       => $centralApiKey,
+            'credentials_encrypted' => array_merge($creds, [
+                'username'           => $deployment->user?->email,
+                'password'           => $password,
+                'db_name'            => $dbName,
+                'better_auth_secret' => $betterAuthSecret,
+            ]),
+        ]);
+
+        try {
+            $this->http($baseUrl, $token)
+                ->get('/api/v1/deploy', ['uuid' => $deployment->coolify_app_id, 'force' => false])
+                ->throw();
+
+            Log::info('Coolify redeploy triggered', ['app_uuid' => $deployment->coolify_app_id]);
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Coolify redeploy trigger failed', ['app_uuid' => $deployment->coolify_app_id, 'error' => $e->getMessage()]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Permanently delete the Coolify application and its volumes.
+     * Used before a full Wipe & Recreate so the admin can provision a brand-new app.
+     */
+    public function deleteApp(\Wave\Deployment $deployment): bool
+    {
+        [$baseUrl, $token] = $this->serverCredentials($deployment);
+        if (! $baseUrl) {
+            return false;
+        }
+
+        try {
+            $this->http($baseUrl, $token)
+                ->delete("/api/v1/applications/{$deployment->coolify_app_id}", [
+                    'delete_configurations' => true,
+                    'delete_volumes'        => true,
+                ])
+                ->throw();
+
+            Log::info('Coolify app deleted', ['app_uuid' => $deployment->coolify_app_id]);
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Coolify delete failed', ['app_uuid' => $deployment->coolify_app_id, 'error' => $e->getMessage()]);
+
+            return false; // non-fatal — Coolify may have already cleaned it up
+        }
+    }
+
+    private function serverCredentials(\Wave\Deployment $deployment): array
+    {
+        $deployment->loadMissing('coolifyServer');
+        $server = $deployment->coolifyServer;
+
+        if (! $server || ! $deployment->coolify_app_id) {
+            return [null, null];
+        }
+
+        return [rtrim($server->api_url, '/'), $server->api_token];
     }
 
     private function http(string $baseUrl, string $token)

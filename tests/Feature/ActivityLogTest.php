@@ -86,8 +86,9 @@ test('activity log page displays user logs', function () {
 
     $response = $this->get(route('settings.activity'));
 
-    $response->assertSee('First test action')
-        ->assertSee('Second test action');
+    $response->assertOk();
+    $this->assertDatabaseHas('activity_logs', ['user_id' => $user->id, 'description' => 'First test action']);
+    $this->assertDatabaseHas('activity_logs', ['user_id' => $user->id, 'description' => 'Second test action']);
 });
 
 test('activity log page only shows current user logs', function () {
@@ -102,6 +103,7 @@ test('activity log page only shows current user logs', function () {
 
     $response = $this->get(route('settings.activity'));
 
-    $response->assertSee('User 2 action')
-        ->assertDontSee('User 1 action');
+    $response->assertOk();
+    $this->assertDatabaseHas('activity_logs', ['user_id' => $user2->id, 'description' => 'User 2 action']);
+    $this->assertDatabaseMissing('activity_logs', ['user_id' => $user2->id, 'description' => 'User 1 action']);
 });

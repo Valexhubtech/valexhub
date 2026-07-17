@@ -60,23 +60,25 @@ class ProductDeploymentService
             'client_email'    => $deployment->client_email,
             'server'          => $server,
             'user_product_id' => $deployment->user_product_id,
+            'extra_env_vars'  => $deployment->extra_env_vars ?? [],
+            'env_inject_mode' => $deployment->env_inject_mode ?? 'alongside',
         ]);
 
         if ($result->success) {
             $deployment->update([
                 'coolify_app_id'        => $result->appId,
+                'deployment_url'        => $result->deploymentUrl, // known at creation time from Coolify
                 'central_api_key'       => $result->centralApiKey,
                 'credentials_encrypted' => [
-                    'username'           => $result->loginUsername,
+                    'email'              => $result->loginUsername,
                     'password'           => $result->loginPassword,
-                    'admin_url'          => $result->adminUrl,
                     'db_name'            => $result->dbName,
                     'better_auth_secret' => $result->betterAuthSecret,
                 ],
             ]);
 
             if ($result->isProvisional) {
-                // Real Coolify deploy — container is booting. URL and active status come via webhook.
+                // Real Coolify deploy — container is booting. Active status comes via setup-complete webhook.
                 $deployment->update(['status' => 'provisioning']);
             } else {
                 // Mock deploy — treat as immediately active (no real container).

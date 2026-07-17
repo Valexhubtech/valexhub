@@ -102,17 +102,24 @@
 
                     {{-- Status badge --}}
                     <td class="px-4 py-3">
-                        <span class="px-2.5 py-1 text-xs font-medium rounded-full {{ $statusClass }}">
-                            @if($deployment->status === 'provisioning')
-                                <span class="inline-block w-1.5 h-1.5 rounded-full bg-yellow-500 mr-1 animate-pulse"></span>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $statusClass }}">
+                            @if($deployment->status === 'provisioning' || $deployment->status === 'pending')
+                                <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span>
                             @endif
                             {{ $statusLabel }}
                         </span>
-                        {{-- Inline status info on mobile --}}
                         @if($deployment->status === 'pending')
                             <p class="text-xs text-zinc-400 mt-1">Awaiting payment…</p>
                         @elseif($deployment->status === 'provisioning')
-                            <p class="text-xs text-zinc-400 mt-1">~2–5 min</p>
+                            @if($deployment->deployment_url)
+                                <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">Initialising app…</p>
+                            @else
+                                <p class="text-xs text-zinc-400 mt-1">Starting container…</p>
+                            @endif
+                        @elseif($deployment->status === 'failed' && $deployment->failure_reason)
+                            <p class="text-xs text-red-500 mt-1 truncate max-w-[140px]" title="{{ $deployment->failure_reason }}">
+                                {{ Str::limit($deployment->failure_reason, 40) }}
+                            </p>
                         @elseif($deployment->status === 'suspended')
                             <p class="text-xs text-orange-500 mt-1">Missed payment</p>
                         @endif

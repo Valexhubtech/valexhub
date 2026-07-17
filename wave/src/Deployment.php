@@ -13,7 +13,8 @@ class Deployment extends Model
 
     protected $casts = [
         'credentials_encrypted' => 'encrypted:array',
-        'deployed_at' => 'datetime',
+        'extra_env_vars'        => 'encrypted:array',
+        'deployed_at'           => 'datetime',
     ];
 
     /**

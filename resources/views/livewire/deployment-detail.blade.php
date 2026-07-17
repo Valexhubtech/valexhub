@@ -38,13 +38,77 @@
 
     {{-- Provisioning --}}
     @if($deployment->status === 'provisioning')
-        <div class="p-6 bg-white border border-zinc-200 rounded-xl dark:bg-zinc-800 dark:border-zinc-700 text-center">
-            <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-                <x-phosphor-gear-six class="w-6 h-6 text-yellow-600 animate-spin" />
+    @php
+        // Step 2 = container started (Coolify deployment_success fired, URL saved)
+        // Step 3 = bootstrap running (container up, waiting for setup-complete webhook)
+        $containerStarted = (bool) $deployment->deployment_url;
+    @endphp
+    <div class="p-6 bg-white border border-zinc-200 rounded-xl dark:bg-zinc-800 dark:border-zinc-700">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center flex-shrink-0">
+                <x-phosphor-gear-six class="w-5 h-5 text-yellow-600 animate-spin" />
             </div>
-            <h3 class="font-semibold text-zinc-900 dark:text-white">Setting Up Your App</h3>
-            <p class="mt-1 text-sm text-zinc-500">Provisioning {{ $deployment->product->name }}. Usually takes 2–5 minutes.</p>
+            <div>
+                <h3 class="font-semibold text-zinc-900 dark:text-white">Setting Up Your App</h3>
+                <p class="text-sm text-zinc-500">This page refreshes automatically — usually ready in 2–5 minutes.</p>
+            </div>
         </div>
+
+        {{-- Progress steps --}}
+        <ol class="relative border-l border-zinc-200 dark:border-zinc-700 ml-3 space-y-6">
+
+            {{-- Step 1: Payment --}}
+            <li class="ml-6">
+                <span class="absolute -left-3 flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/40 ring-4 ring-white dark:ring-zinc-800">
+                    <x-phosphor-check class="w-3 h-3 text-green-600 dark:text-green-400" />
+                </span>
+                <p class="text-sm font-medium text-green-700 dark:text-green-400">Payment confirmed</p>
+                <p class="text-xs text-zinc-400 mt-0.5">Your order has been received.</p>
+            </li>
+
+            {{-- Step 2: Container starting --}}
+            <li class="ml-6">
+                <span class="absolute -left-3 flex items-center justify-center w-6 h-6 rounded-full ring-4 ring-white dark:ring-zinc-800
+                    {{ $containerStarted ? 'bg-green-100 dark:bg-green-900/40' : 'bg-yellow-100 dark:bg-yellow-900/40' }}">
+                    @if($containerStarted)
+                        <x-phosphor-check class="w-3 h-3 text-green-600 dark:text-green-400" />
+                    @else
+                        <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+                    @endif
+                </span>
+                <p class="text-sm font-medium {{ $containerStarted ? 'text-green-700 dark:text-green-400' : 'text-yellow-700 dark:text-yellow-400' }}">
+                    Container starting
+                </p>
+                <p class="text-xs text-zinc-400 mt-0.5">Pulling the Docker image and booting the container.</p>
+            </li>
+
+            {{-- Step 3: App initialising --}}
+            <li class="ml-6">
+                <span class="absolute -left-3 flex items-center justify-center w-6 h-6 rounded-full ring-4 ring-white dark:ring-zinc-800
+                    {{ $containerStarted ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-zinc-100 dark:bg-zinc-700' }}">
+                    @if($containerStarted)
+                        <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+                    @else
+                        <span class="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-500"></span>
+                    @endif
+                </span>
+                <p class="text-sm font-medium {{ $containerStarted ? 'text-yellow-700 dark:text-yellow-400' : 'text-zinc-400' }}">
+                    App initialising
+                </p>
+                <p class="text-xs text-zinc-400 mt-0.5">Creating your database, running migrations, seeding your account.</p>
+            </li>
+
+            {{-- Step 4: Ready --}}
+            <li class="ml-6">
+                <span class="absolute -left-3 flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-700 ring-4 ring-white dark:ring-zinc-800">
+                    <span class="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-500"></span>
+                </span>
+                <p class="text-sm font-medium text-zinc-400">Ready</p>
+                <p class="text-xs text-zinc-400 mt-0.5">Login credentials will be emailed to you.</p>
+            </li>
+
+        </ol>
+    </div>
     @endif
 
     {{-- Active --}}
@@ -52,25 +116,42 @@
         <div class="p-5 bg-white border border-zinc-200 rounded-xl dark:bg-zinc-800 dark:border-zinc-700">
             <h2 class="mb-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide">Access Your App</h2>
 
+            @php
+                $loginPath = ltrim($deployment->product->login_path ?? '/dashboard', '/');
+                $loginUrl  = $deployment->deployment_url
+                    ? rtrim($deployment->deployment_url, '/') . '/' . $loginPath
+                    : null;
+            @endphp
             <div class="flex flex-wrap gap-3">
-                @if($deployment->deployment_url)
+                @if($loginUrl)
                     <a href="{{ URL::temporarySignedRoute('deployments.one-click-login', now()->addMinutes(10), ['deployment' => $deployment->id]) }}"
                        target="_blank"
                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-md bg-zinc-900 hover:bg-zinc-800 transition-colors">
                         <x-phosphor-sign-in class="w-4 h-4" />
                         One-Click Login
                     </a>
+                    <a href="{{ $loginUrl }}" target="_blank"
+                       class="inline-flex items-center gap-2 px-4 py-2 text-sm border rounded-md border-zinc-300 text-zinc-700 dark:border-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-neutral-700 transition-colors">
+                        <x-phosphor-arrow-square-out class="w-4 h-4" />
+                        Open App
+                    </a>
+                @elseif($deployment->deployment_url)
                     <a href="{{ $deployment->deployment_url }}" target="_blank"
                        class="inline-flex items-center gap-2 px-4 py-2 text-sm border rounded-md border-zinc-300 text-zinc-700 dark:border-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-neutral-700 transition-colors">
                         <x-phosphor-arrow-square-out class="w-4 h-4" />
                         Open App
                     </a>
                 @else
-                    <p class="text-sm text-zinc-500">Your app is running. A URL will appear once Coolify assigns one.</p>
+                    <p class="text-sm text-zinc-500">Your app URL will appear here once the container is assigned a domain.</p>
                 @endif
             </div>
 
-            @if($deployment->credentials_encrypted)
+            @php
+                $creds = $deployment->credentials_encrypted ?? [];
+                $email    = $creds['email']    ?? $creds['username'] ?? null;
+                $password = $creds['password'] ?? null;
+            @endphp
+            @if($email || $password)
                 <div x-data="{ revealed: false }" class="mt-5 pt-5 border-t border-zinc-200 dark:border-zinc-700">
                     <div class="flex items-center justify-between mb-3">
                         <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Login Credentials</p>
@@ -78,13 +159,19 @@
                                 class="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white underline transition-colors"
                                 x-text="revealed ? 'Hide' : 'Show credentials'"></button>
                     </div>
-                    <div x-show="revealed" x-transition class="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-md space-y-1.5 font-mono text-xs">
-                        @foreach($deployment->credentials_encrypted ?? [] as $key => $value)
-                            <div class="flex items-center gap-2">
-                                <span class="text-zinc-400 w-24 flex-shrink-0">{{ Str::title(str_replace('_', ' ', $key)) }}</span>
-                                <span class="text-zinc-900 dark:text-white break-all">{{ $value }}</span>
-                            </div>
-                        @endforeach
+                    <div x-show="revealed" x-transition class="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-md space-y-2 font-mono text-xs">
+                        @if($email)
+                        <div class="flex items-center gap-3">
+                            <span class="text-zinc-400 w-20 flex-shrink-0">Email</span>
+                            <span class="text-zinc-900 dark:text-white break-all">{{ $email }}</span>
+                        </div>
+                        @endif
+                        @if($password)
+                        <div class="flex items-center gap-3">
+                            <span class="text-zinc-400 w-20 flex-shrink-0">Password</span>
+                            <span class="text-zinc-900 dark:text-white break-all">{{ $password }}</span>
+                        </div>
+                        @endif
                     </div>
                     <p x-show="!revealed" class="text-xs text-zinc-400">Credentials are hidden for security.</p>
                 </div>
