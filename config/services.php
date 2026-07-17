@@ -46,9 +46,6 @@ return [
 
         'resend_api_key'       => env('DEPLOY_RESEND_API_KEY'),
 
-        'paystack_secret'      => env('DEPLOY_PAYSTACK_SECRET_KEY'),
-        'paystack_public'      => env('DEPLOY_NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY'),
-
         'bunny_api_key'        => env('DEPLOY_BUNNY_API_KEY'),
         'bunny_stream_token'   => env('DEPLOY_BUNNY_STREAM_TOKEN_KEY'),
         'bunny_library_id'     => env('DEPLOY_BUNNY_STREAM_LIBRARY_ID'),

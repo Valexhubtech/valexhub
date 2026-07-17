@@ -226,10 +226,6 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             // Email
             ['key' => 'RESEND_API_KEY',                     'value' => $d['resend_api_key'],              'secret' => true],
 
-            // Payments
-            ['key' => 'PAYSTACK_SECRET_KEY',                'value' => $d['paystack_secret'],             'secret' => true],
-            ['key' => 'NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY',    'value' => $d['paystack_public'],             'secret' => false],
-
             // Bunny Stream
             ['key' => 'BUNNY_API_KEY',                      'value' => $d['bunny_api_key'],               'secret' => true],
             ['key' => 'BUNNY_STREAM_TOKEN_KEY',             'value' => $d['bunny_stream_token'],          'secret' => true],
