@@ -7,7 +7,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (DB::getDriverName() === 'pgsql') {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            return; // SQLite has no ENUM — status is TEXT, all values already valid
+        }
+
+        if ($driver === 'pgsql') {
             $this->alterPostgres(
                 'deployments',
                 "status IN ('pending','provisioning','active','failed','suspended','terminated')"
@@ -24,7 +30,13 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (DB::getDriverName() === 'pgsql') {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            return;
+        }
+
+        if ($driver === 'pgsql') {
             $this->alterPostgres(
                 'deployments',
                 "status IN ('pending','provisioning','active','failed')"
