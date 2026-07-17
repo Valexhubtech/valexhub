@@ -4,55 +4,62 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Wave\Category;
 use Wave\Product;
 
 /**
- * Seeds the single ValexHub Core Platform product with all 15 module add-ons.
- * Clears all existing products, pricing, and add-ons before inserting.
- *
- * Module keys match the core app's MODULE_KEYS:
- *   auth, org, catalog, contacts, inventory, pos, invoicing, dashboard,
- *   notifications, audit_log, platform, staff, booking, digital_products, video_courses
+ * Seeds the ValexHub Core Platform product with all 15 module add-ons.
+ * Safe to re-run on production: uses updateOrCreate for the product and category,
+ * and only resets pricing/addons scoped to this product (never customer records).
  */
 class CoreServiceProductSeeder extends Seeder
 {
     public function run(): void
     {
-        // Wipe existing products (cascades to pricing + addons)
-        DB::table('order_addons')->delete();
-        DB::table('product_addons')->delete();
-        DB::table('product_pricing')->delete();
-        DB::table('products')->delete();
+        // Ensure the category exists before creating/updating the product
+        $category = Category::firstOrCreate(
+            ['slug' => 'cloud-platform'],
+            ['name' => 'Cloud Platform', 'order' => 1]
+        );
 
-        $this->command->info('Cleared all existing products, pricing, and add-ons.');
+        // Upsert the product so this seeder is safe to re-run on production.
+        // Wipe only catalog-level rows (pricing, addons) — never touch customer records.
+        $product = Product::updateOrCreate(
+            ['slug' => 'core-platform'],
+            [
+                'name' => 'ValexHub Core Platform',
+                'slug' => 'core-platform',
+                'category_id' => $category->id,
+                'type' => 'prebuilt',
+                'short_description' => 'A modular business management platform — deploy only the modules your business needs, on your own private instance.',
+                'description' => '<p>ValexHub Core Platform gives your business a fully private, cloud-hosted management system. Choose from 15 modules covering every area of your operation — POS, inventory, bookings, invoicing, staff, customer management, notifications, and more. Pay only for the modules you activate. Your instance runs on its own subdomain and is ready in minutes.</p>',
+                'low_price' => 15000,
+                'high_price' => 145000,
+                'features' => [
+                    'Private cloud instance on your own subdomain',
+                    'Modular — activate only what you need',
+                    'Point of Sale (POS)',
+                    'Inventory & stock management',
+                    'Booking & appointment scheduling',
+                    'Staff, HR & commissions',
+                    'Invoicing & Paystack payments',
+                    'Customer & contacts management',
+                    'SMS & WhatsApp notifications',
+                    'Analytics & reporting dashboard',
+                ],
+                'coolify_deploy_type' => 'docker_image',
+                'coolify_docker_image' => 'ghcr.io/valexhub-dev-s/core-service:latest',
+                'login_path' => '/login',
+                'is_active' => true,
+                'sort_order' => 1,
+            ]
+        );
 
-        $product = Product::create([
-            'name' => 'ValexHub Core Platform',
-            'slug' => 'core-platform',
-            'category_id' => null,
-            'type' => 'prebuilt',
-            'short_description' => 'A modular business management platform — deploy only the modules your business needs, on your own private instance.',
-            'description' => '<p>ValexHub Core Platform gives your business a fully private, cloud-hosted management system. Choose from 15 modules covering every area of your operation — POS, inventory, bookings, invoicing, staff, customer management, notifications, and more. Pay only for the modules you activate. Your instance runs on its own subdomain and is ready in minutes.</p>',
-            'low_price' => 15000,
-            'high_price' => 145000,
-            'features' => [
-                'Private cloud instance on your own subdomain',
-                'Modular — activate only what you need',
-                'Point of Sale (POS)',
-                'Inventory & stock management',
-                'Booking & appointment scheduling',
-                'Staff, HR & commissions',
-                'Invoicing & Paystack payments',
-                'Customer & contacts management',
-                'SMS & WhatsApp notifications',
-                'Analytics & reporting dashboard',
-            ],
-            'coolify_deploy_type' => 'docker_image',
-            'coolify_docker_image' => 'ghcr.io/valexhub-dev-s/core-service:latest',
-            'login_path' => '/login',
-            'is_active' => true,
-            'sort_order' => 1,
-        ]);
+        // Reset catalog-level rows for this product only — never touches customer order_addons
+        DB::table('product_pricing')->where('product_id', $product->id)->delete();
+        DB::table('product_addons')->where('product_id', $product->id)->delete();
+
+        $this->command->info("Upserted product '{$product->name}' (ID {$product->id}).");
 
         // Cloud pricing — monthly, quarterly, yearly
         DB::table('product_pricing')->insert([

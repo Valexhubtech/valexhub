@@ -27,8 +27,10 @@ class InstanceWebhookController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
+        // Accept any non-terminated status — bootstrap re-runs on every container restart,
+        // so the deployment may already be 'active' after a restart.
         $deployment = Deployment::where('central_api_key', $token)
-            ->whereIn('status', ['provisioning', 'pending'])
+            ->whereNotIn('status', ['terminated'])
             ->first();
 
         if (! $deployment) {
@@ -51,25 +53,33 @@ class InstanceWebhookController extends Controller
         $data = $request->json()->all();
         $appUrl = $data['app_url'] ?? null;
 
-        $updates = [
-            'status' => 'active',
-            'deployed_at' => now(),
-        ];
+        $isFirstActivation = in_array($deployment->status, ['provisioning', 'pending']);
 
+        $updates = ['deployed_at' => now()];
         if ($appUrl) {
             $updates['deployment_url'] = $appUrl;
         }
-
-        $deployment->update($updates);
-        $deployment->userProduct?->markAsActive();
-
-        if ($deployment->user?->email) {
-            Mail::to($deployment->user->email)->queue(new DeploymentCredentialsMail($deployment));
+        if ($isFirstActivation) {
+            $updates['status'] = 'active';
         }
 
-        Log::info('Deployment marked active via setup-complete webhook', [
+        $deployment->update($updates);
+
+        // Only trigger activation side-effects on first transition to active.
+        // On subsequent re-pings (container restarts) we skip the email so the
+        // customer doesn't receive duplicate credentials.
+        if ($isFirstActivation) {
+            $deployment->userProduct?->markAsActive();
+
+            if ($deployment->user?->email) {
+                Mail::to($deployment->user->email)->queue(new DeploymentCredentialsMail($deployment));
+            }
+        }
+
+        Log::info('setup-complete webhook received', [
             'deployment_id' => $deployment->id,
             'app_url' => $appUrl,
+            'first_activation' => $isFirstActivation,
         ]);
 
         return response()->json(['ok' => true]);

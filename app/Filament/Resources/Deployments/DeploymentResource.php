@@ -6,6 +6,7 @@ use App\Filament\Resources\Deployments\Pages\AdminDeployDeployment;
 use App\Filament\Resources\Deployments\Pages\EditDeployment;
 use App\Filament\Resources\Deployments\Pages\ListDeployments;
 use App\Filament\Resources\Deployments\Pages\ManageDeployment;
+use App\Jobs\PushSoftwareUpdate;
 use App\Mail\InvoiceMail;
 use App\Services\Coolify\RealCoolifyDeploymentService;
 use App\Services\InvoiceService;
@@ -13,6 +14,7 @@ use App\Services\ProductDeploymentService;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
@@ -27,10 +29,12 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\HtmlString;
 use Wave\Deployment;
 use Wave\Invoice;
+use Wave\Product;
 
 class DeploymentResource extends Resource
 {
@@ -234,6 +238,10 @@ class DeploymentResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('product_id')
+                    ->label('Product / Software')
+                    ->options(fn (): array => Product::orderBy('name')->pluck('name', 'id')->all()),
+
                 SelectFilter::make('status')
                     ->options([
                         'pending' => 'Pending',
@@ -403,6 +411,47 @@ class DeploymentResource extends Resource
                     ->icon('phosphor-caret-down')
                     ->color('gray')
                     ->button(),
+            ])
+            ->bulkActions([
+                BulkAction::make('push_software_update')
+                    ->label('Push Software Update')
+                    ->icon('phosphor-arrow-circle-up-duotone')
+                    ->color('warning')
+                    ->modalHeading('Push Software Update')
+                    ->modalSubmitActionLabel('Push Update')
+                    ->schema([
+                        Select::make('product_ids')
+                            ->label('Which software does this update apply to?')
+                            ->helperText('Only deployments for the selected software will be redeployed. Any other software in your selection will be skipped automatically.')
+                            ->options(fn (): array => Product::orderBy('name')->pluck('name', 'id')->all())
+                            ->multiple()
+                            ->required(),
+                    ])
+                    ->action(function (Collection $records, array $data): void {
+                        $productIds = $data['product_ids'] ?? [];
+                        $queued = 0;
+                        $skipped = 0;
+
+                        foreach ($records as $deployment) {
+                            if (
+                                $deployment->coolify_app_id
+                                && $deployment->status === 'active'
+                                && in_array($deployment->product_id, $productIds)
+                            ) {
+                                PushSoftwareUpdate::dispatch($deployment);
+                                $queued++;
+                            } else {
+                                $skipped++;
+                            }
+                        }
+
+                        Notification::make()
+                            ->title($queued > 0 ? "Update queued for {$queued} deployment(s)." : 'No eligible deployments matched the selected software.')
+                            ->body($skipped > 0 ? "{$skipped} skipped — different software, not active, or no Coolify app." : null)
+                            ->color($queued > 0 ? 'success' : 'warning')
+                            ->send();
+                    })
+                    ->deselectRecordsAfterCompletion(),
             ])
             ->defaultSort('created_at', 'desc');
     }

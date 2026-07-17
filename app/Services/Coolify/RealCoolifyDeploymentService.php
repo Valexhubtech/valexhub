@@ -341,6 +341,32 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
     // ── Admin operations ──────────────────────────────────────────────────────
 
     /**
+     * Pull the latest Docker image and redeploy. Sets force=true so Coolify
+     * always re-pulls from the registry regardless of local cache.
+     */
+    public function pushUpdate(Deployment $deployment): bool
+    {
+        [$baseUrl, $token] = $this->serverCredentials($deployment);
+        if (! $baseUrl) {
+            return false;
+        }
+
+        try {
+            $this->http($baseUrl, $token)
+                ->get('/api/v1/deploy', ['uuid' => $deployment->coolify_app_id, 'force' => true])
+                ->throw();
+
+            Log::info('Rolling update triggered', ['app_uuid' => $deployment->coolify_app_id]);
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Rolling update failed', ['app_uuid' => $deployment->coolify_app_id, 'error' => $e->getMessage()]);
+
+            return false;
+        }
+    }
+
+    /**
      * Restart the running container in-place. UUID and domain stay the same.
      * Use when the app is misbehaving but env vars are correct.
      */

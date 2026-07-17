@@ -5,6 +5,7 @@ namespace App\Services\Coolify;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Wave\CoolifyServer;
+use Wave\Deployment;
 use Wave\Product;
 
 /**
@@ -45,6 +46,11 @@ class MockCoolifyDeploymentService implements CoolifyDeploymentServiceContract
     public function getStatus(string $appId, ?CoolifyServer $server = null): CoolifyDeploymentResult
     {
         return new CoolifyDeploymentResult(success: true, appId: $appId);
+    }
+
+    public function pushUpdate(Deployment $deployment): bool
+    {
+        return true;
     }
 
     protected function shouldSimulateFailure(): bool
