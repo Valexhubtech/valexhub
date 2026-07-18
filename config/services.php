@@ -45,11 +45,8 @@ return [
 
         'resend_api_key' => env('DEPLOY_RESEND_API_KEY'),
 
+        'bunny_api_url' => env('DEPLOY_BUNNY_API_URL', 'https://api.bunny.net'),
         'bunny_api_key' => env('DEPLOY_BUNNY_API_KEY'),
-        'bunny_stream_token' => env('DEPLOY_BUNNY_STREAM_TOKEN_KEY'),
-        'bunny_library_id' => env('DEPLOY_BUNNY_STREAM_LIBRARY_ID'),
-        'bunny_cdn_hostname' => env('DEPLOY_BUNNY_STREAM_CDN_HOSTNAME'),
-        'bunny_webhook_secret' => env('DEPLOY_BUNNY_WEBHOOK_SECRET'),
 
         'central_api_url' => env('DEPLOY_CENTRAL_API_URL'),
     ],
