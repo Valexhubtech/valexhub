@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Services\BunnyStream\BunnyStreamService;
 use App\Services\Hostinger\HostingerDomainService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -45,6 +46,14 @@ class RegisterDomainJob implements ShouldQueue
             if ($purchase->deployment_id) {
                 Deployment::where('id', $purchase->deployment_id)
                     ->update(['custom_domain' => $purchase->domain]);
+
+                $deployment = Deployment::find($purchase->deployment_id);
+                if ($deployment?->bunny_library_id) {
+                    app(BunnyStreamService::class)->updateLibraryWebhook(
+                        $deployment->bunny_library_id,
+                        "https://{$purchase->domain}/api/webhooks/bunny"
+                    );
+                }
             }
 
             return;
@@ -89,10 +98,18 @@ class RegisterDomainJob implements ShouldQueue
         $dnsOk = $hostinger->configureDomainForDeployment($purchase->domain, $serverIp);
         $purchase->update(['dns_status' => $dnsOk ? 'configured' : 'failed']);
 
-        // ── 3. Update deployment with custom domain ───────────────────────────
+        // ── 3. Update deployment with custom domain + Bunny webhook URL ─────────
         if ($dnsOk && $purchase->deployment_id) {
             Deployment::where('id', $purchase->deployment_id)
                 ->update(['custom_domain' => $purchase->domain]);
+
+            $deployment = Deployment::find($purchase->deployment_id);
+            if ($deployment?->bunny_library_id) {
+                app(BunnyStreamService::class)->updateLibraryWebhook(
+                    $deployment->bunny_library_id,
+                    "https://{$purchase->domain}/api/webhooks/bunny"
+                );
+            }
         }
 
         Log::info('RegisterDomainJob: completed', [
