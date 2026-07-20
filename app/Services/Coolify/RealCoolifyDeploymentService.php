@@ -321,10 +321,13 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
                 $response = $this->http($baseUrl, $token)
                     ->post("/api/v1/applications/{$appUuid}/envs", $payload);
 
-                // 409 = var already exists — switch to PATCH to update it
+                // 409 = var already exists — switch to PATCH to update it.
+                // Also update the preview copy so both Coolify UI sections stay in sync.
                 if ($response->status() === 409) {
                     $response = $this->http($baseUrl, $token)
                         ->patch("/api/v1/applications/{$appUuid}/envs", $payload);
+                    $this->http($baseUrl, $token)
+                        ->patch("/api/v1/applications/{$appUuid}/envs", array_merge($payload, ['is_preview' => true]));
                 }
 
                 if ($response->failed()) {
@@ -540,6 +543,8 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
                 if ($res->status() === 409) {
                     $this->http($baseUrl, $token)
                         ->patch("/api/v1/applications/{$deployment->coolify_app_id}/envs", $payload);
+                    $this->http($baseUrl, $token)
+                        ->patch("/api/v1/applications/{$deployment->coolify_app_id}/envs", array_merge($payload, ['is_preview' => true]));
                 }
             }
 
