@@ -115,7 +115,27 @@
                 </h3>
 
                 @if(! $record->coolify_app_id)
-                    <p class="text-sm text-zinc-400 italic">No Coolify app linked yet.</p>
+                    <p class="text-sm text-zinc-400 italic mb-3">No Coolify app linked yet.</p>
+                    @if($record->status === 'failed')
+                        <div x-data="{ confirming: false }">
+                            <button x-show="!confirming" @click="confirming = true"
+                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-blue-400 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 transition-colors">
+                                <x-phosphor-arrow-clockwise class="w-4 h-4" /> Retry Deployment
+                            </button>
+                            <div x-show="confirming" x-cloak class="flex items-center gap-2">
+                                <span class="text-sm text-zinc-500">Re-attempt provisioning?</span>
+                                <button @click="$wire.retryDeployment(); confirming = false"
+                                        wire:loading.attr="disabled"
+                                        class="px-3 py-1.5 text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                                    Confirm
+                                </button>
+                                <button @click="confirming = false"
+                                        class="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    @endif
                 @else
                     <div class="flex flex-wrap gap-3">
                         @foreach([
