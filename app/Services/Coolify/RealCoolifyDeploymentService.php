@@ -527,12 +527,12 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             return false;
         }
 
-        $fqdn = 'https://'.ltrim($domain, 'https://');
+        $cleanDomain = preg_replace('#^https?://#', '', rtrim($domain, '/'));
 
         try {
             $this->http($baseUrl, $token)
                 ->patch("/api/v1/applications/{$deployment->coolify_app_id}", [
-                    'fqdn' => $fqdn,
+                    'domains' => [$cleanDomain],
                 ])
                 ->throw();
 
