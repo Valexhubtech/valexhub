@@ -45,11 +45,11 @@ class FinancialDashboard extends Page
         $start = Carbon::parse($this->startDate)->startOfDay();
         $end = Carbon::parse($this->endDate)->endOfDay();
 
-        $format = $this->groupBy === 'day' ? '%Y-%m-%d' : ($this->groupBy === 'week' ? '%Y-%u' : '%Y-%m');
+        $format = $this->groupBy === 'day' ? 'YYYY-MM-DD' : ($this->groupBy === 'week' ? 'IYYY-IW' : 'YYYY-MM');
 
         $rows = Invoice::where('status', 'paid')
             ->whereBetween('paid_at', [$start, $end])
-            ->selectRaw("DATE_FORMAT(paid_at, '{$format}') as period, SUM(amount) as total")
+            ->selectRaw("TO_CHAR(paid_at, '{$format}') as period, SUM(amount) as total")
             ->groupBy('period')
             ->orderBy('period')
             ->get();
