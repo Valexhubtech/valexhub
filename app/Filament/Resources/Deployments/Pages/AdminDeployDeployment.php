@@ -232,10 +232,10 @@ class AdminDeployDeployment extends Page
                         TextInput::make('amount_paid')
                             ->label('Amount Paid (this transaction)')
                             ->helperText('What the customer actually paid now — may differ from the standard rate.')
-                            ->numeric()
+                            ->inputMode('decimal')
                             ->prefix('₦')
-                            ->default(0)
-                            ->minValue(0),
+                            ->placeholder('e.g. 37,595')
+                            ->default('0'),
 
                         Select::make('price_type')
                             ->label('Billing Type')
@@ -249,9 +249,9 @@ class AdminDeployDeployment extends Page
                         TextInput::make('renewal_amount')
                             ->label('Renewal Rate (₦)')
                             ->helperText('What they will pay at each renewal. Leave blank to use the amount paid above.')
-                            ->numeric()
+                            ->inputMode('decimal')
                             ->prefix('₦')
-                            ->minValue(0)
+                            ->placeholder('e.g. 25,000')
                             ->visible(fn (Get $get) => $get('price_type') === 'recurring'),
 
                         Select::make('billing_cycle')
@@ -319,11 +319,11 @@ class AdminDeployDeployment extends Page
 
         // ── 2. Create UserProduct ─────────────────────────────────────────────
         $isRecurring = ($data['price_type'] ?? 'onetime') === 'recurring';
-        $amountPaid = $data['amount_paid'] ?? 0;
+        $amountPaid = (float) str_replace(',', '', $data['amount_paid'] ?? '0');
 
         // Renewal rate falls back to amount_paid if not explicitly set
         $renewalAmount = $isRecurring && ! empty($data['renewal_amount'])
-            ? $data['renewal_amount']
+            ? (float) str_replace(',', '', $data['renewal_amount'])
             : ($isRecurring ? $amountPaid : null);
 
         $userProduct = UserProduct::create([

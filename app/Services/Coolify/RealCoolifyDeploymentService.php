@@ -528,16 +528,32 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         }
 
         $cleanDomain = preg_replace('#^https?://#', '', rtrim($domain, '/'));
+        $fqdn = 'https://'.$cleanDomain;
 
         try {
+            // Update BETTER_AUTH_URL and NEXT_PUBLIC_APP_URL so the app accepts logins on the new domain.
+            // Try POST first (create); fall back to PATCH if the var already exists (409 conflict).
+            foreach (['BETTER_AUTH_URL', 'NEXT_PUBLIC_APP_URL'] as $key) {
+                $payload = ['key' => $key, 'value' => $fqdn];
+                $res = $this->http($baseUrl, $token)
+                    ->post("/api/v1/applications/{$deployment->coolify_app_id}/envs", $payload);
+                if ($res->status() === 409) {
+                    $this->http($baseUrl, $token)
+                        ->patch("/api/v1/applications/{$deployment->coolify_app_id}/envs", $payload);
+                }
+            }
+
+            // Coolify API expects 'domains' as a comma-separated string (not 'fqdn', not an array).
+            // The PATCH updates the DB but Traefik labels won't regenerate until a redeploy.
             $this->http($baseUrl, $token)
                 ->patch("/api/v1/applications/{$deployment->coolify_app_id}", [
-                    'domains' => [$cleanDomain],
+                    'domains' => $fqdn,
                 ])
                 ->throw();
 
+            // Redeploy (not just restart) so Traefik custom_labels are regenerated with the new domain.
             $this->http($baseUrl, $token)
-                ->post("/api/v1/applications/{$deployment->coolify_app_id}/restart")
+                ->get('/api/v1/deploy', ['uuid' => $deployment->coolify_app_id, 'force' => false])
                 ->throw();
 
             Log::info('Coolify domain updated', ['app_uuid' => $deployment->coolify_app_id, 'fqdn' => $fqdn]);
