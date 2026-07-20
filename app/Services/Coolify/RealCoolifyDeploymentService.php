@@ -531,6 +531,18 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         $fqdn = 'https://'.$cleanDomain;
 
         try {
+            // Update BETTER_AUTH_URL and NEXT_PUBLIC_APP_URL so the app accepts logins on the new domain.
+            // Try POST first (create); fall back to PATCH if the var already exists (409 conflict).
+            foreach (['BETTER_AUTH_URL', 'NEXT_PUBLIC_APP_URL'] as $key) {
+                $payload = ['key' => $key, 'value' => $fqdn];
+                $res = $this->http($baseUrl, $token)
+                    ->post("/api/v1/applications/{$deployment->coolify_app_id}/envs", $payload);
+                if ($res->status() === 409) {
+                    $this->http($baseUrl, $token)
+                        ->patch("/api/v1/applications/{$deployment->coolify_app_id}/envs", $payload);
+                }
+            }
+
             // Coolify API expects 'domains' as a comma-separated string (not 'fqdn', not an array).
             // The PATCH updates the DB but Traefik labels won't regenerate until a redeploy.
             $this->http($baseUrl, $token)

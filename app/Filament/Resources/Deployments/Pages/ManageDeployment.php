@@ -144,7 +144,11 @@ class ManageDeployment extends ViewRecord
         $ok = app(RealCoolifyDeploymentService::class)->setDomain($this->record, $domain);
 
         if ($ok) {
-            $this->record->update(['custom_domain' => $domain]);
+            $fqdn = 'https://'.preg_replace('#^https?://#', '', rtrim($domain, '/'));
+            $this->record->update([
+                'custom_domain'  => $domain,
+                'deployment_url' => $fqdn,
+            ]);
             $this->record->refresh();
             $this->customDomainInput = '';
             Notification::make()->title('Domain updated. Container is redeploying to apply routing changes.')->success()->send();
