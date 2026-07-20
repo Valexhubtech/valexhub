@@ -123,6 +123,7 @@ class AdminDeployDeployment extends Page
                                 ->pluck('name', 'id'))
                             ->searchable()
                             ->required()
+                            ->live()
                             ->visible(fn (Get $get) => $get('project_type') === 'existing_product'),
 
                         Select::make('deployment_type')
@@ -133,25 +134,21 @@ class AdminDeployDeployment extends Page
 
                         CheckboxList::make('enabled_modules')
                             ->label('Modules to Enable')
-                            ->options([
-                                'auth' => 'Auth & Users',
-                                'org' => 'Organisation',
-                                'dashboard' => 'Dashboard',
-                                'contacts' => 'Contacts / CRM',
-                                'catalog' => 'Product Catalog',
-                                'inventory' => 'Inventory',
-                                'pos' => 'Point of Sale',
-                                'invoicing' => 'Invoicing',
-                                'staff' => 'Staff Management',
-                                'booking' => 'Booking & Scheduling',
-                                'notifications' => 'Notifications',
-                                'audit_log' => 'Audit Log',
-                                'platform' => 'Platform / Settings',
-                                'digital_products' => 'Digital Products',
-                                'video_courses' => 'Video Courses',
-                            ])
+                            ->options(function (Get $get) {
+                                $productId = $get('product_id');
+                                if (! $productId) {
+                                    return [];
+                                }
+
+                                return ProductAddon::where('product_id', $productId)
+                                    ->where('is_active', true)
+                                    ->whereNotNull('module_key')
+                                    ->orderBy('sort_order')
+                                    ->pluck('name', 'module_key')
+                                    ->toArray();
+                            })
                             ->columns(3)
-                            ->visible(fn (Get $get) => $get('project_type') === 'existing_product')
+                            ->visible(fn (Get $get) => $get('project_type') === 'existing_product' && $get('product_id'))
                             ->columnSpanFull(),
 
                         // ── Custom work ───────────────────────────────────────────
