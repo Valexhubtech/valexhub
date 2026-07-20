@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Deployments\Pages;
 use App\Filament\Resources\Deployments\DeploymentResource;
 use App\Models\User;
 use App\Services\ProductDeploymentService;
+use Wave\PaymentTransaction;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
@@ -340,7 +341,21 @@ class AdminDeployDeployment extends Page
             'deployment_type' => $deployType,
         ]);
 
-        // ── 3. Link module addons (existing product only) ─────────────────────
+        // ── 3. Record payment transaction ─────────────────────────────────────
+        if ($amountPaid > 0) {
+            PaymentTransaction::create([
+                'user_id'            => $data['user_id'],
+                'user_product_id'    => $userProduct->id,
+                'paystack_reference' => 'ADMIN-' . now()->timestamp . '-' . $data['user_id'],
+                'amount'             => $amountPaid,
+                'currency'           => 'NGN',
+                'type'               => 'product_purchase',
+                'status'             => 'success',
+                'processed_at'       => now(),
+            ]);
+        }
+
+        // ── 5. Link module addons (existing product only) ─────────────────────
         foreach ($modules as $moduleKey) {
             $addon = ProductAddon::where('module_key', $moduleKey)->first();
             if ($addon) {
@@ -353,7 +368,7 @@ class AdminDeployDeployment extends Page
             }
         }
 
-        // ── 4. Create Deployment record ───────────────────────────────────────
+        // ── 6. Create Deployment record ───────────────────────────────────────
         $deployment = Deployment::create([
             'user_id' => $data['user_id'],
             'product_id' => $product->id,
@@ -367,7 +382,7 @@ class AdminDeployDeployment extends Page
             'env_inject_mode' => $injectMode,
         ]);
 
-        // ── 5. Provision ──────────────────────────────────────────────────────
+        // ── 7. Provision ──────────────────────────────────────────────────────
         app(ProductDeploymentService::class)->fulfill($deployment);
 
         Notification::make()

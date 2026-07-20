@@ -65,6 +65,14 @@
                 @endif
             </div>
             <div>
+                <p class="text-zinc-400 text-xs uppercase tracking-wide mb-1">Custom Domain</p>
+                @if($record->custom_domain)
+                    <a href="https://{{ $record->custom_domain }}" target="_blank" class="text-blue-600 dark:text-blue-400 underline break-all text-xs">{{ $record->custom_domain }}</a>
+                @else
+                    <span class="text-zinc-400 italic">Not set</span>
+                @endif
+            </div>
+            <div>
                 <p class="text-zinc-400 text-xs uppercase tracking-wide mb-1">Coolify App ID</p>
                 <code class="text-zinc-700 dark:text-zinc-300 text-xs">{{ $record->coolify_app_id ?? '—' }}</code>
             </div>
@@ -107,6 +115,25 @@
         {{-- TAB 1: Overview                                            --}}
         {{-- ══════════════════════════════════════════════════════════ --}}
         <div x-show="tab === 'overview'" x-cloak class="space-y-5">
+
+            {{-- Custom Domain --}}
+            @if($record->coolify_app_id)
+            <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6">
+                <h3 class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide mb-4">Set Custom Domain</h3>
+                <div class="flex items-center gap-3">
+                    <input type="text"
+                           wire:model="customDomainInput"
+                           placeholder="yourdomain.com"
+                           class="flex-1 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <button wire:click="setCustomDomain"
+                            wire:loading.attr="disabled"
+                            class="px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors">
+                        Apply
+                    </button>
+                </div>
+                <p class="mt-2 text-xs text-zinc-400">Enter the domain without https://. DNS A record must already point to the Coolify server IP. The container will restart automatically.</p>
+            </div>
+            @endif
 
             {{-- Coolify controls --}}
             <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-6">

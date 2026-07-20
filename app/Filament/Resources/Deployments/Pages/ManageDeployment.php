@@ -21,6 +21,8 @@ class ManageDeployment extends ViewRecord
 
     public array $enabledModules = [];
 
+    public string $customDomainInput = '';
+
     public function mount(int|string $record): void
     {
         $this->record = $this->resolveRecord($record);
@@ -127,6 +129,27 @@ class ManageDeployment extends ViewRecord
             Notification::make()->title('Env vars re-injected and redeploy triggered.')->success()->send();
         } else {
             Notification::make()->title('Fix & Redeploy failed')->body('Check the Laravel logs.')->danger()->send();
+        }
+    }
+
+    public function setCustomDomain(): void
+    {
+        $domain = trim($this->customDomainInput);
+
+        if (! $domain) {
+            Notification::make()->title('Please enter a domain.')->warning()->send();
+            return;
+        }
+
+        $ok = app(RealCoolifyDeploymentService::class)->setDomain($this->record, $domain);
+
+        if ($ok) {
+            $this->record->update(['custom_domain' => $domain]);
+            $this->record->refresh();
+            $this->customDomainInput = '';
+            Notification::make()->title('Domain updated. Container is restarting.')->success()->send();
+        } else {
+            Notification::make()->title('Failed to update domain in Coolify. Check the logs.')->danger()->send();
         }
     }
 
