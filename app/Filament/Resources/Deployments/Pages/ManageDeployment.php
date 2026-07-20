@@ -130,6 +130,19 @@ class ManageDeployment extends ViewRecord
         }
     }
 
+    public function retryDeployment(): void
+    {
+        $this->record->update([
+            'status' => 'pending',
+            'failure_reason' => null,
+        ]);
+
+        app(ProductDeploymentService::class)->fulfill($this->record->fresh());
+        $this->record->refresh();
+
+        Notification::make()->title('Retrying deployment…')->success()->send();
+    }
+
     public function wipeAndRecreate(): void
     {
         app(RealCoolifyDeploymentService::class)->deleteApp($this->record);
