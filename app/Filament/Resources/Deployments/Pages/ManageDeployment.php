@@ -147,7 +147,7 @@ class ManageDeployment extends ViewRecord
             $this->record->update(['custom_domain' => $domain]);
             $this->record->refresh();
             $this->customDomainInput = '';
-            Notification::make()->title('Domain updated. Container is restarting.')->success()->send();
+            Notification::make()->title('Domain updated. Container is redeploying to apply routing changes.')->success()->send();
         } else {
             Notification::make()->title('Failed to update domain in Coolify. Check the logs.')->danger()->send();
         }

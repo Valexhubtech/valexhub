@@ -531,20 +531,18 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         $fqdn = 'https://'.$cleanDomain;
 
         try {
+            // Coolify API expects 'domains' as a comma-separated string (not 'fqdn', not an array).
+            // The PATCH updates the DB but Traefik labels won't regenerate until a redeploy.
             $this->http($baseUrl, $token)
                 ->patch("/api/v1/applications/{$deployment->coolify_app_id}", [
-                    'fqdn' => $fqdn,
+                    'domains' => $fqdn,
                 ])
                 ->throw();
 
-            // Restart is best-effort — domain update succeeded even if restart fails
-            try {
-                $this->http($baseUrl, $token)
-                    ->post("/api/v1/applications/{$deployment->coolify_app_id}/restart")
-                    ->throw();
-            } catch (\Throwable $e) {
-                Log::warning('Coolify restart after domain update failed', ['app_uuid' => $deployment->coolify_app_id, 'error' => $e->getMessage()]);
-            }
+            // Redeploy (not just restart) so Traefik custom_labels are regenerated with the new domain.
+            $this->http($baseUrl, $token)
+                ->get('/api/v1/deploy', ['uuid' => $deployment->coolify_app_id, 'force' => false])
+                ->throw();
 
             Log::info('Coolify domain updated', ['app_uuid' => $deployment->coolify_app_id, 'fqdn' => $fqdn]);
 
