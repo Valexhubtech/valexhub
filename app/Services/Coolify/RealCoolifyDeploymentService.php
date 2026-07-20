@@ -3,6 +3,7 @@
 namespace App\Services\Coolify;
 
 use App\Models\User;
+use App\Services\BunnyStream\BunnyStreamService;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -97,6 +98,21 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
                 ? (str_starts_with($appFqdn, 'http') ? $appFqdn : 'https://'.ltrim($appFqdn, '/'))
                 : null;
 
+            // Create a per-deployment Bunny Stream library so each business gets
+            // isolated video storage. Falls back gracefully if API key is absent.
+            $bunnyLibraryId = null;
+            $bunnyApiKey    = null;
+            try {
+                $bunny = app(BunnyStreamService::class);
+                $bunnyLib = $bunny->createLibrary($businessName);
+                $bunnyLibraryId = $bunnyLib['library_id'];
+                $bunnyApiKey    = $bunnyLib['api_key'];
+            } catch (\Throwable $e) {
+                Log::warning('Bunny library creation failed — skipping Bunny env vars', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
             // Inject all env vars before triggering the deploy
             $this->injectEnvVars(
                 appUuid: $appUuid,
@@ -113,6 +129,8 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
                 appUrl: $appUrl,
                 extraEnvVars: $options['extra_env_vars'] ?? [],
                 standaloneMode: ($options['env_inject_mode'] ?? 'alongside') === 'standalone',
+                bunnyLibraryId: $bunnyLibraryId,
+                bunnyApiKey: $bunnyApiKey,
             );
 
             // Now trigger the actual deployment
@@ -131,6 +149,7 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
                 betterAuthSecret: $betterAuthSecret,
                 centralApiKey: $centralApiKey,
                 isProvisional: true,
+                bunnyLibraryId: $bunnyLibraryId,
             );
         } catch (RequestException $e) {
             $responseBody = $e->response->json();
@@ -194,6 +213,8 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         ?string $appUrl = null,
         array $extraEnvVars = [],
         bool $standaloneMode = false,
+        ?int $bunnyLibraryId = null,
+        ?string $bunnyApiKey = null,
     ): void {
         $d = config('services.deploy');
 
@@ -249,12 +270,12 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             ['key' => 'RESEND_API_KEY',                     'value' => $d['resend_api_key'],              'secret' => true],
 
             // Bunny Stream
-            ['key' => 'BUNNY_API_KEY',                      'value' => $d['bunny_api_key'],               'secret' => true],
-            ['key' => 'BUNNY_STREAM_TOKEN_KEY',             'value' => $d['bunny_stream_token'],          'secret' => true],
-            ['key' => 'BUNNY_STREAM_LIBRARY_ID',            'value' => $d['bunny_library_id'],            'secret' => false],
-            ['key' => 'BUNNY_STREAM_CDN_HOSTNAME',          'value' => $d['bunny_cdn_hostname'],          'secret' => false],
-            ['key' => 'BUNNY_WEBHOOK_SECRET',               'value' => $d['bunny_webhook_secret'],        'secret' => true],
-            ['key' => 'NEXT_PUBLIC_BUNNY_STREAM_LIBRARY_ID', 'value' => $d['bunny_library_id'],            'secret' => false],
+            // Bunny Stream — per-deployment library created via API at deploy time
+            ['key' => 'BUNNY_API_KEY',                       'value' => $bunnyApiKey,    'secret' => true],
+            ['key' => 'BUNNY_STREAM_TOKEN_KEY',              'value' => $bunnyApiKey,    'secret' => true],
+            ['key' => 'BUNNY_STREAM_LIBRARY_ID',             'value' => $bunnyLibraryId, 'secret' => false],
+            ['key' => 'BUNNY_WEBHOOK_SECRET',                'value' => $bunnyApiKey,    'secret' => true],
+            ['key' => 'NEXT_PUBLIC_BUNNY_STREAM_LIBRARY_ID', 'value' => $bunnyLibraryId, 'secret' => false],
 
             // Per-deployment identity
             ['key' => 'APP_BUSINESS_NAME',                  'value' => $businessName,                     'secret' => false],
@@ -507,17 +528,23 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         }
 
         $cleanDomain = preg_replace('#^https?://#', '', rtrim($domain, '/'));
+        $fqdn = 'https://'.$cleanDomain;
 
         try {
             $this->http($baseUrl, $token)
                 ->patch("/api/v1/applications/{$deployment->coolify_app_id}", [
-                    'domains' => [$cleanDomain],
+                    'fqdn' => $fqdn,
                 ])
                 ->throw();
 
-            $this->http($baseUrl, $token)
-                ->post("/api/v1/applications/{$deployment->coolify_app_id}/restart")
-                ->throw();
+            // Restart is best-effort — domain update succeeded even if restart fails
+            try {
+                $this->http($baseUrl, $token)
+                    ->post("/api/v1/applications/{$deployment->coolify_app_id}/restart")
+                    ->throw();
+            } catch (\Throwable $e) {
+                Log::warning('Coolify restart after domain update failed', ['app_uuid' => $deployment->coolify_app_id, 'error' => $e->getMessage()]);
+            }
 
             Log::info('Coolify domain updated', ['app_uuid' => $deployment->coolify_app_id, 'fqdn' => $fqdn]);
 

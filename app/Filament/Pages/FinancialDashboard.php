@@ -121,6 +121,7 @@ class FinancialDashboard extends Page
         return compact(
             'productRevenue',
             'subRevenue',
+            'deploymentRevenue',
             'totalRevenue',
             'serverCostPerMonth',
             'serverCostPeriod',

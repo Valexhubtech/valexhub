@@ -47,7 +47,7 @@
     @php $s = $this->summary; @endphp
     <div class="grid grid-cols-2 gap-4 mb-6 lg:grid-cols-4">
         @foreach([
-            ['label' => 'Total Revenue',    'value' => '₦' . number_format($s['totalRevenue'], 2),    'sub' => '₦'.number_format($s['productRevenue'],2).' products · ₦'.number_format($s['subRevenue'],2).' subs', 'color' => 'text-green-600'],
+            ['label' => 'Total Revenue',    'value' => '₦' . number_format($s['totalRevenue'], 2),    'sub' => '₦'.number_format($s['productRevenue'],2).' invoices · ₦'.number_format($s['subRevenue'],2).' subs · ₦'.number_format($s['deploymentRevenue'],2).' deployments', 'color' => 'text-green-600'],
             ['label' => 'Total Expenditure','value' => '₦' . number_format($s['totalExpenditure'], 2),'sub' => '₦'.number_format($s['serverCostPeriod'],2).' servers · ₦'.number_format($s['payoutsPaid'],2).' payouts', 'color' => 'text-orange-500'],
             ['label' => 'Net Profit',       'value' => '₦' . number_format($s['netProfit'], 2),       'sub' => $s['netProfit'] >= 0 ? 'Profitable period' : 'Loss period', 'color' => $s['netProfit'] >= 0 ? 'text-green-600' : 'text-red-600'],
             ['label' => 'Accrued Commissions','value'=> '₦' . number_format($s['accruedComms'], 2),   'sub' => '₦'.number_format($s['pendingPayouts'],2).' in pending payouts', 'color' => 'text-purple-500'],
