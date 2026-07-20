@@ -499,6 +499,36 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         }
     }
 
+    public function setDomain(Deployment $deployment, string $domain): bool
+    {
+        [$baseUrl, $token] = $this->serverCredentials($deployment);
+        if (! $baseUrl) {
+            return false;
+        }
+
+        $fqdn = 'https://'.ltrim($domain, 'https://');
+
+        try {
+            $this->http($baseUrl, $token)
+                ->patch("/api/v1/applications/{$deployment->coolify_app_id}", [
+                    'fqdn' => $fqdn,
+                ])
+                ->throw();
+
+            $this->http($baseUrl, $token)
+                ->post("/api/v1/applications/{$deployment->coolify_app_id}/restart")
+                ->throw();
+
+            Log::info('Coolify domain updated', ['app_uuid' => $deployment->coolify_app_id, 'fqdn' => $fqdn]);
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Coolify domain update failed', ['app_uuid' => $deployment->coolify_app_id, 'error' => $e->getMessage()]);
+
+            return false;
+        }
+    }
+
     private function serverCredentials(Deployment $deployment): array
     {
         $deployment->loadMissing('coolifyServer');

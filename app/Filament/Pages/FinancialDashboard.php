@@ -96,7 +96,12 @@ class FinancialDashboard extends Page
             ->whereBetween('processed_at', [$start, $end])
             ->sum('amount');
 
-        $totalRevenue = $productRevenue + $subRevenue;
+        $deploymentRevenue = (float) PaymentTransaction::where('type', 'product_purchase')
+            ->where('status', 'success')
+            ->whereBetween('processed_at', [$start, $end])
+            ->sum('amount');
+
+        $totalRevenue = $productRevenue + $subRevenue + $deploymentRevenue;
 
         // Expenditure within range
         $months = max(1, (int) Carbon::parse($this->startDate)->diffInMonths(Carbon::parse($this->endDate)) + 1);
