@@ -70,6 +70,12 @@ class AddonsRelationManager extends RelationManager
                 ->required()
                 ->default('both'),
 
+            TextInput::make('module_key')
+                ->label('Module Key')
+                ->placeholder('e.g. public_website, booking, pos')
+                ->helperText('Core module key this add-on maps to.')
+                ->nullable(),
+
             Toggle::make('is_active')
                 ->label('Active')
                 ->default(true),
