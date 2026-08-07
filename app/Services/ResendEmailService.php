@@ -211,9 +211,9 @@ class ResendEmailService
                 'created_at' => $email['created_at'] ?? '',
                 'html' => $email['html'] ?? null,
                 'text' => $email['text'] ?? null,
-                'bcc' => is_array($email['bcc'] ?? []) ? implode(', ', $email['bcc']) : ($email['bcc'] ?? ''),
-                'cc' => is_array($email['cc'] ?? []) ? implode(', ', $email['cc']) : ($email['cc'] ?? ''),
-                'reply_to' => is_array($email['reply_to'] ?? []) ? implode(', ', $email['reply_to']) : ($email['reply_to'] ?? ''),
+                'bcc' => is_array($email['bcc'] ?? null) ? implode(', ', $email['bcc']) : ($email['bcc'] ?? ''),
+                'cc' => is_array($email['cc'] ?? null) ? implode(', ', $email['cc']) : ($email['cc'] ?? ''),
+                'reply_to' => is_array($email['reply_to'] ?? null) ? implode(', ', $email['reply_to']) : ($email['reply_to'] ?? ''),
             ];
         });
     }
