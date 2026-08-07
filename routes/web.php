@@ -13,6 +13,7 @@
 
 use App\Http\Controllers\Billing\PaystackWebhookController;
 use App\Http\Controllers\DemoRequestController;
+use App\Http\Controllers\InternshipController;
 use App\Http\Controllers\DeploymentLoginController;
 use App\Http\Controllers\DomainCheckoutController;
 use App\Http\Controllers\InvoiceController;
@@ -27,6 +28,12 @@ Wave::routes();
 
 // Demo Request Routes
 Route::post('/demo-request', [DemoRequestController::class, 'store'])->name('demo-request.store');
+
+// Internship
+Route::post('/internship/apply', [InternshipController::class, 'store'])->name('internship.apply');
+Route::get('/internship/applications/{application}/cv', [InternshipController::class, 'downloadCv'])
+    ->middleware('auth')
+    ->name('internship.cv.download');
 
 // Pay & Deploy (Pathway A) checkout
 Route::middleware('auth')->group(function () {

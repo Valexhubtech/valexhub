@@ -51,6 +51,7 @@
                         <li><a href="{{ route('blog') }}" wire:navigate class="text-zinc-400 hover:text-white text-sm transition-colors duration-200">Blog</a></li>
                         <li><a href="{{ route('book-demo') }}" wire:navigate class="text-zinc-400 hover:text-white text-sm transition-colors duration-200">Contact</a></li>
                         <li><a href="{{ route('dashboard.affiliate-tracker') }}" wire:navigate class="text-zinc-400 hover:text-white text-sm transition-colors duration-200">Affiliate Program</a></li>
+                        <li><a href="{{ route('internship') }}" wire:navigate class="text-zinc-400 hover:text-white text-sm transition-colors duration-200">Internship</a></li>
                     </ul>
                 </div>
                 {{-- Resources: admin-created pages --}}

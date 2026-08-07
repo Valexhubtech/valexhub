@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         $this->call(SettingsTableSeeder::class);
         $this->call(ThemesTableSeeder::class);
         $this->call(CoreServiceProductSeeder::class);
+        $this->call(CoreHospitalityProductSeeder::class);
 
         fixPostgresSequence();
     }
