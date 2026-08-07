@@ -1,62 +1,65 @@
 <div class="space-y-6">
-
-    {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <!-- Header with Actions -->
+    <div class="flex justify-between items-center">
         <div>
-            <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Email Logs</h1>
-            <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                Sent via Resend &mdash; domain:
-                <span class="font-medium text-primary-600 dark:text-primary-400">{{ $configuredDomain }}</span>
+            <h1 class="text-2xl font-semibold text-gray-900">Inbox</h1>
+            <p class="mt-1 text-sm text-gray-600">
+                Email logs from Resend (last 30 days) - Domain:
+                <span class="font-medium text-blue-600">{{ $configuredDomain }}</span>
             </p>
         </div>
-        <div class="flex items-center gap-2">
-            <button wire:click="refresh"
-                class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                </svg>
-                Refresh
-            </button>
-            <button wire:click="testApiConnection"
-                class="inline-flex items-center gap-1.5 rounded-lg border border-primary-300 dark:border-primary-700 bg-primary-50 dark:bg-primary-900/20 px-3 py-2 text-sm font-medium text-primary-700 dark:text-primary-400 shadow-sm hover:bg-primary-100 dark:hover:bg-primary-900/40 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        <div class="flex space-x-3">
+            <button wire:click="testApiConnection" class="inline-flex items-center px-4 py-2 border border-blue-300 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 Test API
+            </button>
+            <button wire:click="debugEmails" class="inline-flex items-center px-4 py-2 border border-orange-300 rounded-md shadow-sm text-sm font-medium text-orange-700 bg-orange-50 hover:bg-orange-100">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.98-.833-2.75 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+                Debug
+            </button>
+            <button wire:click="refresh" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Refresh
             </button>
         </div>
     </div>
 
-    {{-- Flash messages --}}
+    <!-- API Test Results -->
     @if(session('api_test'))
-        <div class="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-4 py-3 text-sm text-green-700 dark:text-green-400">
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
             {{ session('api_test') }}
         </div>
     @endif
+
     @if(session('api_error'))
-        <div class="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
             {{ session('api_error') }}
         </div>
     @endif
+
     @if(session('debug_info'))
-        <div class="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
-            {{ session('debug_info') }}
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+            <strong>Debug Info:</strong> {{ session('debug_info') }}
         </div>
     @endif
 
-    {{-- Filters --}}
-    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <!-- Filters -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Search</label>
-                <input wire:model.live.debounce.300ms="search" type="text" placeholder="From, to, or subject…"
-                    class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
+                <input wire:model.live.debounce.300ms="search" type="text" id="search" placeholder="Search emails..." class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Status</label>
-                <select wire:model.live="status"
-                    class="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500">
-                    <option value="">All statuses</option>
+                <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                <select wire:model.live="status" id="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">All Statuses</option>
                     <option value="sent">Sent</option>
                     <option value="delivered">Delivered</option>
                     <option value="bounced">Bounced</option>
@@ -66,65 +69,55 @@
         </div>
     </div>
 
-    {{-- Table --}}
-    <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead>
-                <tr class="bg-gray-50 dark:bg-gray-800/60">
-                    <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">From</th>
-                    <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">To</th>
-                    <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subject</th>
-                    <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                    <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sent</th>
-                    <th class="px-5 py-3"></th>
+    <!-- Email Table -->
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sent At</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($emails as $email)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition">
-                        <td class="px-5 py-3.5 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                            {{ $email['from'] }}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $email['from'] }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ Str::limit($email['to'], 30) }}
                         </td>
-                        <td class="px-5 py-3.5 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                            {{ Str::limit($email['to'], 35) }}
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            {{ Str::limit($email['subject'], 50) }}
                         </td>
-                        <td class="px-5 py-3.5 text-sm text-gray-900 dark:text-white max-w-xs truncate">
-                            {{ $email['subject'] ?: '(no subject)' }}
-                        </td>
-                        <td class="px-5 py-3.5 whitespace-nowrap">
-                            @php
-                                $statusClass = match($email['status']) {
-                                    'delivered' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-                                    'bounced'   => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-                                    'complained'=> 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-                                    'sent'      => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-                                    default     => 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
-                                };
-                            @endphp
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $statusClass }}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                @switch($email['status'])
+                                    @case('delivered') bg-green-100 text-green-800 @break
+                                    @case('bounced') bg-red-100 text-red-800 @break
+                                    @case('complained') bg-yellow-100 text-yellow-800 @break
+                                    @case('sent') bg-blue-100 text-blue-800 @break
+                                    @default bg-gray-100 text-gray-800
+                                @endswitch">
                                 {{ ucfirst($email['status']) }}
                             </span>
                         </td>
-                        <td class="px-5 py-3.5 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ \Carbon\Carbon::parse($email['created_at'])->diffForHumans() }}
                         </td>
-                        <td class="px-5 py-3.5 whitespace-nowrap text-right">
-                            <div class="flex items-center justify-end gap-3">
-                                <button wire:click="viewEmail('{{ $email['id'] }}')"
-                                    class="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline">
-                                    View
-                                </button>
-                                <button wire:click="viewEvents('{{ $email['id'] }}')"
-                                    class="text-xs font-medium text-gray-500 dark:text-gray-400 hover:underline">
-                                    Events
-                                </button>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button wire:click="viewEmail('{{ $email['id'] }}')" class="text-blue-600 hover:text-blue-900">View</button>
+                                <button wire:click="viewEvents('{{ $email['id'] }}')" class="text-gray-600 hover:text-gray-900">Events</button>
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-5 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
-                            No emails found.
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                            No emails found matching your criteria.
                         </td>
                     </tr>
                 @endforelse
@@ -132,142 +125,171 @@
         </table>
     </div>
 
-    {{-- Footer count --}}
-    <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-        <span>Showing {{ $emails->count() }} of {{ $totalEmails }} emails</span>
+    <!-- Pagination Info -->
+    <div class="flex justify-between items-center text-sm text-gray-700">
+        <div>
+            Showing {{ $emails->count() }} of {{ $totalEmails }} emails from {{ $configuredDomain }}
+            @if($status)
+                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Status: {{ ucfirst($status) }}
+                </span>
+            @endif
+        </div>
         @if($status || $search)
-            <button wire:click="clearFilters" class="text-primary-600 dark:text-primary-400 hover:underline">
-                Clear filters
+            <button wire:click="clearFilters" class="text-blue-600 hover:text-blue-900 text-xs">
+                Clear Filters
             </button>
         @endif
     </div>
 
-    {{-- ── Email Detail Modal ─────────────────────────────────────────────── --}}
+    <!-- Email Details Modal -->
     @if($showModal && $selectedEmail)
-        <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-8"
-             x-data x-on:keydown.escape.window="$wire.closeModal()">
+        <div class="fixed inset-0 z-50 overflow-y-auto" x-data="{ show: @entangle('showModal') }">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="closeModal"></div>
 
-            {{-- Backdrop --}}
-            <div class="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm" wire:click="closeModal"></div>
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:align-middle sm:max-w-4xl sm:w-full">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Email Details</h3>
+                            <button wire:click="closeModal" class="text-gray-400 hover:text-gray-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
 
-            {{-- Panel --}}
-            <div class="relative z-10 w-full max-w-4xl rounded-2xl bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/10 dark:ring-white/10 my-8">
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">From</label>
+                                    <div class="mt-1 text-sm text-gray-900">{{ $selectedEmail['from'] }}</div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">To</label>
+                                    <div class="mt-1 text-sm text-gray-900">{{ $selectedEmail['to'] }}</div>
+                                </div>
+                            </div>
 
-                {{-- Modal header --}}
-                <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-6 py-4">
-                    <div>
-                        <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ $selectedEmail['subject'] ?: '(no subject)' }}</h2>
-                        <p class="mt-0.5 text-xs text-gray-400">
-                            {{ \Carbon\Carbon::parse($selectedEmail['created_at'])->format('M j, Y · g:i A') }}
-                        </p>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Subject</label>
+                                <div class="mt-1 text-sm text-gray-900">{{ $selectedEmail['subject'] }}</div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Status</label>
+                                    <div class="mt-1">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            @switch($selectedEmail['status'])
+                                                @case('delivered') bg-green-100 text-green-800 @break
+                                                @case('bounced') bg-red-100 text-red-800 @break
+                                                @case('complained') bg-yellow-100 text-yellow-800 @break
+                                                @case('sent') bg-blue-100 text-blue-800 @break
+                                                @default bg-gray-100 text-gray-800
+                                            @endswitch">
+                                            {{ ucfirst($selectedEmail['status']) }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Sent At</label>
+                                    <div class="mt-1 text-sm text-gray-900">
+                                        {{ \Carbon\Carbon::parse($selectedEmail['created_at'])->format('M d, Y H:i:s') }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if(isset($selectedEmail['html']) && $selectedEmail['html'])
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">HTML Content</label>
+                                    <iframe srcdoc="{{ $selectedEmail['html'] }}"
+                                            sandbox="allow-same-origin"
+                                            class="w-full rounded-lg border border-gray-200"
+                                            style="height: 480px;"
+                                            onload="this.style.height = Math.min(this.contentDocument.body.scrollHeight + 32, 640) + 'px'">
+                                    </iframe>
+                                </div>
+                            @endif
+
+                            @if(isset($selectedEmail['text']) && $selectedEmail['text'])
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Text Content</label>
+                                    <div class="border rounded-lg p-4 bg-gray-50 max-h-96 overflow-y-auto">
+                                        <pre class="whitespace-pre-wrap text-sm">{{ $selectedEmail['text'] }}</pre>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
                     </div>
-                    <button wire:click="closeModal" class="rounded-lg p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
 
-                {{-- Meta grid --}}
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-px bg-gray-100 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-800">
-                    @foreach([
-                        ['label' => 'From',   'value' => $selectedEmail['from']],
-                        ['label' => 'To',     'value' => $selectedEmail['to']],
-                        ['label' => 'Status', 'value' => ucfirst($selectedEmail['status'])],
-                        ['label' => 'Reply-to','value' => $selectedEmail['reply_to'] ?: '—'],
-                    ] as $meta)
-                        <div class="bg-white dark:bg-gray-900 px-5 py-3">
-                            <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ $meta['label'] }}</p>
-                            <p class="mt-0.5 text-sm text-gray-900 dark:text-white truncate">{{ $meta['value'] }}</p>
-                        </div>
-                    @endforeach
-                </div>
-
-                {{-- Body --}}
-                <div class="p-6 space-y-5">
-                    @if(!empty($selectedEmail['html']))
-                        <div>
-                            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Preview</p>
-                            {{-- iframe isolates the email's own CSS from the admin UI --}}
-                            <iframe srcdoc="{{ $selectedEmail['html'] }}"
-                                    sandbox="allow-same-origin"
-                                    class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white"
-                                    style="height: 520px;"
-                                    onload="this.style.height = Math.min(this.contentDocument.body.scrollHeight + 32, 700) + 'px'">
-                            </iframe>
-                        </div>
-                    @elseif(!empty($selectedEmail['text']))
-                        <div>
-                            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Plain Text</p>
-                            <pre class="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap overflow-x-auto">{{ $selectedEmail['text'] }}</pre>
-                        </div>
-                    @else
-                        <p class="text-sm text-gray-400 dark:text-gray-500 text-center py-8">No content available for this email.</p>
-                    @endif
-                </div>
-
-                {{-- Footer --}}
-                <div class="flex justify-end border-t border-gray-100 dark:border-gray-800 px-6 py-4">
-                    <button wire:click="closeModal"
-                        class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                        Close
-                    </button>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button wire:click="closeModal" type="button" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:w-auto sm:text-sm">
+                            Close
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     @endif
 
-    {{-- ── Events Modal ──────────────────────────────────────────────────── --}}
+    <!-- Email Events Modal -->
     @if($showEvents)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
-             x-data x-on:keydown.escape.window="$wire.closeEvents()">
+        <div class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="closeEvents"></div>
 
-            <div class="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm" wire:click="closeEvents"></div>
-
-            <div class="relative z-10 w-full max-w-lg rounded-2xl bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/10 dark:ring-white/10">
-
-                <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-6 py-4">
-                    <h2 class="text-base font-semibold text-gray-900 dark:text-white">Delivery Events</h2>
-                    <button wire:click="closeEvents" class="rounded-lg p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="p-6 space-y-2 max-h-96 overflow-y-auto">
-                    @forelse($emailEvents as $event)
-                        @php
-                            $evClass = match($event['type'] ?? '') {
-                                'sent'      => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-                                'delivered' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-                                'bounced'   => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-                                'opened'    => 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-                                'clicked'   => 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-                                default     => 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
-                            };
-                        @endphp
-                        <div class="flex items-center justify-between rounded-lg border border-gray-100 dark:border-gray-800 px-4 py-3">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $evClass }}">
-                                {{ ucfirst($event['type'] ?? 'unknown') }}
-                            </span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">
-                                {{ \Carbon\Carbon::parse($event['created_at'])->format('M j, g:i:s A') }}
-                            </span>
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:align-middle sm:max-w-2xl sm:w-full">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Email Events</h3>
+                            <button wire:click="closeEvents" class="text-gray-400 hover:text-gray-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
                         </div>
-                    @empty
-                        <p class="text-center text-sm text-gray-400 dark:text-gray-500 py-6">No events recorded.</p>
-                    @endforelse
-                </div>
 
-                <div class="flex justify-end border-t border-gray-100 dark:border-gray-800 px-6 py-4">
-                    <button wire:click="closeEvents"
-                        class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                        Close
-                    </button>
+                        <div class="space-y-3">
+                            @forelse($emailEvents as $event)
+                                <div class="border rounded-lg p-3">
+                                    <div class="flex justify-between items-start">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            @switch($event['type'])
+                                                @case('sent') bg-blue-100 text-blue-800 @break
+                                                @case('delivered') bg-green-100 text-green-800 @break
+                                                @case('bounced') bg-red-100 text-red-800 @break
+                                                @case('opened') bg-purple-100 text-purple-800 @break
+                                                @case('clicked') bg-orange-100 text-orange-800 @break
+                                                @default bg-gray-100 text-gray-800
+                                            @endswitch">
+                                            {{ ucfirst($event['type']) }}
+                                        </span>
+                                        <span class="text-sm text-gray-500">
+                                            {{ \Carbon\Carbon::parse($event['created_at'])->format('M d, H:i:s') }}
+                                        </span>
+                                    </div>
+                                    @if(isset($event['data']) && $event['data'])
+                                        <div class="mt-2 text-sm text-gray-600">
+                                            {{ json_encode($event['data']) }}
+                                        </div>
+                                    @endif
+                                </div>
+                            @empty
+                                <div class="text-center text-gray-500 py-4">
+                                    No events recorded for this email.
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button wire:click="closeEvents" type="button" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:w-auto sm:text-sm">
+                            Close
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     @endif
-
 </div>
