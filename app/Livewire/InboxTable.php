@@ -69,12 +69,12 @@ class InboxTable extends Component
                 $formattedDetails = [
                     'html' => $emailDetails['html'] ?? null,
                     'text' => $emailDetails['text'] ?? null,
-                    'to' => is_array($emailDetails['to'] ?? []) ? implode(', ', $emailDetails['to']) : ($emailDetails['to'] ?? ''),
+                    'to' => is_array($emailDetails['to'] ?? null) ? implode(', ', $emailDetails['to']) : ($emailDetails['to'] ?? ''),
                     'from' => $emailDetails['from'] ?? '',
                     'subject' => $emailDetails['subject'] ?? '',
-                    'bcc' => is_array($emailDetails['bcc'] ?? []) ? implode(', ', $emailDetails['bcc']) : ($emailDetails['bcc'] ?? ''),
-                    'cc' => is_array($emailDetails['cc'] ?? []) ? implode(', ', $emailDetails['cc']) : ($emailDetails['cc'] ?? ''),
-                    'reply_to' => is_array($emailDetails['reply_to'] ?? []) ? implode(', ', $emailDetails['reply_to']) : ($emailDetails['reply_to'] ?? ''),
+                    'bcc' => is_array($emailDetails['bcc'] ?? null) ? implode(', ', $emailDetails['bcc']) : ($emailDetails['bcc'] ?? ''),
+                    'cc' => is_array($emailDetails['cc'] ?? null) ? implode(', ', $emailDetails['cc']) : ($emailDetails['cc'] ?? ''),
+                    'reply_to' => is_array($emailDetails['reply_to'] ?? null) ? implode(', ', $emailDetails['reply_to']) : ($emailDetails['reply_to'] ?? ''),
                 ];
 
                 $this->selectedEmail = array_merge($this->selectedEmail, $formattedDetails);

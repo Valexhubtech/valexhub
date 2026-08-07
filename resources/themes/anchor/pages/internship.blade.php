@@ -326,7 +326,7 @@ $isOpen  = $session && $session->isOpen();
                     <div class="bg-zinc-50 border border-zinc-200 rounded-2xl p-6">
                         <p class="text-xs font-semibold tracking-widest uppercase text-zinc-500 mb-4">Questions?</p>
                         <p class="text-sm text-zinc-600 mb-4">Reach us on WhatsApp or email — we typically respond within the hour on business days.</p>
-                        <a href="mailto:info.valexhub@gmail.com" class="text-sm font-semibold text-zinc-900 hover:underline">info.valexhub@gmail.com</a>
+                        <a href="mailto:info@valexhub.com" class="text-sm font-semibold text-zinc-900 hover:underline">info@valexhub.com</a>
                     </div>
                 </div>
 
