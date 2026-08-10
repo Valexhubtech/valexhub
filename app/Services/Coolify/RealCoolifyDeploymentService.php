@@ -274,9 +274,9 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             // Bunny Stream — per-deployment library created via API at deploy time
             ['key' => 'BUNNY_API_KEY',                       'value' => $bunnyApiKey,    'secret' => true],
             ['key' => 'BUNNY_STREAM_TOKEN_KEY',              'value' => $bunnyApiKey,    'secret' => true],
-            ['key' => 'BUNNY_STREAM_LIBRARY_ID',             'value' => $bunnyLibraryId, 'secret' => false],
+            ['key' => 'BUNNY_STREAM_LIBRARY_ID',             'value' => $bunnyLibraryId !== null ? (string) $bunnyLibraryId : null, 'secret' => false],
             ['key' => 'BUNNY_WEBHOOK_SECRET',                'value' => $bunnyApiKey,    'secret' => true],
-            ['key' => 'NEXT_PUBLIC_BUNNY_STREAM_LIBRARY_ID', 'value' => $bunnyLibraryId, 'secret' => false],
+            ['key' => 'NEXT_PUBLIC_BUNNY_STREAM_LIBRARY_ID', 'value' => $bunnyLibraryId !== null ? (string) $bunnyLibraryId : null, 'secret' => false],
 
             // Per-deployment identity
             ['key' => 'APP_BUSINESS_NAME',                  'value' => $businessName,                     'secret' => false],
