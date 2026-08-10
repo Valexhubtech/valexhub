@@ -95,6 +95,25 @@ class ManageDeployment extends ViewRecord
                 })
                 ->visible(fn (): bool => $this->record->status === 'provisioning'),
 
+            Action::make('resend_credentials')
+                ->label('Resend Credentials')
+                ->icon('phosphor-envelope-duotone')
+                ->color('warning')
+                ->requiresConfirmation()
+                ->modalHeading('Resend Credentials to Client')
+                ->modalDescription('This will email the client their current login URL, username and password from the stored credentials. Use this if the password changed after a Fix & Redeploy.')
+                ->modalSubmitActionLabel('Send Now')
+                ->action(function (): void {
+                    if ($this->record->user?->email) {
+                        Mail::to($this->record->user->email)
+                            ->queue(new DeploymentCredentialsMail($this->record));
+                        Notification::make()->title('Credentials email queued.')->success()->send();
+                    } else {
+                        Notification::make()->title('No client email on record.')->danger()->send();
+                    }
+                })
+                ->visible(fn (): bool => $this->record->user_id !== null && !empty($this->record->credentials_encrypted)),
+
             Action::make('back')
                 ->label('Back to list')
                 ->icon('phosphor-arrow-left')
@@ -168,6 +187,24 @@ class ManageDeployment extends ViewRecord
         $this->record->refresh();
 
         Notification::make()->title('Retrying deployment…')->success()->send();
+    }
+
+    public function reprovisionBunny(): void
+    {
+        // Clear stored library so redeployWithEnvFix creates a new one on the current Bunny account
+        $this->record->update([
+            'bunny_library_id'        => null,
+            'bunny_api_key_encrypted' => null,
+        ]);
+
+        $ok = app(RealCoolifyDeploymentService::class)->redeployWithEnvFix($this->record->fresh());
+
+        if ($ok) {
+            $this->record->refresh();
+            Notification::make()->title('New Bunny library created and redeploy triggered.')->success()->send();
+        } else {
+            Notification::make()->title('Bunny re-provision failed')->body('Check the Laravel logs.')->danger()->send();
+        }
     }
 
     public function wipeAndRecreate(): void
