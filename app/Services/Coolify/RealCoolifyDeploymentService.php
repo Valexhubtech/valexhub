@@ -148,8 +148,9 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
                 dbName: $dbName,
                 betterAuthSecret: $betterAuthSecret,
                 centralApiKey: $centralApiKey,
-                isProvisional: true,
                 bunnyLibraryId: $bunnyLibraryId,
+                bunnyApiKey: $bunnyApiKey,
+                isProvisional: true,
             );
         } catch (RequestException $e) {
             $responseBody = $e->response->json();
@@ -438,6 +439,30 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         $encryptionKey = bin2hex(random_bytes(32)); // always fresh — old value is unrecoverable
         $businessName = $deployment->business_name ?? $deployment->user?->name ?? 'Business';
 
+        // Reuse existing Bunny library if already provisioned — avoids creating a new
+        // library on every fix-redeploy. Clear bunny_library_id on the deployment record
+        // first to force a new library (e.g. when switching Bunny accounts).
+        $bunnyLibraryId = $deployment->bunny_library_id ?? null;
+        $bunnyApiKey    = $deployment->bunny_api_key_encrypted ?? null;
+
+        if (! $bunnyLibraryId) {
+            try {
+                $bunny = app(BunnyStreamService::class);
+                $bunnyLib = $bunny->createLibrary($businessName);
+                $bunnyLibraryId = $bunnyLib['library_id'];
+                $bunnyApiKey    = $bunnyLib['api_key'];
+
+                $deployment->update([
+                    'bunny_library_id'       => $bunnyLibraryId,
+                    'bunny_api_key_encrypted' => $bunnyApiKey,
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('Bunny library creation failed on redeploy — skipping Bunny env vars', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         // Use the stored URL if we have one; otherwise fetch from Coolify
         $appUrl = $deployment->deployment_url;
         if (! $appUrl) {
@@ -466,6 +491,8 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             appUrl: $appUrl,
             extraEnvVars: $deployment->extra_env_vars ?? [],
             standaloneMode: ($deployment->env_inject_mode ?? 'alongside') === 'standalone',
+            bunnyLibraryId: $bunnyLibraryId,
+            bunnyApiKey: $bunnyApiKey,
         );
 
         // Persist updated credentials so the setup-complete webhook and client area stay in sync

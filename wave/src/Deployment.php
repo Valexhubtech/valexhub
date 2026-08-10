@@ -14,6 +14,7 @@ class Deployment extends Model
     protected $casts = [
         'credentials_encrypted' => 'encrypted:array',
         'extra_env_vars' => 'encrypted:array',
+        'bunny_api_key_encrypted' => 'encrypted',
         'deployed_at' => 'datetime',
     ];
 

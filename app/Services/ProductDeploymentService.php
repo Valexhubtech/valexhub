@@ -69,8 +69,10 @@ class ProductDeploymentService
                 'coolify_app_id' => $result->appId,
                 'deployment_url' => $result->deploymentUrl, // known at creation time from Coolify
                 'central_api_key' => $result->centralApiKey,
+                'bunny_library_id' => $result->bunnyLibraryId,
+                'bunny_api_key_encrypted' => $result->bunnyApiKey,
                 'credentials_encrypted' => [
-                    'email' => $result->loginUsername,
+                    'username' => $result->loginUsername,
                     'password' => $result->loginPassword,
                     'db_name' => $result->dbName,
                     'better_auth_secret' => $result->betterAuthSecret,

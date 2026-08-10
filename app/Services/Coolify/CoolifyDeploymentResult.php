@@ -14,6 +14,8 @@ final class CoolifyDeploymentResult
         public readonly ?string $dbName = null,
         public readonly ?string $betterAuthSecret = null,
         public readonly ?string $centralApiKey = null,
+        public readonly ?int $bunnyLibraryId = null,
+        public readonly ?string $bunnyApiKey = null,
         // true = real Coolify deploy, status comes via webhook; false = mock, mark active immediately
         public readonly bool $isProvisional = false,
         public readonly ?string $failureReason = null,
