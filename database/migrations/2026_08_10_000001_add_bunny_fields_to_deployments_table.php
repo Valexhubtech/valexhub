@@ -9,8 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('deployments', function (Blueprint $table) {
-            $table->unsignedInteger('bunny_library_id')->nullable()->after('central_api_key');
-            $table->text('bunny_api_key_encrypted')->nullable()->after('bunny_library_id');
+            if (! Schema::hasColumn('deployments', 'bunny_library_id')) {
+                $table->unsignedInteger('bunny_library_id')->nullable()->after('central_api_key');
+            }
+            if (! Schema::hasColumn('deployments', 'bunny_api_key_encrypted')) {
+                $table->text('bunny_api_key_encrypted')->nullable()->after('bunny_library_id');
+            }
         });
     }
 
