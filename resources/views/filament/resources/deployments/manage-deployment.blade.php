@@ -166,20 +166,23 @@
                 @else
                     <div class="flex flex-wrap gap-3">
                         @foreach([
-                            ['restart',        'Restart',         'phosphor-arrows-clockwise', 'zinc',  'Restart container?'],
-                            ['fixAndRedeploy', 'Fix & Redeploy',  'phosphor-wrench',            'amber', 'Re-inject env vars & redeploy?'],
-                            ['wipeAndRecreate','Wipe & Recreate', 'phosphor-trash',             'red',   'Deletes the container — are you sure?'],
+                            ['restart',          'Restart',              'phosphor-arrows-clockwise',  'zinc',   'Restart container?'],
+                            ['fixAndRedeploy',   'Fix & Redeploy',       'phosphor-wrench',             'amber',  'Re-inject env vars & redeploy?'],
+                            ['reprovisionBunny', 'Re-provision Bunny',   'phosphor-video-camera',       'purple', 'This will create a NEW Bunny Stream library and update the client env vars. Old videos will not be migrated. Continue?'],
+                            ['wipeAndRecreate',  'Wipe & Recreate',      'phosphor-trash',              'red',    'Deletes the container — are you sure?'],
                         ] as [$method, $btnLabel, $icon, $color, $prompt])
                         @php
                             $btn = match($color) {
-                                'amber' => 'border-amber-400 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100',
-                                'red'   => 'border-red-400 text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100',
-                                default => 'border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-700',
+                                'amber'  => 'border-amber-400 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100',
+                                'red'    => 'border-red-400 text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100',
+                                'purple' => 'border-purple-400 text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100',
+                                default  => 'border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-700',
                             };
                             $confirmBtn = match($color) {
-                                'amber' => 'bg-amber-600 hover:bg-amber-700',
-                                'red'   => 'bg-red-600 hover:bg-red-700',
-                                default => 'bg-zinc-800 hover:bg-zinc-700',
+                                'amber'  => 'bg-amber-600 hover:bg-amber-700',
+                                'red'    => 'bg-red-600 hover:bg-red-700',
+                                'purple' => 'bg-purple-600 hover:bg-purple-700',
+                                default  => 'bg-zinc-800 hover:bg-zinc-700',
                             };
                         @endphp
                         <div x-data="{ confirming: false }">
