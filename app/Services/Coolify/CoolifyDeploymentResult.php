@@ -20,6 +20,5 @@ final class CoolifyDeploymentResult
         // true = real Coolify deploy, status comes via webhook; false = mock, mark active immediately
         public readonly bool $isProvisional = false,
         public readonly ?string $failureReason = null,
-        public readonly ?int $bunnyLibraryId = null,
     ) {}
 }

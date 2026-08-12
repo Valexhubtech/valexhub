@@ -68,7 +68,6 @@ class ProductDeploymentService
         if ($result->success) {
             $deployment->update([
                 'coolify_app_id' => $result->appId,
-                'bunny_library_id' => $result->bunnyLibraryId,
                 'deployment_url' => $result->deploymentUrl, // known at creation time from Coolify
                 'central_api_key' => $result->centralApiKey,
                 'auth_relay_secret' => $result->authRelaySecret,
