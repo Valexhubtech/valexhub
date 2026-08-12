@@ -60,6 +60,7 @@ class ProductDeploymentService
             'client_email' => $deployment->client_email,
             'server' => $server,
             'user_product_id' => $deployment->user_product_id,
+            'deployment_id' => $deployment->id,
             'extra_env_vars' => $deployment->extra_env_vars ?? [],
             'env_inject_mode' => $deployment->env_inject_mode ?? 'alongside',
         ]);
@@ -69,6 +70,7 @@ class ProductDeploymentService
                 'coolify_app_id' => $result->appId,
                 'deployment_url' => $result->deploymentUrl, // known at creation time from Coolify
                 'central_api_key' => $result->centralApiKey,
+                'auth_relay_secret' => $result->authRelaySecret,
                 'bunny_library_id' => $result->bunnyLibraryId,
                 'bunny_api_key_encrypted' => $result->bunnyApiKey,
                 'credentials_encrypted' => [
