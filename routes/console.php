@@ -13,3 +13,8 @@ Schedule::command('subscriptions:cancel-expired')->hourly();
 Schedule::command('accounts:process-deletions')->daily();
 Schedule::command('activity:clean')->daily();
 Schedule::command('invoices:generate-renewals')->dailyAt('08:00');
+
+// Prune expired Google OAuth relay nonces
+Schedule::call(function () {
+    DB::table('google_auth_nonces')->where('expires_at', '<', now())->delete();
+})->hourly();

@@ -11,11 +11,12 @@
 |
 */
 
+use App\Http\Controllers\AuthRelayController;
 use App\Http\Controllers\Billing\PaystackWebhookController;
 use App\Http\Controllers\DemoRequestController;
-use App\Http\Controllers\InternshipController;
 use App\Http\Controllers\DeploymentLoginController;
 use App\Http\Controllers\DomainCheckoutController;
+use App\Http\Controllers\InternshipController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductCheckoutController;
 use App\Http\Controllers\ReferralController;
@@ -69,3 +70,7 @@ Route::post('/webhook/paystack', [PaystackWebhookController::class, 'handler'])
 // Affiliate referral link capture
 Route::get('/r/{referralCode}', [ReferralController::class, 'capture'])
     ->name('referral.capture');
+
+// Google OAuth relay — no auth middleware, JWT-verified internally
+Route::get('/auth-relay/start', [AuthRelayController::class, 'start'])->name('auth-relay.start');
+Route::get('/auth-relay/callback', [AuthRelayController::class, 'callback'])->name('auth-relay.callback');

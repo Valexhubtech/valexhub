@@ -38,6 +38,7 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             $dbName = 'db_'.Str::lower(Str::random(20));
             $betterAuthSecret = Str::random(64);
             $centralApiKey = Str::random(64);
+            $authRelaySecret = bin2hex(random_bytes(32));
             $encryptionKey = bin2hex(random_bytes(32));
             $businessName = $options['business_name'] ?? $user->name;
 
@@ -101,12 +102,12 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             // Create a per-deployment Bunny Stream library so each business gets
             // isolated video storage. Falls back gracefully if API key is absent.
             $bunnyLibraryId = null;
-            $bunnyApiKey    = null;
+            $bunnyApiKey = null;
             try {
                 $bunny = app(BunnyStreamService::class);
                 $bunnyLib = $bunny->createLibrary($businessName);
                 $bunnyLibraryId = $bunnyLib['library_id'];
-                $bunnyApiKey    = $bunnyLib['api_key'];
+                $bunnyApiKey = $bunnyLib['api_key'];
             } catch (\Throwable $e) {
                 Log::warning('Bunny library creation failed — skipping Bunny env vars', [
                     'error' => $e->getMessage(),
@@ -121,11 +122,13 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
                 dbName: $dbName,
                 betterAuthSecret: $betterAuthSecret,
                 centralApiKey: $centralApiKey,
+                authRelaySecret: $authRelaySecret,
                 encryptionKey: $encryptionKey,
                 businessName: $businessName,
                 baseUrl: $baseUrl,
                 token: $token,
                 userProductId: $options['user_product_id'] ?? null,
+                deploymentId: $options['deployment_id'] ?? null,
                 appUrl: $appUrl,
                 extraEnvVars: $options['extra_env_vars'] ?? [],
                 standaloneMode: ($options['env_inject_mode'] ?? 'alongside') === 'standalone',
@@ -150,6 +153,7 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
                 centralApiKey: $centralApiKey,
                 bunnyLibraryId: $bunnyLibraryId,
                 bunnyApiKey: $bunnyApiKey,
+                authRelaySecret: $authRelaySecret,
                 isProvisional: true,
             );
         } catch (RequestException $e) {
@@ -206,11 +210,13 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         string $dbName,
         string $betterAuthSecret,
         string $centralApiKey,
+        string $authRelaySecret,
         string $encryptionKey,
         string $businessName,
         string $baseUrl,
         string $token,
         ?int $userProductId = null,
+        ?int $deploymentId = null,
         ?string $appUrl = null,
         array $extraEnvVars = [],
         bool $standaloneMode = false,
@@ -293,6 +299,11 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             // Platform comms — bootstrap uses these to phone home on setup-complete
             ['key' => 'CENTRAL_API_URL',                    'value' => $d['central_api_url'],             'secret' => false],
             ['key' => 'CENTRAL_API_KEY',                    'value' => $centralApiKey,                    'secret' => true],
+
+            // Google OAuth relay — shared secret between this instance and the relay
+            ['key' => 'AUTH_RELAY_URL',                     'value' => config('services.deploy.auth_relay_url'), 'secret' => false],
+            ['key' => 'AUTH_RELAY_KEY',                     'value' => $authRelaySecret,                  'secret' => true],
+            ['key' => 'DEPLOYMENT_ID',                      'value' => $deploymentId !== null ? (string) $deploymentId : null, 'secret' => false],
 
             // Encryption key — unique per instance, protects sensitive DB values
             ['key' => 'ENCRYPTION_KEY',                     'value' => $encryptionKey,                    'secret' => true],
@@ -436,6 +447,7 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         $dbName = $creds['db_name'] ?? 'db_'.Str::lower(Str::random(20));
         $betterAuthSecret = $creds['better_auth_secret'] ?? Str::random(64);
         $centralApiKey = $deployment->central_api_key ?? Str::random(64);
+        $authRelaySecret = $deployment->auth_relay_secret ?? bin2hex(random_bytes(32));
         $encryptionKey = bin2hex(random_bytes(32)); // always fresh — old value is unrecoverable
         $businessName = $deployment->business_name ?? $deployment->user?->name ?? 'Business';
 
@@ -443,17 +455,17 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         // library on every fix-redeploy. Clear bunny_library_id on the deployment record
         // first to force a new library (e.g. when switching Bunny accounts).
         $bunnyLibraryId = $deployment->bunny_library_id ?? null;
-        $bunnyApiKey    = $deployment->bunny_api_key_encrypted ?? null;
+        $bunnyApiKey = $deployment->bunny_api_key_encrypted ?? null;
 
         if (! $bunnyLibraryId) {
             try {
                 $bunny = app(BunnyStreamService::class);
                 $bunnyLib = $bunny->createLibrary($businessName);
                 $bunnyLibraryId = $bunnyLib['library_id'];
-                $bunnyApiKey    = $bunnyLib['api_key'];
+                $bunnyApiKey = $bunnyLib['api_key'];
 
                 $deployment->update([
-                    'bunny_library_id'       => $bunnyLibraryId,
+                    'bunny_library_id' => $bunnyLibraryId,
                     'bunny_api_key_encrypted' => $bunnyApiKey,
                 ]);
             } catch (\Throwable $e) {
@@ -483,11 +495,13 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             dbName: $dbName,
             betterAuthSecret: $betterAuthSecret,
             centralApiKey: $centralApiKey,
+            authRelaySecret: $authRelaySecret,
             encryptionKey: $encryptionKey,
             businessName: $businessName,
             baseUrl: $baseUrl,
             token: $token,
             userProductId: $deployment->user_product_id,
+            deploymentId: $deployment->id,
             appUrl: $appUrl,
             extraEnvVars: $deployment->extra_env_vars ?? [],
             standaloneMode: ($deployment->env_inject_mode ?? 'alongside') === 'standalone',
@@ -498,6 +512,7 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         // Persist updated credentials so the setup-complete webhook and client area stay in sync
         $deployment->update([
             'central_api_key' => $centralApiKey,
+            'auth_relay_secret' => $authRelaySecret,
             'credentials_encrypted' => array_merge($creds, [
                 'username' => $deployment->user?->email,
                 'password' => $password,

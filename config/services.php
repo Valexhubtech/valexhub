@@ -49,10 +49,16 @@ return [
         'bunny_api_key' => env('DEPLOY_BUNNY_API_KEY'),
 
         'central_api_url' => env('DEPLOY_CENTRAL_API_URL'),
+        'auth_relay_url' => env('DEPLOY_AUTH_RELAY_URL'),
     ],
 
     'hostinger' => [
         'api_token' => env('HOSTINGER_API_TOKEN'),
+    ],
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
     ],
 
 ];

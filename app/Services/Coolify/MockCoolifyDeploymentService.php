@@ -40,6 +40,7 @@ class MockCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             adminUrl: "{$appUrl}/admin",
             dbName: 'db_'.Str::lower(Str::random(20)),
             betterAuthSecret: Str::random(64),
+            authRelaySecret: bin2hex(random_bytes(32)),
         );
     }
 
