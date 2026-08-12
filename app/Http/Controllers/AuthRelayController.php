@@ -11,9 +11,13 @@ use Wave\Deployment;
 class AuthRelayController extends Controller
 {
     private const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
+
     private const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+
     private const GOOGLE_USERINFO_URL = 'https://openidconnect.googleapis.com/v1/userinfo';
+
     private const NONCE_TTL_SECONDS = 300;
+
     private const HANDOFF_TTL_SECONDS = 300;
 
     /**

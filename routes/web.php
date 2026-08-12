@@ -14,9 +14,9 @@
 use App\Http\Controllers\AuthRelayController;
 use App\Http\Controllers\Billing\PaystackWebhookController;
 use App\Http\Controllers\DemoRequestController;
-use App\Http\Controllers\InternshipController;
 use App\Http\Controllers\DeploymentLoginController;
 use App\Http\Controllers\DomainCheckoutController;
+use App\Http\Controllers\InternshipController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductCheckoutController;
 use App\Http\Controllers\ReferralController;

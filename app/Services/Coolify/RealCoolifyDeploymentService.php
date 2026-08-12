@@ -102,12 +102,12 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             // Create a per-deployment Bunny Stream library so each business gets
             // isolated video storage. Falls back gracefully if API key is absent.
             $bunnyLibraryId = null;
-            $bunnyApiKey    = null;
+            $bunnyApiKey = null;
             try {
                 $bunny = app(BunnyStreamService::class);
                 $bunnyLib = $bunny->createLibrary($businessName);
                 $bunnyLibraryId = $bunnyLib['library_id'];
-                $bunnyApiKey    = $bunnyLib['api_key'];
+                $bunnyApiKey = $bunnyLib['api_key'];
             } catch (\Throwable $e) {
                 Log::warning('Bunny library creation failed — skipping Bunny env vars', [
                     'error' => $e->getMessage(),
@@ -455,17 +455,17 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         // library on every fix-redeploy. Clear bunny_library_id on the deployment record
         // first to force a new library (e.g. when switching Bunny accounts).
         $bunnyLibraryId = $deployment->bunny_library_id ?? null;
-        $bunnyApiKey    = $deployment->bunny_api_key_encrypted ?? null;
+        $bunnyApiKey = $deployment->bunny_api_key_encrypted ?? null;
 
         if (! $bunnyLibraryId) {
             try {
                 $bunny = app(BunnyStreamService::class);
                 $bunnyLib = $bunny->createLibrary($businessName);
                 $bunnyLibraryId = $bunnyLib['library_id'];
-                $bunnyApiKey    = $bunnyLib['api_key'];
+                $bunnyApiKey = $bunnyLib['api_key'];
 
                 $deployment->update([
-                    'bunny_library_id'       => $bunnyLibraryId,
+                    'bunny_library_id' => $bunnyLibraryId,
                     'bunny_api_key_encrypted' => $bunnyApiKey,
                 ]);
             } catch (\Throwable $e) {
