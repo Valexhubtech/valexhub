@@ -52,6 +52,7 @@ return [
         'bunny_webhook_secret' => env('DEPLOY_BUNNY_WEBHOOK_SECRET'),
 
         'central_api_url' => env('DEPLOY_CENTRAL_API_URL'),
+        'auth_relay_url' => env('DEPLOY_AUTH_RELAY_URL'),
     ],
 
     'hostinger' => [

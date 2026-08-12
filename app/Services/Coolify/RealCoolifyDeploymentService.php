@@ -301,7 +301,7 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             ['key' => 'CENTRAL_API_KEY',                    'value' => $centralApiKey,                    'secret' => true],
 
             // Google OAuth relay — shared secret between this instance and the relay
-            ['key' => 'AUTH_RELAY_URL',                     'value' => config('services.deploy.auth_relay_url', 'https://appsauth.valexhub.com'), 'secret' => false],
+            ['key' => 'AUTH_RELAY_URL',                     'value' => config('services.deploy.auth_relay_url'), 'secret' => false],
             ['key' => 'AUTH_RELAY_KEY',                     'value' => $authRelaySecret,                  'secret' => true],
             ['key' => 'DEPLOYMENT_ID',                      'value' => $deploymentId !== null ? (string) $deploymentId : null, 'secret' => false],
 
@@ -512,6 +512,7 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         // Persist updated credentials so the setup-complete webhook and client area stay in sync
         $deployment->update([
             'central_api_key' => $centralApiKey,
+            'auth_relay_secret' => $authRelaySecret,
             'credentials_encrypted' => array_merge($creds, [
                 'username' => $deployment->user?->email,
                 'password' => $password,
