@@ -23,7 +23,6 @@ class DomainManagerResource extends Resource
     public static function getNavigationGroup(): ?string { return 'Email & Domains'; }
     public static function getNavigationLabel(): string { return 'DNS Manager'; }
     public static function getNavigationSort(): int { return 30; }
-    public static function getSlug(): string { return 'dns-manager'; }
 
     public static function table(Table $table): Table
     {
