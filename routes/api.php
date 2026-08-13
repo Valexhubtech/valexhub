@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CoolifyWebhookController;
+use App\Http\Controllers\Api\DomainTickController;
 use App\Http\Controllers\Api\InstanceWebhookController;
 use Illuminate\Http\Request;
 
@@ -24,5 +25,11 @@ Route::post('/instance-webhook/setup-complete', [InstanceWebhookController::clas
 
 // Webhook from Coolify — token embedded in path to avoid query-string validation issues
 Route::post('/coolify-webhook/{token}', [CoolifyWebhookController::class, 'handle']);
+
+// Domain order state machine — called by JS polling and Retry buttons (no cron)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/domains/{order}/tick', [DomainTickController::class, 'tick']);
+    Route::post('/domains/{order}/retry', [DomainTickController::class, 'retry']);
+});
 
 Wave::api();

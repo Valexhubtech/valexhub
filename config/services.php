@@ -61,4 +61,24 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
     ],
 
+    'plume' => [
+        'base_url'    => env('PLUME_BASE_URL'),
+        'master_key'  => env('PLUME_MASTER_KEY'),
+        'mail_domain' => env('PLATFORM_MAIL_DOMAIN'),
+    ],
+
+    'mail_provider' => env('MAIL_PROVIDER', 'resend'),
+
+    'go54' => [
+        'endpoint' => env('GO54_ENDPOINT', 'https://api.go54.com'),
+        'username' => env('GO54_USERNAME'),
+        'token'    => env('GO54_TOKEN'),
+        'enabled'  => env('GO54_ENABLED', true),
+    ],
+
+    'desec' => [
+        'token'    => env('DESEC_TOKEN'),
+        'base_url' => 'https://desec.io/api/v1',
+    ],
+
 ];

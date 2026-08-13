@@ -6,9 +6,11 @@ use App\Http\Middleware\AuthorizeDeploymentAccess;
 use App\Http\Middleware\VerifyPaystackWebhookSignature;
 use App\Listeners\LogSuccessfulLogin;
 use App\Listeners\LogSuccessfulLogout;
+use App\Mail\Transport\PlumeTransport;
 use App\Services\Coolify\CoolifyDeploymentServiceContract;
 use App\Services\Coolify\MockCoolifyDeploymentService;
 use App\Services\Coolify\RealCoolifyDeploymentService;
+use Illuminate\Support\Facades\Mail;
 use Exception;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -44,6 +46,21 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 
+    private function registerPlumeMailTransport(): void
+    {
+        Mail::extend('plume', function () {
+            return new PlumeTransport(
+                baseUrl: config('services.plume.base_url', ''),
+                apiKey: config('services.plume.master_key', ''),
+            );
+        });
+
+        // If MAIL_PROVIDER=plume, switch the default mailer at runtime
+        if (config('services.mail_provider', 'resend') === 'plume') {
+            config(['mail.default' => 'plume']);
+        }
+    }
+
     /**
      * Bootstrap any application services.
      */
@@ -54,6 +71,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->setSchemaDefaultLength();
+        $this->registerPlumeMailTransport();
 
         // Register activity log event listeners
         Event::listen(Login::class, LogSuccessfulLogin::class);
