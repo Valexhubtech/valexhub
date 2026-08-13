@@ -293,8 +293,9 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
 
             // App URL — injected at creation time so Better Auth accepts requests on first boot.
             // BETTER_AUTH_URL must match the origin exactly or Better Auth rejects all logins.
+            // APP_PUBLIC_URL is the runtime-only replacement for the old NEXT_PUBLIC_APP_URL build var.
             ['key' => 'BETTER_AUTH_URL',                    'value' => $appUrl,                           'secret' => false],
-            ['key' => 'NEXT_PUBLIC_APP_URL',                'value' => $appUrl,                           'secret' => false],
+            ['key' => 'APP_PUBLIC_URL',                     'value' => $appUrl,                           'secret' => false],
 
             // Platform comms — bootstrap uses these to phone home on setup-complete
             ['key' => 'CENTRAL_API_URL',                    'value' => $d['central_api_url'],             'secret' => false],
@@ -576,9 +577,9 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
         $fqdn = 'https://'.$cleanDomain;
 
         try {
-            // Update BETTER_AUTH_URL and NEXT_PUBLIC_APP_URL so the app accepts logins on the new domain.
+            // Update BETTER_AUTH_URL and APP_PUBLIC_URL so the app accepts logins on the new domain.
             // Try POST first (create); fall back to PATCH if the var already exists (409 conflict).
-            foreach (['BETTER_AUTH_URL', 'NEXT_PUBLIC_APP_URL'] as $key) {
+            foreach (['BETTER_AUTH_URL', 'APP_PUBLIC_URL'] as $key) {
                 $payload = ['key' => $key, 'value' => $fqdn];
                 $res = $this->http($baseUrl, $token)
                     ->post("/api/v1/applications/{$deployment->coolify_app_id}/envs", $payload);
