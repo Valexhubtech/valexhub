@@ -18,15 +18,12 @@ use Filament\Tables\Table;
 class DomainManagerResource extends Resource
 {
     protected static ?string $model = Domain::class;
-    protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
-    protected static ?string $navigationLabel = 'DNS Manager';
-    protected static ?int $navigationSort = 30;
-    protected static ?string $slug = 'dns-manager';
 
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Email & Domains';
-    }
+    public static function getNavigationIcon(): string|\BackedEnum|null { return 'heroicon-o-globe-alt'; }
+    public static function getNavigationGroup(): ?string { return 'Email & Domains'; }
+    public static function getNavigationLabel(): string { return 'DNS Manager'; }
+    public static function getNavigationSort(): int { return 30; }
+    public static function getSlug(): string { return 'dns-manager'; }
 
     public static function table(Table $table): Table
     {
