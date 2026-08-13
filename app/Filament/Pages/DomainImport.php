@@ -3,7 +3,6 @@
 namespace App\Filament\Pages;
 
 use App\Services\Domain\DomainImportService;
-use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
@@ -57,38 +56,6 @@ class DomainImport extends Page implements HasForms
     public function mount(): void
     {
         $this->form->fill();
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Action::make('query')
-                ->label('Reconstruct DNS Records')
-                ->color('primary')
-                ->action('queryRecords'),
-
-            Action::make('approve')
-                ->label('Approve & Push to deSEC')
-                ->color('success')
-                ->visible(fn () => $this->step === 'review')
-                ->requiresConfirmation()
-                ->modalDescription('This will push the approved records to deSEC and set dns_host=desec for this domain.')
-                ->action('approveAndPush'),
-
-            Action::make('switchNs')
-                ->label('Switch NS to deSEC')
-                ->color('warning')
-                ->visible(fn () => $this->step === 'ns_switch' && ($this->data['registrar'] ?? 'elsewhere') === 'go54')
-                ->requiresConfirmation()
-                ->modalDescription('This will call GO54 API to point ' . ($this->data['domain'] ?? '') . ' at ns1.desec.io / ns2.desec.org.')
-                ->action('switchNameservers'),
-
-            Action::make('markManaged')
-                ->label('Confirm NS Live → Mark Managed')
-                ->color('gray')
-                ->visible(fn () => $this->step === 'ns_switch')
-                ->action('confirmManaged'),
-        ];
     }
 
     public function queryRecords(): void
