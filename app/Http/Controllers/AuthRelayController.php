@@ -45,6 +45,7 @@ class AuthRelayController extends Controller
         $tenantId = $payload['tenant_id'] ?? null;
         $returnUrl = $payload['return_url'] ?? null;
         $nonce = $payload['nonce'] ?? null;
+        $handoffPath = $payload['handoff_path'] ?? '/api/auth/google-handoff';
 
         if (! $tenantId || ! $returnUrl || ! $nonce) {
             return redirect('/')->with('error', 'Invalid relay token payload.');
@@ -89,6 +90,7 @@ class AuthRelayController extends Controller
             'tenant_id' => $tenantId,
             'nonce' => $nonce,
             'return_url' => $returnUrl,
+            'handoff_path' => $handoffPath,
         ]);
 
         $callbackUrl = url('/auth-relay/callback');
@@ -125,6 +127,7 @@ class AuthRelayController extends Controller
         $tenantId = $stateData['tenant_id'];
         $nonce = $stateData['nonce'];
         $returnUrl = rtrim($stateData['return_url'], '/');
+        $handoffPath = $stateData['handoff_path'] ?? '/api/auth/google-handoff';
 
         $deployment = Deployment::find((int) $tenantId);
         if (! $deployment || ! $deployment->auth_relay_secret) {
@@ -187,7 +190,7 @@ class AuthRelayController extends Controller
 
         $handoffToken = $this->signJwt($handoffPayload, $deployment->auth_relay_secret);
 
-        return redirect($returnUrl.'/api/auth/google-handoff?token='.urlencode($handoffToken));
+        return redirect($returnUrl.$handoffPath.'?token='.urlencode($handoffToken));
     }
 
     // ── JWT helpers (HS256, zero external deps) ───────────────────────────────
