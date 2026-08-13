@@ -4,15 +4,13 @@ namespace App\Filament\Pages;
 
 use App\Services\Domain\DomainImportService;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Schema;
 use Filament\Pages\Page;
 
 class DomainImport extends Page implements HasForms
@@ -22,9 +20,9 @@ class DomainImport extends Page implements HasForms
     protected string $view = 'filament.pages.domain-import';
 
     public static function getNavigationIcon(): string|\BackedEnum|null { return 'heroicon-o-arrow-down-tray'; }
-    public static function getNavigationGroup(): ?string { return 'Email & Domains'; }
+    public static function getNavigationGroup(): ?string { return 'Deployments & Services'; }
     public static function getNavigationLabel(): string { return 'Import / Adopt Domain'; }
-    public static function getNavigationSort(): int { return 20; }
+    public static function getNavigationSort(): int { return 6; }
 
     public string $domain = '';
     public array $extraSubnames = [];
@@ -35,7 +33,7 @@ class DomainImport extends Page implements HasForms
 
     private const DESEC_NAMESERVERS = ['ns1.desec.io', 'ns2.desec.org'];
 
-    public function form(Form $form): Form
+    public function form(Schema $form): Schema
     {
         return $form->schema([
             TextInput::make('domain')

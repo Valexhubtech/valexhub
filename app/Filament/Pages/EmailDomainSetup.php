@@ -12,9 +12,9 @@ class EmailDomainSetup extends Page
     protected string $view = 'filament.pages.email-domain-setup';
 
     public static function getNavigationIcon(): string|\BackedEnum|null { return 'heroicon-o-envelope'; }
-    public static function getNavigationGroup(): ?string { return 'Email & Domains'; }
+    public static function getNavigationGroup(): ?string { return 'Deployments & Services'; }
     public static function getNavigationLabel(): string { return 'Platform Email Setup'; }
-    public static function getNavigationSort(): int { return 10; }
+    public static function getNavigationSort(): int { return 5; }
 
     public ?string $provisionStatus = null;
     public array $provisionedRecords = [];
