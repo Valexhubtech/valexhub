@@ -4,8 +4,8 @@ namespace App\Filament\Resources\DomainManagement\Pages;
 
 use App\Filament\Resources\DomainManagement\DomainManagerResource;
 use App\Models\Domain;
-use App\Services\Go54\Go54RegistrarProvider;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 
@@ -16,58 +16,44 @@ class ListDomainRecords extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('sync_go54')
-                ->label('Sync from GO54')
-                ->icon('heroicon-o-arrow-path')
-                ->color('gray')
-                ->requiresConfirmation()
-                ->modalHeading('Sync GO54 Domains')
-                ->modalDescription('This will pull all domains on your GO54 account and add any missing ones to the DNS Manager.')
-                ->action(function (): void {
-                    try {
-                        $go54 = app(Go54RegistrarProvider::class);
-                        $response = $go54->listDomains();
+            Action::make('add_domains')
+                ->label('Add Domains')
+                ->icon('heroicon-o-plus-circle')
+                ->color('primary')
+                ->modalHeading('Add Domains to DNS Manager')
+                ->modalDescription('Paste your domain names below, one per line. Any domains already in the list will be skipped.')
+                ->form([
+                    Textarea::make('domains')
+                        ->label('Domain names (one per line)')
+                        ->placeholder("valexhub.com\nexample.com\nclient.ng")
+                        ->rows(8)
+                        ->required(),
+                ])
+                ->action(function (array $data): void {
+                    $lines = preg_split('/\r?\n/', trim($data['domains']));
+                    $added = 0;
 
-                        $domains = data_get($response, 'domains', $response['data'] ?? []);
+                    foreach ($lines as $line) {
+                        $domain = strtolower(trim($line));
 
-                        if (empty($domains)) {
-                            Notification::make()
-                                ->title('No domains returned from GO54.')
-                                ->warning()
-                                ->send();
-
-                            return;
+                        if (! $domain || ! str_contains($domain, '.')) {
+                            continue;
                         }
 
-                        $synced = 0;
+                        $record = Domain::firstOrCreate(
+                            ['domain' => $domain],
+                            ['owner' => 'us', 'registrar' => 'go54', 'dns_host' => 'unknown', 'managed' => false],
+                        );
 
-                        foreach ($domains as $item) {
-                            $domainName = is_string($item) ? $item : ($item['domain'] ?? $item['name'] ?? null);
-
-                            if (! $domainName) {
-                                continue;
-                            }
-
-                            $created = Domain::firstOrCreate(
-                                ['domain' => strtolower(trim($domainName))],
-                                ['owner' => 'us', 'registrar' => 'go54', 'dns_host' => 'unknown', 'managed' => false],
-                            );
-
-                            if ($created->wasRecentlyCreated) {
-                                $synced++;
-                            }
+                        if ($record->wasRecentlyCreated) {
+                            $added++;
                         }
-
-                        Notification::make()
-                            ->title("Sync complete — {$synced} new domain(s) added.")
-                            ->success()
-                            ->send();
-                    } catch (\Throwable $e) {
-                        Notification::make()
-                            ->title('Sync failed: ' . $e->getMessage())
-                            ->danger()
-                            ->send();
                     }
+
+                    Notification::make()
+                        ->title("{$added} domain(s) added.")
+                        ->success()
+                        ->send();
                 }),
         ];
     }

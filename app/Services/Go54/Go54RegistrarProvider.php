@@ -84,10 +84,6 @@ class Go54RegistrarProvider
         return $this->get('/tlds');
     }
 
-    public function listDomains(): array
-    {
-        return $this->get('/domains');
-    }
 
     private function post(string $path, array $params = []): array
     {
