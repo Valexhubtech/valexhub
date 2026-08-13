@@ -7,6 +7,7 @@ use App\Services\Dns\DesecDnsProvider;
 use App\Services\Dns\RecordConflictResolver;
 use App\Services\Go54\Go54RegistrarProvider;
 use Illuminate\Support\Facades\Log;
+use Wave\DomainPurchase;
 
 class DomainImportService
 {
@@ -110,6 +111,14 @@ class DomainImportService
             ['domain' => $domain],
             ['managed' => true, 'dns_host' => 'desec'],
         );
+
+        // Sync status to Domain Purchases if a matching record exists
+        DomainPurchase::where('domain', $domain)
+            ->whereIn('dns_status', ['pending', 'failed'])
+            ->update([
+                'dns_status'            => 'configured',
+                'registration_status'   => 'registered',
+            ]);
     }
 
     private function queryDns(string $host, string $type): array
