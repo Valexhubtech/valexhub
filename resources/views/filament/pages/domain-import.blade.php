@@ -5,7 +5,9 @@
             <form wire:submit.prevent="queryRecords">
                 {{ $this->form }}
                 <div class="mt-4">
-                    {{ ($this->getHeaderActions())[0]->render() }}
+                    <x-filament::button type="submit" color="primary">
+                        Reconstruct DNS Records
+                    </x-filament::button>
                 </div>
             </form>
         </x-filament::section>
@@ -15,7 +17,7 @@
             <x-filament::section heading="2. Review reconstructed records">
                 @if (!empty($staleFlags))
                     <div class="mb-4 rounded-md bg-yellow-50 p-4 text-sm text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300">
-                        ⚠ Records marked <strong>stale</strong> look like parking/default entries. Remove them before approving.
+                        Records marked <strong>stale</strong> look like parking/default entries. Remove them before approving.
                     </div>
                 @endif
 
@@ -58,7 +60,13 @@
                 </div>
 
                 <div class="mt-4">
-                    {{ ($this->getHeaderActions())[1]->render() }}
+                    <x-filament::button
+                        color="success"
+                        wire:click="approveAndPush"
+                        wire:confirm="This will push the approved records to deSEC and set dns_host=desec for this domain. Continue?"
+                    >
+                        Approve & Push to deSEC
+                    </x-filament::button>
                 </div>
             </x-filament::section>
         @endif
@@ -76,17 +84,25 @@
                         @endforeach
                     </div>
 
-                    @if (($data['registrar'] ?? 'elsewhere') === 'go54')
-                        <div class="flex gap-3 pt-2">
-                            {{ ($this->getHeaderActions())[2]->render() }}
-                            {{ ($this->getHeaderActions())[3]->render() }}
-                        </div>
-                    @else
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                            Log in to your registrar and change the nameservers manually. When done, click:
-                        </p>
-                        {{ ($this->getHeaderActions())[3]->render() }}
-                    @endif
+                    <div class="flex gap-3 pt-2">
+                        @if (($data['registrar'] ?? 'elsewhere') === 'go54')
+                            <x-filament::button
+                                color="warning"
+                                wire:click="switchNameservers"
+                                wire:confirm="This will call the GO54 API to point {{ $data['domain'] ?? '' }} at ns1.desec.io / ns2.desec.org. Continue?"
+                            >
+                                Switch NS to deSEC
+                            </x-filament::button>
+                        @else
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Log in to your registrar and change the nameservers manually. When done, click:
+                            </p>
+                        @endif
+
+                        <x-filament::button color="gray" wire:click="confirmManaged">
+                            Confirm NS Live — Mark Managed
+                        </x-filament::button>
+                    </div>
                 </div>
             </x-filament::section>
         @endif
@@ -95,7 +111,7 @@
         @if ($step === 'done')
             <x-filament::section>
                 <p class="font-semibold text-green-700 dark:text-green-400">
-                    ✓ {{ $data['domain'] ?? '' }} is now a fully managed domain. You can proceed with Plume onboarding.
+                    ✓ {{ $data['domain'] ?? '' }} is now a fully managed domain.
                 </p>
             </x-filament::section>
         @endif
