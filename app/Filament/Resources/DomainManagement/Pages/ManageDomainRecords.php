@@ -18,7 +18,7 @@ use Filament\Resources\Pages\Page;
 class ManageDomainRecords extends Page
 {
     protected static string $resource = DomainManagerResource::class;
-    protected static string $view = 'filament.resources.domain-management.pages.manage-domain-records';
+    protected string $view = 'filament.resources.domain-management.pages.manage-domain-records';
 
     /** System-managed record subname+type combos that require typed confirmation */
     private const LOCKED_KEYS = [

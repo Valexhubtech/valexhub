@@ -132,7 +132,12 @@ class DomainOrderStateMachine
 
     private function alertAdmin(string $subject, string $body): void
     {
-        $adminEmail = config('mail.from.address');
-        Mail::to($adminEmail)->send(new AdminAlertMail($subject, $body));
+        $recipients = array_filter(explode(',', config('app.support_email', '')));
+
+        if (empty($recipients)) {
+            return;
+        }
+
+        Mail::to($recipients)->send(new AdminAlertMail($subject, $body));
     }
 }

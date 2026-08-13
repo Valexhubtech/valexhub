@@ -19,11 +19,12 @@ class DomainImport extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-arrow-down-tray';
-    protected static ?string $navigationGroup = 'Email & Domains';
-    protected static ?string $navigationLabel = 'Import / Adopt Domain';
-    protected static ?int $navigationSort = 20;
-    protected static string $view = 'filament.pages.domain-import';
+    protected string $view = 'filament.pages.domain-import';
+
+    public static function getNavigationIcon(): string|\BackedEnum|null { return 'heroicon-o-arrow-down-tray'; }
+    public static function getNavigationGroup(): ?string { return 'Email & Domains'; }
+    public static function getNavigationLabel(): string { return 'Import / Adopt Domain'; }
+    public static function getNavigationSort(): int { return 20; }
 
     public string $domain = '';
     public array $extraSubnames = [];
