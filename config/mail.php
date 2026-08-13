@@ -9,6 +9,9 @@ return [
         'resend' => [
             'transport' => 'resend',
         ],
+        'plume' => [
+            'transport' => 'plume',
+        ],
     ],
 
     'markdown' => [

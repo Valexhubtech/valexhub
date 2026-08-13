@@ -2,8 +2,8 @@
 
 namespace App\Livewire;
 
-use App\Services\ExchangeRateService;
-use App\Services\Hostinger\HostingerDomainService;
+use App\Models\DomainOrder;
+use App\Services\Go54\Go54RegistrarProvider;
 use App\Services\Paystack\PaystackService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -15,7 +15,6 @@ class DomainSearch extends Component
 {
     public ?Deployment $deployment = null;
 
-    // Tracks whether deployment was injected as a prop vs chosen via selector
     public bool $deploymentBound = false;
 
     public string $searchQuery = '';
@@ -29,8 +28,6 @@ class DomainSearch extends Component
     public ?string $selectedDomain = null;
 
     public ?string $selectedTld = null;
-
-    public ?string $selectedItemId = null;
 
     public int $selectedPriceKobo = 0;
 
@@ -56,34 +53,18 @@ class DomainSearch extends Component
         ]);
 
         $this->searching = true;
-        $this->results = [];
-        $this->searched = false;
-        $this->reset(['selectedDomain', 'selectedTld', 'selectedItemId', 'selectedPriceKobo', 'showPayment', 'showDeploymentSelector', 'availableDeployments']);
+        $this->results   = [];
+        $this->searched  = false;
+        $this->reset(['selectedDomain', 'selectedTld', 'selectedPriceKobo', 'showPayment', 'showDeploymentSelector', 'availableDeployments']);
 
         $input = strtolower(trim($this->searchQuery));
+        $tlds  = (array) config('domains.tld_whitelist', ['com', 'com.ng', 'ng']);
 
-        $hostinger = app(HostingerDomainService::class);
-        $catalogTlds = $this->loadCatalog($hostinger);
-
-        if (empty($catalogTlds)) {
-            $this->addError('searchQuery', 'Domain search is temporarily unavailable. Please try again in a moment.');
-            $this->searching = false;
-
-            return;
-        }
-
-        $whitelist = (array) config('domains.tld_whitelist', []);
-        $catalogTlds = array_intersect_key($catalogTlds, array_flip($whitelist));
-
-        $allTldKeys = collect(array_keys($catalogTlds))
-            ->sortByDesc(fn ($t) => strlen($t))
-            ->values()
-            ->toArray();
-
+        // Strip TLD if user typed the full domain
         $name = $input;
-        foreach ($allTldKeys as $tld) {
-            if (str_ends_with($input, '.'.$tld)) {
-                $name = substr($input, 0, strlen($input) - strlen('.'.$tld));
+        foreach (array_map(fn ($t) => '.' . $t, $tlds) as $dotTld) {
+            if (str_ends_with($input, $dotTld)) {
+                $name = substr($input, 0, -strlen($dotTld));
                 break;
             }
         }
@@ -95,52 +76,43 @@ class DomainSearch extends Component
             return;
         }
 
-        try {
-            $availability = $hostinger->checkAvailability($name, $allTldKeys);
-        } catch (\Throwable $e) {
-            Log::error('DomainSearch: availability check failed', ['error' => $e->getMessage()]);
-            $availability = [];
-        }
-
-        $liveRate = app(ExchangeRateService::class)->getUsdToNgn();
-        $recommendedTlds = (array) config('domains.recommended_tlds', ['com', 'com.ng']);
+        $go54        = app(Go54RegistrarProvider::class);
+        $recommended = (array) config('domains.recommended_tlds', ['com', 'com.ng']);
         $descriptions = (array) config('domains.tld_descriptions', []);
-        $groups = (array) config('domains.tld_groups', []);
 
         $results = [];
-        foreach ($catalogTlds as $tld => $catalogItem) {
-            $fullDomain = $name.'.'.$tld;
-            $available = $availability[$fullDomain]['available'] ?? null;
+        foreach ($tlds as $tld) {
+            $fullDomain = $name . '.' . $tld;
 
-            $priceKobo = (int) round($catalogItem['promo_cents'] * $liveRate);
+            try {
+                $check     = $go54->checkAvailability($fullDomain);
+                $available = $check['available'] ?? null;
+                $priceKobo = isset($check['price']) ? (int) round((float) $check['price'] * 100) : 0;
+            } catch (\Throwable $e) {
+                Log::warning('DomainSearch: GO54 availability check failed', ['domain' => $fullDomain, 'error' => $e->getMessage()]);
+                $available = null;
+                $priceKobo = 0;
+            }
 
-            $isRecommended = in_array($tld, $recommendedTlds) && $available !== false;
+            $setupFeeKobo = (int) config('domains.setup_fee_kobo', 0);
 
             $results[] = [
-                'domain' => $fullDomain,
-                'tld' => $tld,
-                'label' => '.'.$tld,
+                'domain'      => $fullDomain,
+                'tld'         => $tld,
+                'label'       => '.' . $tld,
                 'description' => $descriptions[$tld] ?? '',
-                'group' => $groups[$tld] ?? 'other',
-                'recommended' => $isRecommended,
-                'price_kobo' => $priceKobo,
+                'recommended' => in_array($tld, $recommended) && $available !== false,
+                'price_kobo'  => $priceKobo,
                 'price_naira' => number_format($priceKobo / 100, 0),
-                'available' => $available,
-                'item_id' => $catalogItem['item_id'],
+                'available'   => $available,
             ];
         }
 
         usort($results, function ($a, $b) {
             $score = function ($r) {
-                if ($r['available'] === true && $r['recommended']) {
-                    return 3;
-                }
-                if ($r['available'] === true) {
-                    return 2;
-                }
-                if ($r['available'] === null) {
-                    return 1;
-                }
+                if ($r['available'] === true && $r['recommended']) return 3;
+                if ($r['available'] === true) return 2;
+                if ($r['available'] === null) return 1;
 
                 return 0;
             };
@@ -148,17 +120,16 @@ class DomainSearch extends Component
             return $score($b) <=> $score($a);
         });
 
-        $this->results = $results;
+        $this->results  = $results;
         $this->searched = true;
         $this->searching = false;
     }
 
-    public function select(string $domain, string $tld, int $priceKobo, string $itemId): void
+    public function select(string $domain, string $tld, int $priceKobo): void
     {
-        $this->selectedDomain = $domain;
-        $this->selectedTld = $tld;
+        $this->selectedDomain   = $domain;
+        $this->selectedTld      = $tld;
         $this->selectedPriceKobo = $priceKobo;
-        $this->selectedItemId = $itemId;
 
         if ($this->deployment !== null) {
             $this->showPayment = true;
@@ -166,7 +137,6 @@ class DomainSearch extends Component
             return;
         }
 
-        // No deployment bound — find ones available for this user
         $paidIds = DomainPurchase::where('user_id', Auth::id())
             ->where('payment_status', 'paid')
             ->pluck('deployment_id')
@@ -176,9 +146,7 @@ class DomainSearch extends Component
             ->where('user_id', Auth::id())
             ->whereNotIn('id', $paidIds)
             ->get()
-            ->map(function ($d) {
-                return ['id' => $d->id, 'name' => $d->product->name ?? 'Deployment #'.$d->id];
-            })
+            ->map(fn ($d) => ['id' => $d->id, 'name' => $d->product->name ?? 'Deployment #' . $d->id])
             ->toArray();
 
         $this->showDeploymentSelector = true;
@@ -204,14 +172,14 @@ class DomainSearch extends Component
             return;
         }
 
-        $this->deployment = $deployment;
+        $this->deployment             = $deployment;
         $this->showDeploymentSelector = false;
-        $this->showPayment = true;
+        $this->showPayment            = true;
     }
 
     public function cancelDeploymentSelection(): void
     {
-        $this->reset(['selectedDomain', 'selectedTld', 'selectedItemId', 'selectedPriceKobo', 'showDeploymentSelector', 'availableDeployments']);
+        $this->reset(['selectedDomain', 'selectedTld', 'selectedPriceKobo', 'showDeploymentSelector', 'availableDeployments']);
     }
 
     public function cancelSelection(): void
@@ -219,7 +187,7 @@ class DomainSearch extends Component
         if (! $this->deploymentBound) {
             $this->deployment = null;
         }
-        $this->reset(['selectedDomain', 'selectedTld', 'selectedItemId', 'selectedPriceKobo', 'showPayment', 'showDeploymentSelector', 'availableDeployments']);
+        $this->reset(['selectedDomain', 'selectedTld', 'selectedPriceKobo', 'showPayment', 'showDeploymentSelector', 'availableDeployments']);
     }
 
     public function proceedToPayment(): void
@@ -228,38 +196,36 @@ class DomainSearch extends Component
             return;
         }
 
-        $setupFeeKobo = (int) config('domains.setup_fee_kobo');
-        $totalKobo = $this->selectedPriceKobo + $setupFeeKobo;
+        $setupFeeKobo = (int) config('domains.setup_fee_kobo', 0);
+        $totalKobo    = $this->selectedPriceKobo + $setupFeeKobo;
 
         $this->paymentError = '';
 
         $purchase = DomainPurchase::create([
-            'user_id' => Auth::id(),
-            'deployment_id' => $this->deployment->id,
-            'domain' => $this->selectedDomain,
-            'tld' => $this->selectedTld,
-            'hostinger_item_id' => $this->selectedItemId,
+            'user_id'          => Auth::id(),
+            'deployment_id'    => $this->deployment->id,
+            'domain'           => $this->selectedDomain,
+            'tld'              => $this->selectedTld,
             'domain_price_kobo' => $this->selectedPriceKobo,
-            'setup_fee_kobo' => $setupFeeKobo,
-            'total_kobo' => $totalKobo,
-            'payment_status' => 'pending',
+            'setup_fee_kobo'   => $setupFeeKobo,
+            'total_kobo'       => $totalKobo,
+            'payment_status'   => 'pending',
         ]);
 
         try {
-            $paystack = app(PaystackService::class);
-            $result = $paystack->initializeTransaction(
+            $result   = app(PaystackService::class)->initializeTransaction(
                 email: Auth::user()->email,
                 amountKobo: $totalKobo,
                 metadata: [
-                    'type' => 'domain_purchase',
+                    'type'               => 'domain_purchase',
                     'domain_purchase_id' => $purchase->id,
-                    'deployment_id' => $this->deployment->id,
-                    'domain' => $this->selectedDomain,
+                    'deployment_id'      => $this->deployment->id,
+                    'domain'             => $this->selectedDomain,
                 ],
                 callbackUrl: route('dashboard.domain.callback'),
             );
 
-            $authUrl = $result['data']['authorization_url'] ?? null;
+            $authUrl   = $result['data']['authorization_url'] ?? null;
             $reference = $result['data']['reference'] ?? null;
 
             if (! $authUrl || ! $reference) {
@@ -267,26 +233,18 @@ class DomainSearch extends Component
             }
 
             $purchase->update(['paystack_reference' => $reference]);
-
             $this->redirect($authUrl);
         } catch (\Throwable $e) {
             Log::error('DomainSearch: Paystack init failed', ['error' => $e->getMessage()]);
             $purchase->update(['payment_status' => 'failed']);
-            $this->paymentError = 'Payment could not be initiated: '.$e->getMessage();
+            $this->paymentError = 'Payment could not be initiated: ' . $e->getMessage();
         }
-    }
-
-    private function loadCatalog(HostingerDomainService $hostinger): array
-    {
-        return cache()->remember('hostinger_available_tlds', 86400, function () use ($hostinger) {
-            return $hostinger->getAvailableTlds();
-        });
     }
 
     public function render()
     {
         return view('livewire.domain-search', [
-            'setupFeeNaira' => number_format(config('domains.setup_fee_kobo') / 100, 0),
+            'setupFeeNaira' => number_format(config('domains.setup_fee_kobo', 0) / 100, 0),
         ]);
     }
 }

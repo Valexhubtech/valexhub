@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\RegisterDomainJob;
+use App\Models\DomainOrder;
 use App\Services\Paystack\PaystackService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -86,19 +86,16 @@ class DomainCheckoutController extends Controller
                 'domain' => $purchase->domain,
             ]);
 
-            // On sync queue (shared hosting) this runs immediately in the same request.
-            // On a real queue (VPS) it runs in the background via a worker.
-            // Either way, payment is already confirmed above — a registration failure
-            // only sets registration_status=failed, it never fails the payment.
-            try {
-                RegisterDomainJob::dispatch($purchase->id);
-            } catch (\Throwable $e) {
-                Log::error('DomainCheckout: registration job failed', [
-                    'purchase_id' => $purchase->id,
-                    'error' => $e->getMessage(),
-                ]);
-                // Don't rethrow — payment is confirmed, registration can be retried from admin
-            }
+            // Create a DomainOrder to track the state machine (GO54 → deSEC → Plume verify → inject).
+            // The tick endpoint advances it; no cron or queue worker needed on cPanel.
+            DomainOrder::firstOrCreate(
+                ['domain' => $purchase->domain, 'instance_id' => (string) $purchase->deployment_id],
+                [
+                    'price'    => $purchase->domain_price_kobo / 100,
+                    'currency' => 'NGN',
+                    'state'    => 'pending',
+                ]
+            );
 
             return $this->successRedirect($purchase, "Payment received! Your domain {$purchase->domain} is being registered. DNS will be active within 30 minutes.");
 
