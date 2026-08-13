@@ -9,11 +9,12 @@ use Filament\Pages\Page;
 
 class EmailDomainSetup extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-envelope';
-    protected static ?string $navigationGroup = 'Email & Domains';
-    protected static ?string $navigationLabel = 'Platform Email Setup';
-    protected static ?int $navigationSort = 10;
-    protected static string $view = 'filament.pages.email-domain-setup';
+    protected string $view = 'filament.pages.email-domain-setup';
+
+    public static function getNavigationIcon(): string|\BackedEnum|null { return 'heroicon-o-envelope'; }
+    public static function getNavigationGroup(): ?string { return 'Email & Domains'; }
+    public static function getNavigationLabel(): string { return 'Platform Email Setup'; }
+    public static function getNavigationSort(): int { return 10; }
 
     public ?string $provisionStatus = null;
     public array $provisionedRecords = [];

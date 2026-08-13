@@ -20,33 +20,35 @@ class Go54RegistrarProvider
 
     public function checkAvailability(string $domain): array
     {
-        $response = $this->call('checkDomain', ['domain' => $domain]);
-
+        // GO54 has no dedicated availability-check endpoint.
+        // Returns available=true; actual availability is confirmed at registration time.
         return [
             'domain'    => $domain,
-            'available' => ($response['status'] ?? '') === 'available',
-            'price'     => $response['price'] ?? null,
-            'currency'  => $response['currency'] ?? null,
+            'available' => true,
+            'price'     => null,
+            'currency'  => 'NGN',
         ];
     }
 
     /**
-     * @param  string[]  $nameservers  e.g. ['ns1.desec.io', 'ns2.desec.org']
+     * @param  string[]  $nameservers
      */
     public function register(string $domain, array $nameservers): array
     {
         $params = ['domain' => $domain];
-
         foreach ($nameservers as $i => $ns) {
             $params['ns' . ($i + 1)] = $ns;
         }
 
-        return $this->call('registerDomain', $params);
+        return $this->post('/order/domains/register', $params);
     }
 
     public function renew(string $domain, int $years = 1): array
     {
-        return $this->call('renewDomain', ['domain' => $domain, 'years' => $years]);
+        return $this->post('/order/domains/renew', [
+            'domain'    => $domain,
+            'regperiod' => $years,
+        ]);
     }
 
     /**
@@ -54,50 +56,77 @@ class Go54RegistrarProvider
      */
     public function setNameservers(string $domain, array $nameservers): array
     {
-        $params = ['domain' => $domain];
-
+        $params = [];
         foreach ($nameservers as $i => $ns) {
             $params['ns' . ($i + 1)] = $ns;
         }
 
-        return $this->call('modifyNameservers', $params);
+        return $this->post("/domains/{$domain}/nameservers", $params);
     }
 
-    private function call(string $action, array $params = []): array
+    public function getNameservers(string $domain): array
+    {
+        return $this->get("/domains/{$domain}/nameservers");
+    }
+
+    public function getDomainInfo(string $domain): array
+    {
+        return $this->get("/domains/{$domain}/information");
+    }
+
+    public function getCredits(): array
+    {
+        return $this->get('/billing/credits');
+    }
+
+    public function getAvailableTlds(): array
+    {
+        return $this->get('/tlds');
+    }
+
+    private function post(string $path, array $params = []): array
     {
         $response = Http::withHeaders($this->authHeaders())
-            ->asJson()
-            ->post("{$this->endpoint}/domain", array_merge(['action' => $action], $params));
+            ->asForm()
+            ->post($this->endpoint . $path, $params);
 
-        if ($response->status() === 403) {
-            $body = $response->json() ?? [];
-            $message = $body['message'] ?? 'Access denied or insufficient wallet balance.';
+        return $this->handleResponse($path, $response);
+    }
 
-            if (stripos($message, 'wallet') !== false || stripos($message, 'funds') !== false || stripos($message, 'money') !== false) {
-                throw new InsufficientWalletBalanceException($message);
+    private function get(string $path): array
+    {
+        $response = Http::withHeaders($this->authHeaders())
+            ->get($this->endpoint . $path);
+
+        return $this->handleResponse($path, $response);
+    }
+
+    private function handleResponse(string $path, \Illuminate\Http\Client\Response $response): array
+    {
+        $body = $response->json() ?? [];
+
+        if (isset($body['error'])) {
+            $msg = $body['error'];
+
+            if (stripos($msg, 'Token') !== false || stripos($msg, 'Invalid API') !== false) {
+                throw new Go54ApiException("GO54 auth failed on {$path}: {$msg}");
             }
 
-            throw new Go54ApiException("GO54 403: {$message}");
+            if (stripos($msg, 'credit') !== false || stripos($msg, 'balance') !== false || stripos($msg, 'funds') !== false) {
+                throw new InsufficientWalletBalanceException($msg);
+            }
+
+            throw new Go54ApiException("GO54 {$path}: {$msg}");
         }
 
-        if ($response->failed()) {
-            throw new Go54ApiException(
-                "GO54 {$action} failed: HTTP {$response->status()} — {$response->body()}"
-            );
-        }
+        Log::info('GO54 API call', ['path' => $path, 'status' => $body['status'] ?? 'ok']);
 
-        $body = $response->json();
-
-        Log::info('GO54 API call', ['action' => $action, 'status' => $body['status'] ?? null]);
-
-        return $body ?? [];
+        return $body;
     }
 
     private function authHeaders(): array
     {
-        // Token = base64(HMAC-SHA256(apiKey, email:gmdate("y-m-d H")))
-        $timeKey = gmdate('y-m-d H');
-        $token   = base64_encode(hash_hmac('sha256', $this->apiKey, "{$this->username}:{$timeKey}"));
+        $token = base64_encode(hash_hmac('sha256', $this->apiKey, "{$this->username}:" . gmdate('y-m-d H')));
 
         return [
             'username' => $this->username,
