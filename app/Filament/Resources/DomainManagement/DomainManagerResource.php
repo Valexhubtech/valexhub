@@ -19,10 +19,14 @@ class DomainManagerResource extends Resource
 {
     protected static ?string $model = Domain::class;
     protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
-    protected static ?string $navigationGroup = 'Email & Domains';
     protected static ?string $navigationLabel = 'DNS Manager';
     protected static ?int $navigationSort = 30;
     protected static ?string $slug = 'dns-manager';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Email & Domains';
+    }
 
     public static function table(Table $table): Table
     {
