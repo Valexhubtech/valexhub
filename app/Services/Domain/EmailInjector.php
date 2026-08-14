@@ -61,7 +61,7 @@ class EmailInjector
         }
 
         // Trigger redeploy so new env vars take effect
-        $http->get('/api/v1/deploy', ['uuid' => $appUuid, 'force' => false]);
+        $http->post('/api/v1/deploy', ['uuid' => $appUuid, 'force' => false]);
 
         // Record in email_domains table (upsert — replaces any previous entry for this instance)
         EmailDomain::updateOrCreate(
