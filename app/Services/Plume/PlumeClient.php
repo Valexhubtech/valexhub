@@ -56,7 +56,7 @@ class PlumeClient
     {
         $response = $this->http->post('/api-keys', [
             'domain' => $domain,
-            'name'   => $name,
+            'label'  => $name,
         ]);
 
         $this->assertSuccess($response, "create API key for {$domain}");

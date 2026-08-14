@@ -273,8 +273,12 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
             ['key' => 'B2_CDN_BASE_URL',                    'value' => $d['b2_cdn_base_url'],             'secret' => false],
             ['key' => 'STORAGE_PREFIX',                     'value' => $dbName,                           'secret' => false], // unique per instance
 
-            // Email
-            ['key' => 'RESEND_API_KEY',                     'value' => $d['resend_api_key'],              'secret' => true],
+            // Email — Plume defaults (overridden when customer sets up a custom domain)
+            ['key' => 'MAIL_PROVIDER',                      'value' => 'plume',                                        'secret' => false],
+            ['key' => 'MAIL_FROM_DOMAIN',                   'value' => $d['platform_mail_domain'],                     'secret' => false],
+            ['key' => 'PLUME_BASE_URL',                     'value' => $d['plume_base_url'],                           'secret' => false],
+            ['key' => 'PLUME_API_KEY',                      'value' => $d['plume_platform_api_key'],                   'secret' => true],
+            ['key' => 'RESEND_API_KEY',                     'value' => $d['resend_api_key'],                           'secret' => true],
 
             // Bunny Stream
             // Bunny Stream — per-deployment library created via API at deploy time

@@ -34,7 +34,7 @@ class EmailInjector
         $businessName = $deployment->business_name ?? config('app.name');
 
         $vars = [
-            ['key' => 'PLUME_BASE_URL',       'value' => config('services.plume.base_url'), 'secret' => false],
+            ['key' => 'PLUME_BASE_URL',       'value' => config('services.deploy.plume_base_url'), 'secret' => false],
             ['key' => 'PLUME_API_KEY',         'value' => $apiKey,                           'secret' => true],
             ['key' => 'MAIL_FROM_DOMAIN',      'value' => $domain,                           'secret' => false],
             ['key' => 'MAIL_PROVIDER',         'value' => 'plume',                           'secret' => false],
@@ -63,9 +63,9 @@ class EmailInjector
         // Trigger redeploy so new env vars take effect
         $http->post('/api/v1/deploy', ['uuid' => $appUuid, 'force' => false]);
 
-        // Record in email_domains table (upsert — replaces any previous entry for this instance)
+        // Record in email_domains table (upsert — keyed by instance + domain)
         EmailDomain::updateOrCreate(
-            ['instance_id' => $instanceId],
+            ['instance_id' => $instanceId, 'domain' => $domain],
             [
                 'domain'       => $domain,
                 'is_shared'    => $domain === config('services.plume.mail_domain'),
