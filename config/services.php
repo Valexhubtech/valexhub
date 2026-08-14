@@ -43,7 +43,10 @@ return [
         'b2_bucket_name' => env('DEPLOY_B2_BUCKET_NAME'),
         'b2_cdn_base_url' => env('DEPLOY_B2_CDN_BASE_URL'),
 
-        'resend_api_key' => env('DEPLOY_RESEND_API_KEY'),
+        'resend_api_key'        => env('DEPLOY_RESEND_API_KEY'),
+        'plume_base_url'        => env('DEPLOY_PLUME_BASE_URL'),
+        'plume_platform_api_key' => env('DEPLOY_PLUME_PLATFORM_API_KEY'),
+        'platform_mail_domain'  => env('DEPLOY_PLATFORM_MAIL_DOMAIN'),
 
         'bunny_api_url' => env('DEPLOY_BUNNY_API_URL', 'https://api.bunny.net'),
         'bunny_api_key' => env('DEPLOY_BUNNY_API_KEY'),
