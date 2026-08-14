@@ -138,7 +138,7 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
 
             // Now trigger the actual deployment
             $this->http($baseUrl, $token)
-                ->get('/api/v1/deploy', ['uuid' => $appUuid, 'force' => false]);
+                ->post('/api/v1/deploy', ['uuid' => $appUuid, 'force' => false]);
 
             Log::info('Coolify deployment triggered', ['app_uuid' => $appUuid, 'product' => $product->id]);
 
@@ -390,7 +390,7 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
 
         try {
             $this->http($baseUrl, $token)
-                ->get('/api/v1/deploy', ['uuid' => $deployment->coolify_app_id, 'force' => true])
+                ->post('/api/v1/deploy', ['uuid' => $deployment->coolify_app_id, 'force' => true])
                 ->throw();
 
             Log::info('Rolling update triggered', ['app_uuid' => $deployment->coolify_app_id]);
@@ -524,7 +524,7 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
 
         try {
             $this->http($baseUrl, $token)
-                ->get('/api/v1/deploy', ['uuid' => $deployment->coolify_app_id, 'force' => false])
+                ->post('/api/v1/deploy', ['uuid' => $deployment->coolify_app_id, 'force' => false])
                 ->throw();
 
             Log::info('Coolify redeploy triggered', ['app_uuid' => $deployment->coolify_app_id]);
@@ -601,7 +601,7 @@ class RealCoolifyDeploymentService implements CoolifyDeploymentServiceContract
 
             // Redeploy (not just restart) so Traefik custom_labels are regenerated with the new domain.
             $this->http($baseUrl, $token)
-                ->get('/api/v1/deploy', ['uuid' => $deployment->coolify_app_id, 'force' => false])
+                ->post('/api/v1/deploy', ['uuid' => $deployment->coolify_app_id, 'force' => false])
                 ->throw();
 
             Log::info('Coolify domain updated', ['app_uuid' => $deployment->coolify_app_id, 'fqdn' => $fqdn]);
